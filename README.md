@@ -1,36 +1,196 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Konthora - AI Audio Platform
 
-## Getting Started
+**Konthora** is a production-ready web application hosting browser-based AI audio tools. The name is inspired by the Bengali word *“Kontho”*, meaning *voice*.
 
-First, run the development server:
+The application launches with:
+1. **Text to Speech (TTS)**: Fully integrated with a local Python FastAPI backend using the high-quality open-weight **Kokoro-82M** model, compiling voiceovers into WAV/MP3 files.
+2. **Audio Transcription**: Fully integrated with **faster-whisper** (small.en) for timestamped transcription. Supports MP3, WAV, M4A, AAC, MP4, WebM, and MOV files with sentence, paragraph, and word-level timestamps. Exports as TXT, SRT, VTT, and JSON.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Technical Architecture & State Flow
+
+```mermaid
+graph TD
+    User[Browser Frontend] -->|1. POST /api/v1/tts/jobs| Server[FastAPI Backend]
+    Server -->|2. Check IP Rate Limit| RateLimit[Rate Limit Service]
+    Server -->|3. Enqueue Job ID| Queue[asyncio.Queue]
+    Queue -->|4. Pull Job| Worker[Worker Thread]
+    Worker -->|5. Normalize & Chunk| TextProc[Text Processor]
+    TextProc -->|6. Lazy Load Weights| Kokoro[Kokoro KPipeline]
+    Kokoro -->|7. Generate Waveforms| Assemble[Audio Assembly & linear crossfades]
+    Assemble -->|8. PCM 16-bit Mono WAV| AudioStore[WAV Master Export]
+    AudioStore -->|9. Shell-Safe FFmpeg| MP3Store[MP3 VBR Conversion]
+    MP3Store -->|10. Finalize Status| MemoryDB[In-Memory Registry]
+    User -->|11. Poll GET /tts/jobs/jobId| MemoryDB
+    User -->|12. GET /tts/jobs/jobId/audio| FileStream[Secure File Streamer]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* **Frontend**: Next.js App Router (TypeScript in strict mode, Tailwind CSS v4, Lucide React, ESLint).
+* **Backend**: FastAPI (Python 3.11+, PyTorch, Kokoro, faster-whisper, eSpeak NG, FFmpeg, pytest).
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Installation & Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Prerequisites (Required Hosts)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **FFmpeg**: Required on the system PATH to encode WAV files to MP3.
+  * *Windows Setup*: Install via Winget `winget install Gyan.FFmpeg` or extract from Gyan.dev and add to system `PATH`.
+* **eSpeak NG**: Required for English grapheme-to-phoneme (G2P) phonemizer translation.
+  * *Windows Setup*: Run the installer and verify installation under `C:\Program Files\eSpeak NG`.
 
-## Deploy on Vercel
+### 2. Backend Setup & Run
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Navigate to the `backend/` folder and create a virtual environment:
+   ```bash
+   cd backend
+   python -m venv .venv
+   ```
+2. Activate the virtual environment:
+   * **Windows (PowerShell)**: `.venv\Scripts\Activate.ps1`
+   * **Linux/macOS**: `source .venv/bin/activate`
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+4. Create your local `backend/.env` file:
+   ```env
+   PORT=8000
+   APP_ENV=development
+   ESPEAK_PATH=C:\Program Files\eSpeak NG
+   TTS_JOB_RETENTION_MINUTES=60
+   ```
+5. Start the FastAPI server:
+   ```bash
+   # Make sure you are in the backend directory
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Frontend Setup & Run
+
+1. Navigate back to the repository root:
+   ```bash
+   npm install
+   ```
+2. Configure `.env.local` (copy from the template):
+   ```bash
+   cp .env.example .env.local
+   ```
+   Then adjust values as needed (`NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1`).
+3. Start the Next.js development server:
+   ```bash
+   npm run dev
+   ```
+4. Access the workbench in your browser at `http://localhost:3000/text-to-speech`.
+
+---
+
+## System Limitations & Scopes
+
+* **English Only**: The platform is restricted to English inputs (using `en-US` and `en-GB` accents). "Auto Detect" currently resolves to English.
+* **Character Ceiling**: Strict limit of **2,000 characters** per guest synthesis session.
+* **In-Memory Queue**: Submissions are scheduled in a bounded FIFO queue of size 10. Duplicate submissions above capacity receive an immediate `503 Service Unavailable (QUEUE_FULL)`.
+* **Guest Rate Limiting**: Limit of **10 job creations per hour** per client IP.
+* **Retention Policy**: Generated audio files and metadata expire and are deleted automatically after **60 minutes**.
+* **State Loss on Restart**: All job states are in-memory. Restarting the backend wipes all jobs, although cached storage directories are cleaned on startup.
+* **Temporary Local Storage**: Files are stored on local disk under `backend/storage` and expire automatically.
+* **Single-Server MVP**: The backend uses an in-process asyncio queue and local storage. Multi-replica scaling requires transitioning to a shared message queue (e.g., Redis) and shared block storage.
+* **Docker**: A Dockerfile is provided, but Docker is **not runtime-verified** in this repository.
+* **No diarization, translation, or guaranteed perfect accuracy.**
+
+## Verified Runtime
+
+* **Python**: `3.11.9` (verified on Windows)
+* **TTS**: Kokoro (`kokoro==0.7.16`) with `misaki` pinned to an immutable Git commit
+* **Transcription**: faster-whisper (`faster-whisper==1.2.1`, `small.en`)
+* **FFmpeg & FFprobe**: required on the system PATH
+* **eSpeak NG**: required for Kokoro English phonemization
+* **Domain**: https://konthora.dev.bd
+
+---
+
+## Verified Voice Catalogue
+
+Every voice listed below is verified to compile, load, and synthesize waveforms correctly using the local eSpeak NG phonemizer and Kokoro engine:
+
+| Accent | Voice ID | Gender | Description |
+| :--- | :--- | :--- | :--- |
+| **American English** | `af_heart` | Female | Soft, clear narration (Recommended ★) |
+| **American English** | `af_bella` | Female | Bright, conversational tone |
+| **American English** | `af_nicole` | Female | Warm, corporate presentation voice |
+| **American English** | `af_nova` | Female | Clear, energetic voice |
+| **American English** | `am_adam` | Male | Warm, narrative tone |
+| **American English** | `am_michael` | Male | Professional, corporate narrator |
+| **British English** | `bf_emma` | Female | Clear British accent, narrative (Recommended ★) |
+| **British English** | `bf_isabella` | Female | Calm, articulate British tone |
+| **British English** | `bm_george` | Male | Confident, narrative British accent |
+| **British English** | `bm_lewis` | Male | Conversational, friendly British tone |
+
+---
+
+## Verification Commands
+
+### Automated Tests
+Run the mock unit tests suite (exits in < 1 second, does not fetch or download weights):
+```bash
+$env:PYTHONPATH="backend"
+backend\.venv\Scripts\python -m pytest backend/app/tests -vv --timeout=30
+```
+
+Run the real-model synthesis integration test (separately):
+```bash
+$env:RUN_TTS_INTEGRATION_TESTS="1"
+$env:PYTHONPATH="backend"
+backend\.venv\Scripts\python -m pytest backend/app/tests/test_integration.py -vv -s --timeout=300
+Remove-Item Env:RUN_TTS_INTEGRATION_TESTS -ErrorAction SilentlyContinue
+```
+
+Run the real-model transcription integration test (separately):
+```bash
+$env:RUN_TRANSCRIPTION_INTEGRATION_TESTS="1"
+$env:PYTHONPATH="backend"
+backend\.venv\Scripts\python -m pytest backend/app/tests/test_transcription_integration.py -vv -s --timeout=600
+Remove-Item Env:RUN_TRANSCRIPTION_INTEGRATION_TESTS -ErrorAction SilentlyContinue
+```
+
+Verify the installed dependency tree is coherent (must print "No broken requirements found" and exit 0):
+```bash
+backend\.venv\Scripts\python -m pip check
+```
+
+### Frontend Optimization Checks
+Verify TypeScript strict checks and production assets packaging:
+```bash
+# Strictly check typings
+npx tsc --noEmit
+
+# Run ESLint rules
+npm run lint
+
+# Compile Next.js production build
+npm run build
+```
+
+---
+
+## Docker Instructions
+
+To run the backend in a containerized environment (which installs eSpeak NG and FFmpeg automatically in the Linux image):
+
+1. Build the Docker image:
+   ```bash
+   docker build -t konthora-backend ./backend
+   ```
+2. Run the container:
+   ```bash
+   docker run -p 8000:8000 \
+     -v $(pwd)/backend/storage:/app/storage \
+     -v $(pwd)/backend/model_cache:/root/.cache/huggingface \
+     konthora-backend
+   ```

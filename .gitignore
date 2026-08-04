@@ -1,41 +1,74 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Environment files
+.env
+.env.*
+!.env.example
+!backend/.env.example
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Python
+backend/.venv/
+backend/.venv-*/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# testing
-/coverage
+# Node / Next.js
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# next.js
-/.next/
-/out/
+# Generated backend data
+backend/storage/*
+!backend/storage/.gitkeep
+storage/
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.webm
+*.mov
+*.srt
+*.vtt
+
+# Model and package caches
+.cache/
+huggingface/
+/models/
+*.bin
+*.safetensors
+*.onnx
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+scratch/
+backend/scratch/
+*.part
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # production
 /build
 
 # misc
-.DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vercel
+.vercel
