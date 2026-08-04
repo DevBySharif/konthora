@@ -39,6 +39,12 @@ EnvironmentFile=/etc/konthora/konthora.env
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
 
+# Deterministic model cache location (Kokoro + faster-whisper weights download
+# on first use). Lives under the konthora home so it survives restarts and is
+# protected from public access; /opt is outside ProtectSystem=full's RO set.
+Environment=HF_HOME=/opt/konthora/.cache/huggingface
+Environment=XDG_CACHE_HOME=/opt/konthora/.cache
+
 # Storage root and log dir come from the EnvironmentFile (TTS_STORAGE_ROOT,
 # LOG_DIR). The deploy script pre-creates both with konthora ownership.
 ExecStartPre=/usr/bin/test -d /opt/konthora/repo/backend
@@ -57,14 +63,28 @@ RestartSec=5
 # -------- Resource limits --------
 # uvicorn socket backlog / descriptors
 LimitNOFILE=65535
-# Hard memory cap (Kokoro + faster-whisper models loaded lazily in one process).
-MemoryMax=4G
+#
+# MemoryMax caps the whole cgroup (service + FFmpeg children). Measured (Aug
+# 2026): app is warm at ~1.5 GB with BOTH models, and a transcription job can
+# push peak to ~3 GB. 6G on an 8 GiB box leaves ~2 GB for Ubuntu/Nginx/FFmpeg
+# and filesystem cache — do NOT set it equal to total RAM.
+#   Adjust to your instance:
+#     4 GiB validation box -> keep 6G (moot; physical RAM is the real ceiling)
+#    8 GiB MVP (default)   -> 6G
+#    16 GiB scale-up       -> 12G
+MemoryMax=6G
 # Rate-limit restarts: max 5 starts in a 10 minute window, then 90s pause.
 StartLimitIntervalSec=600
 StartLimitBurst=5
 
-# Soft CPU limit (1000 = 10 cores of a typical VPS). Raise for bigger boxes.
-CPUQuota=1000%
+# CPUQuota = vCPU count to allow (vCPU x 100 = %).
+#   Adjust to your instance:
+#     2 vCPU  -> 200%
+#     4 vCPU  -> 400%   (MVP default)
+#     8 vCPU  -> 800%
+# A quota HIGHER than the physical core count is benign (it never removes CPU
+# capacity); set it to match your instance so throttling is predictable.
+CPUQuota=400%
 
 # Keep stdout/stderr on the journal; the app also writes rotated files when
 # LOG_DIR is configured.

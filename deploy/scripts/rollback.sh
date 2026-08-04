@@ -36,4 +36,4 @@ log "Reinstalling dependencies for the rolled-back commit..."
 log "Restarting service..."
 systemctl restart "$SERVICE_NAME"
 
-log "Rollback complete. Verify with ./health.sh"
+log "Rollback complete. Verify with ./healthcheck.sh"

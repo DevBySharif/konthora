@@ -34,14 +34,14 @@ Notes:
   fails, or if `modelStatus` becomes `failed`.
 - `ffmpegAvailable: false` means MP3 encoding and transcription extraction are
   broken — alert on this.
-- `queueDepth` climbing to `queueCapacity` under sustained load means the VPS is
+- `queueDepth` climbing to `queueCapacity` under sustained load means the box is
   saturated.
 
 ### Local check
 
 ```bash
-bash deploy/scripts/health.sh        # full public check
-bash deploy/scripts/health.sh --local
+bash deploy/scripts/healthcheck.sh        # full public check
+bash deploy/scripts/healthcheck.sh --local
 ```
 
 ## UptimeRobot
@@ -54,7 +54,7 @@ bash deploy/scripts/health.sh --local
 
 ## Better Stack (alternative/replacement)
 
-- **Heartbeat:** POST to a Better Stack heartbeat URL from a cron on the VPS:
+- **Heartbeat:** POST to a Better Stack heartbeat URL from a cron on the box:
   ```cron
   */5 * * * * curl -fsS https://uptime.betterstack.com/api/v1/heartbeat/HEARTBEAT_TOKEN
   ```
@@ -81,7 +81,7 @@ cache (`~/.cache/huggingface`).
 ## RAM monitoring
 
 One uvicorn process holds both models once used (~1.5–2.5 GB with the defaults).
-The systemd unit caps it with `MemoryMax=4G`.
+The systemd unit caps it with `MemoryMax=6G` (adjust per instance tier).
 
 - Alert when memory usage > 80% for 5+ minutes.
 - Watch `MemoryMax` hit events: `journalctl -u konthora | grep -i memory`.
@@ -92,7 +92,7 @@ Transcription (`small.en`, `int8`) saturates a single core for minutes per job.
 TTS uses one core in bursts.
 
 - Alert when load average stays > 1.5× vCPU count for 10+ minutes.
-- `CPUQuota=1000%` in the unit prevents runaway CPU.
+- `CPUQuota` (default `400%`, adjusted per instance vCPU) prevents runaway CPU.
 
 ## Log locations
 

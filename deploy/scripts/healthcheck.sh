@@ -7,9 +7,9 @@
 #   2. local health endpoint on 127.0.0.1:8000
 #   3. public health endpoint through Nginx/TLS (https://api.konthora.dev.bd)
 # Usage:
-#   ./health.sh            full check against the public URL
-#   ./health.sh --local    only check the local upstream
-#   ./health.sh --json     print the raw JSON body
+#   ./healthcheck.sh            full check against the public URL
+#   ./healthcheck.sh --local    only check the local upstream
+#   ./healthcheck.sh --json     print the raw JSON body
 # =============================================================================
 set -euo pipefail
 

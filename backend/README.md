@@ -158,7 +158,8 @@ python -m pip check
 
 ## Production Configuration
 
-Deployment target: an **Ubuntu 24.04 VPS** behind Nginx, managed by systemd.
+Deployment target: an **AWS EC2** instance running **Ubuntu 24.04** behind
+Nginx, managed by systemd.
 See the repository-level [DEPLOYMENT.md](../DEPLOYMENT.md) for the full procedure.
 
 Production-specific settings (see `app/core/config.py` and
@@ -171,7 +172,7 @@ Production-specific settings (see `app/core/config.py` and
 | `TRUSTED_HOSTS` | `api.konthora.dev.bd` | Host-header allowlist (anti DNS-rebinding) |
 | `CORS_ORIGINS` | `https://konthora.dev.bd` | Exact browser origin allowed |
 | `LOG_DIR` | `/var/log/konthora` | Rotating file logs (50 MB × 7 days, zipped) |
-| `TTS_STORAGE_ROOT` | `/opt/konthora/backend/storage` | Job output location on the VPS |
+| `TTS_STORAGE_ROOT` | `/opt/konthora/repo/backend/storage` | Job output location on the instance |
 
 Startup command (also baked into the systemd unit):
 

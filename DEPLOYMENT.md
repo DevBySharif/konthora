@@ -1,16 +1,19 @@
 # Konthora — Production Deployment
 
-This document describes how to deploy the Konthora backend to a fresh
-**Ubuntu 24.04 VPS** behind **Nginx + Let's Encrypt**, managed by **systemd**.
+This document describes how to deploy the Konthora backend to **AWS EC2**
+(Ubuntu 24.04 LTS) behind **Nginx + Let's Encrypt**, managed by **systemd**.
 The frontend runs on **Vercel**.
 
-- Architecture: `konthora.dev.bd` (Vercel) + `api.konthora.dev.bd` (VPS)
+- Architecture: `konthora.dev.bd` (Vercel) + `api.konthora.dev.bd` (AWS EC2)
+- AWS provisioning & sizing: [deploy/AWS.md](deploy/AWS.md)
 - Launch checklist: [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
 - Monitoring: [deploy/MONITORING.md](deploy/MONITORING.md)
+- Security review: [deploy/SECURITY.md](deploy/SECURITY.md)
+- Performance review: [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md)
 
 ```
-Browser ──► Vercel (Next.js)            konthora.dev.bd
-Browser ──► Nginx:443 ──► uvicorn:127.0.0.1:8000   api.konthora.dev.bd
+Browser ──► Vercel (Next.js)                     konthora.dev.bd
+Browser ──► EC2: Nginx:443 ──► uvicorn:127.0.0.1:8000   api.konthora.dev.bd
               ▲ Let's Encrypt TLS, rate limits, security headers
 ```
 
@@ -18,16 +21,24 @@ Browser ──► Nginx:443 ──► uvicorn:127.0.0.1:8000   api.konthora.dev.
 
 ## 1. Server requirements
 
-| Resource | Minimum | Recommended |
-| --- | --- | --- |
-| CPU | 2 vCPU | 4 vCPU |
-| RAM | 3 GB | 6 GB (models load lazily, ~2 GB once warm) |
-| Disk | 20 GB SSD | 40 GB SSD |
-| OS | Ubuntu 24.04 LTS (x86_64) | same |
-| Network | Public IPv4, 22/80/443 open | same |
+AWS sizing is **tiered by budget** — this project has ≈ USD $100 of credits,
+so **do not default to a large instance**. Pick a tier from
+[deploy/AWS.md](deploy/AWS.md) and **benchmark before choosing** (there is a
+helper at `deploy/scripts/benchmark_resources.sh`).
 
-Models are downloaded on first use into `~/.cache/huggingface`
-(≈160 MB Kokoro + ≈460 MB Whisper small.en). The default
+| Tier | Shape | When |
+| --- | --- | --- |
+| A — validation | smallest that benchmarks safely (candidates: `c7i-flex.large`, `c6i.large`, `m7i-flex.large`, `t3.large`, `t3a.large`); 4 GiB may be marginal | smoke tests, restricted beta |
+| B — MVP | 4 vCPU / 8 GiB, 40–50 GiB gp3 | small public launch (≈ $100 credit ≈ 1 month or less) |
+| C — scale-up | `c6i.xlarge` / `c7i.xlarge` | real traffic / paid funding |
+
+Common to all tiers: Ubuntu 24.04 LTS (x86_64); public IPv4 (≈ $3.65/mo —
+**billed whether attached or not**, see [deploy/AWS.md](deploy/AWS.md));
+22/80/443 open.
+
+Measured (Aug 2026): the app is warm at **~1.5 GB** with both models
+(Kokoro ~1.3 GB), and the model cache on disk is ~0.8 GB
+(Kokoro ≈0.3 GB + Whisper small.en ≈0.46 GB). The default
 `small.en / int8 / cpu` configuration is tuned for this class of box.
 
 > **Single-process constraint:** Konthora keeps jobs, rate-limit state and task
@@ -89,7 +100,34 @@ sudo apt install -y nodejs
 node --version
 ```
 
-## 5. FFmpeg (backend dependency)
+## 5. Git installation
+
+Git is used to clone the repository and by `update.sh`/`rollback.sh` to manage
+releases. `deploy.sh` installs it automatically; manually:
+
+```bash
+sudo apt install -y git
+git --version
+```
+
+## 6. Virtual environment
+
+The backend runs from an isolated **virtualenv** (`backend/.venv`) so system
+packages never interfere with the pinned requirements. `deploy.sh` creates it;
+manually:
+
+```bash
+cd /opt/konthora/repo/backend
+python3.11 -m venv .venv
+.venv/bin/pip install --upgrade pip setuptools wheel
+.venv/bin/pip install -r requirements.txt
+.venv/bin/pip check
+```
+
+The systemd unit launches `.venv/bin/uvicorn` directly — no shell, no tmux, no
+`source activate` needed.
+
+## 7. FFmpeg (backend dependency)
 
 Required for MP3 encoding and for transcription media processing (extraction,
 inspection).
@@ -101,7 +139,7 @@ ffmpeg -version   # ffprobe ships with ffmpeg
 
 Verify the backend sees it: `GET /api/v1/health` → `"ffmpegAvailable": true`.
 
-## 6. eSpeak NG (backend dependency)
+## 8. eSpeak NG (backend dependency)
 
 Required for Kokoro's English grapheme-to-phoneme stage.
 
@@ -114,7 +152,7 @@ Auto-discovery finds `/usr/bin/espeak-ng`, so `ESPEAK_PATH` can stay empty in
 
 ---
 
-## 7. Deploying the backend (first time)
+## 9. Deploying the backend (first time)
 
 The provisioning script performs every step below automatically. DNS must
 already point at the VPS before it runs (it obtains the TLS certificate).
@@ -143,7 +181,7 @@ What `deploy.sh` does:
 8. Issues a Let's Encrypt certificate for `api.konthora.dev.bd`.
 9. Starts the service and reloads Nginx.
 
-Manual equivalents of steps 5–9 are shown below.
+Manual equivalents of steps 7–11 are shown below.
 
 ### Backend secrets file — `/etc/konthora/konthora.env`
 
@@ -179,7 +217,7 @@ Key properties:
 | `EnvironmentFile` | `/etc/konthora/konthora.env` | secret config, not in the unit |
 | `ExecStart` | `.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --http httptools` | loopback bind, 1 worker, trust only local proxy |
 | `Restart=always` / `RestartSec=5` | | self-healing |
-| `MemoryMax=4G`, `LimitNOFILE=65535`, `CPUQuota=1000%` | | resource limits |
+| `MemoryMax=6G`, `LimitNOFILE=65535`, `CPUQuota=400%` | | resource limits — adjust per instance tier (see the unit file) |
 | `StandardOutput/StandardError=journal` | | logs via journald |
 | `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=full`, `ProtectHome`, `ReadWritePaths=...` | | security hardening |
 
@@ -234,7 +272,7 @@ Certificates renew automatically via the `certbot.timer` systemd timer.
 
 ---
 
-## 8. Verify the deployment
+## 10. Verify the deployment
 
 ```bash
 # Backend
@@ -248,13 +286,13 @@ curl -I https://konthora.dev.bd
 The deploy scripts also provide helpers:
 
 ```bash
-sudo bash deploy/scripts/health.sh      # systemd + local + public health
+sudo bash deploy/scripts/healthcheck.sh      # systemd + local + public health
 sudo bash deploy/scripts/logs.sh -f     # tail backend logs
 ```
 
 ---
 
-## 9. Frontend (Vercel)
+## 11. Frontend (Vercel)
 
 1. Import `DevBySharif/konthora` into Vercel (framework preset Next.js).
 2. Set production env vars:
@@ -269,9 +307,9 @@ sudo bash deploy/scripts/logs.sh -f     # tail backend logs
 
 ---
 
-## 10. Updating
+## 12. Updating
 
-On the VPS:
+On the EC2 instance:
 
 ```bash
 sudo bash deploy/scripts/update.sh
@@ -287,9 +325,9 @@ Frontend updates are pushed to Vercel automatically on merge to `main`
 
 ---
 
-## 11. Rollback
+## 13. Rollback
 
-### Backend (VPS)
+### Backend (EC2)
 
 Every deploy is a Git commit. Rollback = checkout the previous commit and restart:
 
@@ -304,7 +342,7 @@ git log --oneline -5
 git checkout --force <previous-sha>
 sudo /opt/konthora/repo/backend/.venv/bin/pip install -r backend/requirements.txt
 sudo systemctl restart konthora
-sudo bash deploy/scripts/health.sh
+sudo bash deploy/scripts/healthcheck.sh
 ```
 
 Rollback only touches the code, not the config — the secrets file
@@ -318,7 +356,7 @@ Rollback to previous deployment).
 
 ---
 
-## 12. Operations cheat-sheet
+## 14. Operations cheat-sheet
 
 ```bash
 sudo systemctl status konthora          # unit state
@@ -328,12 +366,86 @@ sudo bash deploy/scripts/cleanup.sh     # manual storage/journal cleanup
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-## 13. Deploying from a fresh machine (summary)
+## 15. Deploying from a fresh machine (summary)
 
 ```bash
-# 1. DNS: A record api -> VPS IP (create first)
+# 1. DNS: A record api -> EC2 Elastic IP (create before deploy.sh runs)
 # 2. Provision:
-sudo bash deploy.sh
+sudo bash deploy/scripts/deploy.sh
 # 3. Verify:
 curl https://api.konthora.dev.bd/api/v1/health
 ```
+
+---
+
+## 16. Troubleshooting
+
+### Service fails to start or keeps restarting
+
+```bash
+sudo systemctl status konthora          # unit state + last error
+sudo journalctl -u konthora -n 200      # recent logs
+sudo bash deploy/scripts/healthcheck.sh
+```
+
+Common causes:
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `konthora.service: Failed` at startup | missing venv or `EnvironmentFile` | re-run `deploy.sh`; confirm `/etc/konthora/konthora.env` exists (`sudo test -f /etc/konthora/konthora.env`) |
+| `ModuleNotFoundError: ...` in logs | stale venv after upgrade | `sudo bash deploy/scripts/update.sh` (reinstalls requirements) |
+| Restart loop after 5 failures in 10 min | `StartLimitBurst` exhausted | fix the underlying error, then `sudo systemctl reset-failed konthora` |
+| App runs but queue workers never process | `TTS_WORKER_COUNT`/`TRANSCRIPTION_WORKER_COUNT` > 1 | must be `1` (in-process queues); edit `/etc/konthora/konthora.env` and restart |
+
+### Health endpoint reports `ffmpegAvailable: false`
+
+FFmpeg is missing or not on PATH for the `konthora` user:
+
+```bash
+sudo -u konthora /opt/konthora/repo/backend/.venv/bin/python -c "from app.core.config import settings"
+sudo apt install -y ffmpeg
+sudo systemctl restart konthora
+```
+
+### Model downloads are slow or fail (first request 500s)
+
+Models download on first use to `/opt/konthora/.cache/huggingface`
+(`HF_HOME`, see the systemd unit). If a cold download times out, retry the
+request or pre-warm the cache once:
+
+```bash
+sudo -u konthora /opt/konthora/repo/backend/.venv/bin/python - <<'PY'
+import os
+os.environ.setdefault("HF_HOME", "/opt/konthora/.cache/huggingface")
+from app.services.kokoro_service import KokoroService
+from app.services.transcription_service import TranscriptionService
+KokoroService().load_pipeline(lang_code="a")
+TranscriptionService().load_model()
+print("models pre-warmed")
+PY
+```
+
+### `502 Bad Gateway` from Nginx
+
+Uvicorn is down, or the service is restarting:
+
+```bash
+sudo systemctl restart konthora
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### Certificate does not renew / expires
+
+Renewal runs via `certbot.timer`:
+
+```bash
+sudo systemctl list-timers certbot.timer
+sudo certbot renew --dry-run
+```
+
+### High memory usage
+
+The single process holds both models (~2 GB warm). If the box runs out of
+memory, confirm `TTS_WORKER_COUNT`/`TRANSCRIPTION_WORKER_COUNT` are `1`, and
+raise the instance size (see [deploy/AWS.md](deploy/AWS.md)) or lower
+`TRANSCRIPTION_BEAM_SIZE`/`TRANSCRIPTION_MODEL` (e.g. `base.en`).

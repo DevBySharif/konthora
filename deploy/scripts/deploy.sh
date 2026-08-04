@@ -6,7 +6,8 @@
 #   sudo bash deploy.sh
 #
 # What this does:
-#   1. Installs system packages (Python 3.11, FFmpeg, eSpeak NG, Nginx, git).
+#   1. Installs system packages (Python 3.11 via deadsnakes, FFmpeg, eSpeak NG,
+#      Nginx, git, build tools).
 #   2. Creates the unprivileged 'konthora' service account.
 #   3. Clones the repository into /opt/konthora/repo.
 #   4. Creates a virtualenv and installs requirements.
@@ -42,7 +43,15 @@ apt-get install -y \
   ffmpeg espeak-ng \
   nginx \
   git curl ca-certificates \
-  build-essential
+  build-essential software-properties-common
+
+# Konthora is verified on Python 3.11. Prefer it over the distro 3.12; the
+# pinned requirements install on both, but 3.11 is the tested parity target.
+if ! command -v python3.11 >/dev/null 2>&1; then
+  add-apt-repository ppa:deadsnakes/ppa -y >/dev/null 2>&1 || true
+  apt-get update -qq
+  apt-get install -y python3.11 python3.11-venv python3.11-dev
+fi
 
 # ---------------------------------------------------------------------------
 log "2/9 Creating service account..."
@@ -64,8 +73,11 @@ chown -R "$SERVICE_USER:$SERVICE_GROUP" "$REPO_DIR"
 
 # ---------------------------------------------------------------------------
 log "4/9 Creating virtualenv and installing dependencies..."
+# Prefer Python 3.11 (the version the lockfile was verified on). Falls back to
+# the distro Python 3.12, which also installs the pinned requirements.
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python3.11 || command -v python3)}"
 if [ ! -x "$BACKEND_DIR/.venv/bin/python" ]; then
-  python3 -m venv "$BACKEND_DIR/.venv"
+  "$PYTHON_BIN" -m venv "$BACKEND_DIR/.venv"
 fi
 "$BACKEND_DIR/.venv/bin/pip" install --upgrade pip setuptools wheel
 "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements.txt"
@@ -126,4 +138,4 @@ systemctl restart "$SERVICE_NAME"
 log "Deployment complete."
 log "   Check:  sudo systemctl status $SERVICE_NAME"
 log "   Logs:   ./logs.sh"
-log "   Health: ./health.sh  (expect HTTP 200 with status=alive)"
+log "   Health: ./healthcheck.sh  (expect HTTP 200 with status=alive)"

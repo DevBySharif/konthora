@@ -10,18 +10,21 @@ The application launches with:
 
 | Document | Purpose |
 | :--- | :--- |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Full production setup: Ubuntu VPS, Python, FFmpeg, eSpeak NG, systemd, Nginx, Let's Encrypt, updates, rollback. |
-| [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) | Step-by-step go-live checklist (DNS, Vercel, SSL, Search Console, backups, etc.). |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Full production setup: AWS EC2 / Ubuntu 24.04, Python, Node, Git, FFmpeg, eSpeak NG, venv, systemd, Nginx, Let's Encrypt, updates, rollback, troubleshooting. |
+| [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) | Step-by-step go-live checklist (AWS, EC2, Elastic IP, Security Group, DNS, Vercel, SSL, Search Console, analytics, backups). |
+| [deploy/AWS.md](deploy/AWS.md) | AWS recommendations: credit-budget tiers, benchmark-before-sizing, public IPv4 pricing, Security Groups, IAM, cost model (by region), scaling path. |
 | [deploy/MONITORING.md](deploy/MONITORING.md) | Health endpoint, uptime, disk/RAM/CPU and log monitoring recommendations. |
+| [deploy/SECURITY.md](deploy/SECURITY.md) | Security review: CORS, trusted hosts, headers, rate limiting, uploads, tokens, storage, log sanitization. |
+| [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md) | Performance review: queue, memory, startup, model loading, compression, caching. |
 | [deploy/nginx/](deploy/nginx/) | Production Nginx configuration (TLS, security headers, uploads, timeouts). |
 | [deploy/systemd/](deploy/systemd/) | `konthora.service` systemd unit. |
-| [deploy/scripts/](deploy/scripts/) | Provision, update, restart, stop, backup, cleanup, logs, health and rollback scripts. |
+| [deploy/scripts/](deploy/scripts/) | Provision, update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
 | [.env.example](.env.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates. |
 
 > **Architecture:** Frontend on **Vercel** (`konthora.dev.bd`), backend on an
-> **Ubuntu 24.04 VPS** behind **Nginx + Let's Encrypt** (`api.konthora.dev.bd`),
-> supervised by **systemd**. Continuous integration runs in GitHub Actions (CI
-> only — no automatic deployments).
+> **AWS EC2** instance running **Ubuntu 24.04** behind **Nginx + Let's Encrypt**
+> (`api.konthora.dev.bd`), supervised by **systemd**. Continuous integration
+> runs in GitHub Actions (CI only — no automatic deployments).
 
 ---
 

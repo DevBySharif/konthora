@@ -48,4 +48,4 @@ systemctl restart "$SERVICE_NAME"
 
 AFTER=$(git -C "$REPO_DIR" rev-parse --short HEAD)
 log "Updated: $BEFORE -> $AFTER"
-log "Verify with ./health.sh"
+log "Verify with ./healthcheck.sh"
