@@ -1,10 +1,27 @@
 # Konthora - AI Audio Platform
 
-**Konthora** is a production-ready web application hosting browser-based AI audio tools. The name is inspired by the Bengali word *“Kontho”*, meaning *voice*.
+**Konthora** is a production-ready web application hosting browser-based AI audio tools. The name is inspired by the Bengali word *"Kontho"*, meaning *voice*.
 
 The application launches with:
 1. **Text to Speech (TTS)**: Fully integrated with a local Python FastAPI backend using the high-quality open-weight **Kokoro-82M** model, compiling voiceovers into WAV/MP3 files.
 2. **Audio Transcription**: Fully integrated with **faster-whisper** (small.en) for timestamped transcription. Supports MP3, WAV, M4A, AAC, MP4, WebM, and MOV files with sentence, paragraph, and word-level timestamps. Exports as TXT, SRT, VTT, and JSON.
+
+## Deployment
+
+| Document | Purpose |
+| :--- | :--- |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Full production setup: Ubuntu VPS, Python, FFmpeg, eSpeak NG, systemd, Nginx, Let's Encrypt, updates, rollback. |
+| [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) | Step-by-step go-live checklist (DNS, Vercel, SSL, Search Console, backups, etc.). |
+| [deploy/MONITORING.md](deploy/MONITORING.md) | Health endpoint, uptime, disk/RAM/CPU and log monitoring recommendations. |
+| [deploy/nginx/](deploy/nginx/) | Production Nginx configuration (TLS, security headers, uploads, timeouts). |
+| [deploy/systemd/](deploy/systemd/) | `konthora.service` systemd unit. |
+| [deploy/scripts/](deploy/scripts/) | Provision, update, restart, stop, backup, cleanup, logs, health and rollback scripts. |
+| [.env.example](.env.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates. |
+
+> **Architecture:** Frontend on **Vercel** (`konthora.dev.bd`), backend on an
+> **Ubuntu 24.04 VPS** behind **Nginx + Let's Encrypt** (`api.konthora.dev.bd`),
+> supervised by **systemd**. Continuous integration runs in GitHub Actions (CI
+> only — no automatic deployments).
 
 ---
 
@@ -61,8 +78,8 @@ graph TD
    ```
 4. Create your local `backend/.env` file:
    ```env
-   PORT=8000
    APP_ENV=development
+   APP_PORT=8000
    ESPEAK_PATH=C:\Program Files\eSpeak NG
    TTS_JOB_RETENTION_MINUTES=60
    ```

@@ -31,7 +31,7 @@ def resolve_secure_path(filename: str) -> Path:
     curr = candidate
     while curr != root and curr != curr.parent:
         if curr.exists() and curr.is_symlink():
-            logger.error(f"Symlink detected and blocked: {curr}")
+            logger.error(f"Symlink detected and blocked: {curr.name}")
             raise InvalidRequestException("INVALID_REQUEST", "Symlinks are not allowed.")
         curr = curr.parent
 

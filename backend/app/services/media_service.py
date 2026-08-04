@@ -211,8 +211,7 @@ class MediaService:
                     pass
             raise AudioExtractionFailedException("Media conversion timed out. The file may be corrupt or too complex.")
         except subprocess.CalledProcessError as e:
-            stderr = e.stderr.decode("utf-8", errors="ignore")
-            logger.error(f"FFmpeg extraction failed (code {e.returncode}). Stderr: {stderr}")
+            logger.error(f"FFmpeg extraction failed with code {e.returncode}.")
             if output_path.exists():
                 try:
                     output_path.unlink()

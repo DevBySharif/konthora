@@ -3,10 +3,13 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from starlette.middleware.gzip import GZipMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from loguru import logger
 
 from app.core.config import settings
 from app.core.exceptions import TtsException
+from app.core.security import SecurityHeadersMiddleware
 from app.core.queue import TtsQueueManager
 from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.cleanup_service import CleanupService
@@ -57,6 +60,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Middleware stack. Starlette wraps in reverse order, so the LAST added middleware
+# is the OUTERMOST. Order (outer -> inner): TrustedHost -> CORS -> SecurityHeaders -> GZip.
+if settings.COMPRESSION_ENABLED:
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 # CORS configuration (complying with cross-origin safety rules)
 app.add_middleware(
     CORSMiddleware,
@@ -64,6 +74,12 @@ app.add_middleware(
     allow_credentials=False,  # Bearer auth does not require credentials/cookies
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
+)
+
+# Host header validation (deny unknown Hosts to prevent DNS rebinding / host spoofing)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.trusted_hosts_list,
 )
 
 # Register routes

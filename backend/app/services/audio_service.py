@@ -20,7 +20,7 @@ class AudioService:
         """Checks if ffmpeg is available on the system path."""
         which_ffmpeg = shutil.which("ffmpeg")
         if which_ffmpeg:
-            logger.info(f"FFmpeg detected successfully at: {which_ffmpeg}")
+            logger.info("FFmpeg detected successfully on system PATH.")
             return True, which_ffmpeg
 
         # Check standard installation locations if on Windows
@@ -31,7 +31,7 @@ class AudioService:
             ]
             for path in standard_paths:
                 if Path(path).exists():
-                    logger.info(f"FFmpeg detected at standard path: {path}")
+                    logger.info("FFmpeg detected at a standard installation location.")
                     return True, path
 
         logger.warning("FFmpeg was not found. MP3 encoding will not be available.")
@@ -161,8 +161,7 @@ class AudioService:
 
             logger.info(f"Successfully generated MP3 file: {mp3_path.name}")
         except subprocess.CalledProcessError as e:
-            stderr_out = e.stderr.decode("utf-8", errors="ignore")
-            logger.error(f"FFmpeg command failed with code {e.returncode}. Stderr: {stderr_out}")
+            logger.error(f"FFmpeg MP3 conversion process failed with code {e.returncode}.")
             raise GenerationFailedException(f"FFmpeg MP3 conversion process failed.")
         except Exception as e:
             logger.error(f"Failed to execute FFmpeg sub-process: {e}")

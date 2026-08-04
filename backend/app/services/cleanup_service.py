@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime, timezone
 from loguru import logger
 
+from app.core.config import settings
 from app.services.job_service import JobService
 from app.utils.storage import get_resolved_storage_root, ensure_storage_exists
 
@@ -67,8 +68,7 @@ class CleanupService:
         # Run in a background loop
         while self._running:
             try:
-                # Check every 60 seconds
-                await asyncio.sleep(60)
+                await asyncio.sleep(settings.CLEANUP_INTERVAL_SECONDS)
                 await self.cleanup_expired_jobs()
             except asyncio.CancelledError:
                 break
@@ -90,7 +90,7 @@ class CleanupService:
                 tts_expired_count += 1
             if job.status == "expired":
                 time_since_expiry = (now - job.expires_at).total_seconds()
-                if time_since_expiry > 900:  # 15 minutes
+                if time_since_expiry > settings.CLEANUP_PURGE_AFTER_EXPIRY_SECONDS:
                     self.job_service.remove_job_completely(job.job_id)
                     tts_deleted_metadata_count += 1
 
@@ -108,7 +108,7 @@ class CleanupService:
                 trans_expired_count += 1
             if job.status == "expired":
                 time_since_expiry = (now - job.expires_at).total_seconds()
-                if time_since_expiry > 900:  # 15 minutes
+                if time_since_expiry > settings.CLEANUP_PURGE_AFTER_EXPIRY_SECONDS:
                     trans_job_service.remove_job_completely(job.job_id)
                     trans_deleted_metadata_count += 1
 

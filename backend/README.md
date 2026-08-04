@@ -156,6 +156,40 @@ To verify the installed dependency tree is coherent:
 python -m pip check
 ```
 
+## Production Configuration
+
+Deployment target: an **Ubuntu 24.04 VPS** behind Nginx, managed by systemd.
+See the repository-level [DEPLOYMENT.md](../DEPLOYMENT.md) for the full procedure.
+
+Production-specific settings (see `app/core/config.py` and
+`.env.production.example`):
+
+| Variable | Production value | Purpose |
+| --- | --- | --- |
+| `APP_ENV` | `production` | Enables HSTS, disables dev behaviour |
+| `TRUST_PROXY_HEADERS` | `true` | Client IP from `X-Forwarded-For` for rate limiting |
+| `TRUSTED_HOSTS` | `api.konthora.dev.bd` | Host-header allowlist (anti DNS-rebinding) |
+| `CORS_ORIGINS` | `https://konthora.dev.bd` | Exact browser origin allowed |
+| `LOG_DIR` | `/var/log/konthora` | Rotating file logs (50 MB × 7 days, zipped) |
+| `TTS_STORAGE_ROOT` | `/opt/konthora/backend/storage` | Job output location on the VPS |
+
+Startup command (also baked into the systemd unit):
+
+```bash
+.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 \
+  --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --http httptools
+```
+
+### Logging & Privacy
+
+- Console/stderr logs go to journald under systemd; when `LOG_DIR` is set,
+  loguru also writes a rotating `konthora.log` (50 MB rotation, 7-day retention,
+  zipped).
+- The application **never logs**: access tokens, submitted text/transcripts,
+  uploaded filenames, `Authorization` headers, or absolute machine paths.
+- `pip check`, `pytest`, lint, `tsc` and `next build` run automatically in
+  GitHub Actions (`../.github/workflows/ci.yml`).
+
 ## Known Limitations
 
 * **English-only**: Launch scope is English (en-US / en-GB accents). "Auto Detect" currently resolves to English.

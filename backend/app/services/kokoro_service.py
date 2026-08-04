@@ -230,7 +230,7 @@ class KokoroService:
                     waveforms.append(audio.astype(np.float32))
 
             if not waveforms:
-                logger.error(f"Synthesis returned empty waveforms for text: {chunk_text}")
+                logger.error("Synthesis returned empty waveforms for the processed chunk.")
                 raise GenerationFailedException("Inference produced empty audio output.")
 
             return np.concatenate(waveforms)

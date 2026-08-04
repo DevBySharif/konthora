@@ -1,0 +1,86 @@
+# =============================================================================
+# Konthora Backend — systemd unit (konthora.service)
+# =============================================================================
+# Install:
+#   sudo cp konthora.service /etc/systemd/system/konthora.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now konthora
+#
+# Configuration file: /etc/konthora/konthora.env (600 root) is loaded into the
+# process environment via EnvironmentFile. The deploy script generates it from
+# backend/.env.production.example.
+#
+# Logs:
+#   stdout/stderr -> journald:  journalctl -u konthora
+#   rotating file:  /var/log/konthora/konthora.log (owned by konthora)
+#
+# Manual operation (also provided as deploy/scripts):
+#   sudo systemctl start|stop|restart|status konthora
+# =============================================================================
+
+[Unit]
+Description=Konthora AI Speech & Transcription API (FastAPI/Uvicorn)
+Documentation=https://github.com/DevBySharif/konthora
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Run as an unprivileged dedicated service account (created by deploy.sh).
+User=konthora
+Group=konthora
+
+# Application root and runtime directory.
+WorkingDirectory=/opt/konthora/repo/backend
+
+# Environment loaded from the secret configuration file.
+EnvironmentFile=/etc/konthora/konthora.env
+
+# Load the config file format and env file parser used by the app.
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+
+# Storage root and log dir come from the EnvironmentFile (TTS_STORAGE_ROOT,
+# LOG_DIR). The deploy script pre-creates both with konthora ownership.
+ExecStartPre=/usr/bin/test -d /opt/konthora/repo/backend
+ExecStart=/opt/konthora/repo/backend/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 1 \
+    --proxy-headers \
+    --forwarded-allow-ips 127.0.0.1 \
+    --http httptools
+
+# -------- Restart policy --------
+Restart=always
+RestartSec=5
+
+# -------- Resource limits --------
+# uvicorn socket backlog / descriptors
+LimitNOFILE=65535
+# Hard memory cap (Kokoro + faster-whisper models loaded lazily in one process).
+MemoryMax=4G
+# Rate-limit restarts: max 5 starts in a 10 minute window, then 90s pause.
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+# Soft CPU limit (1000 = 10 cores of a typical VPS). Raise for bigger boxes.
+CPUQuota=1000%
+
+# Keep stdout/stderr on the journal; the app also writes rotated files when
+# LOG_DIR is configured.
+StandardOutput=journal
+StandardError=journal
+
+# Give graceful shutdown (uvicorn drains and cancels background workers).
+TimeoutStopSec=60
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/konthora/repo/backend/storage /var/log/konthora
+ProtectHome=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

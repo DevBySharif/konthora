@@ -239,7 +239,10 @@ def get_job_transcript(jobId: str, request: Request):
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        return StructuredTranscriptResponse(**data)
+        return JSONResponse(
+            content=StructuredTranscriptResponse(**data).model_dump(),
+            headers={"Cache-Control": "private, no-store"}
+        )
     except Exception as e:
         logger.error(f"Failed to read/parse structured JSON for job {jobId}: {e}")
         raise InvalidRequestException("RESULT_CORRUPTED", "Failed to parse stored transcription result.")
@@ -281,5 +284,8 @@ def get_job_result(jobId: str, request: Request):
         path=result_path,
         media_type=content_type,
         filename=export_filename,
-        headers={"Content-Disposition": f"attachment; filename=\"{export_filename}\""}
+        headers={
+            "Content-Disposition": f"attachment; filename=\"{export_filename}\"",
+            "Cache-Control": "private, no-store"
+        }
     )

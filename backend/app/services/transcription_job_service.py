@@ -95,7 +95,7 @@ class TranscriptionJobService:
             try:
                 import shutil
                 shutil.rmtree(job_dir)
-                logger.info(f"Wiped transcription storage directory: {job_dir}")
+                logger.info(f"Wiped transcription storage directory: {job_dir.name}")
             except Exception as e:
                 logger.warning(f"Could not wipe transcription directory {job_dir}: {e}")
 

@@ -131,7 +131,7 @@ def download_audio_file(jobId: str, token: str = Depends(get_bearer_token)):
     secure_path = resolve_secure_path(path.name)
 
     if not secure_path.exists():
-        logger.error(f"File resolved but not found on disk: {secure_path}")
+        logger.error(f"File resolved but not found on disk: {secure_path.name}")
         raise InvalidRequestException("INVALID_REQUEST", "Requested audio file is missing from cache.")
 
     media_type = "audio/mpeg" if job.output_format == "mp3" else "audio/wav"

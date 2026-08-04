@@ -55,7 +55,7 @@ shellingham==1.5.4
 
 # Logging and System
 loguru==0.7.3
-win32_setctime==1.2.0
+win32_setctime==1.2.0; sys_platform == "win32"
 attrs==26.1.0
 charset-normalizer==3.4.9
 requests==2.34.2

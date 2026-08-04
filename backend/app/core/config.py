@@ -2,11 +2,30 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    # Runtime environment: "development" | "testing" | "production"
     APP_ENV: str = "development"
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
+    # Comma-separated list of allowed browser origins (no wildcards in production).
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://konthora.dev.bd"
+    # Set to true ONLY when running behind a trusted reverse proxy (Nginx) so that
+    # X-Forwarded-For / X-Forwarded-Proto headers are honored for rate limiting and
+    # URL building. Never enable when the API is directly reachable by clients.
     TRUST_PROXY_HEADERS: bool = False
+    # Comma-separated allowlist of valid Host headers. Empty string allows any host
+    # (development only). In production set to "api.konthora.dev.bd".
+    TRUSTED_HOSTS: str = ""
+    # Enable GZip compression for JSON API responses (audio files are never compressed).
+    COMPRESSION_ENABLED: bool = True
+    # Minimum log severity emitted to console/file sinks.
+    LOG_LEVEL: str = "INFO"
+    # Directory for rotating log files. Leave empty to log to stdout/stderr only
+    # (captured by journald under systemd). In production set e.g. /var/log/konthora.
+    LOG_DIR: str = ""
+    # Seconds between periodic expired-job cleanup sweeps.
+    CLEANUP_INTERVAL_SECONDS: int = 60
+    # Seconds after expiry before a job's metadata record is fully purged.
+    CLEANUP_PURGE_AFTER_EXPIRY_SECONDS: int = 900
 
     TTS_MAX_CHARACTERS: int = 2000
     TTS_MAX_QUEUE_SIZE: int = 10
@@ -61,5 +80,13 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @property
+    def trusted_hosts_list(self) -> List[str]:
+        """Returns the trusted Host allowlist. A single "*" allows any host (dev only)."""
+        hosts = [host.strip() for host in self.TRUSTED_HOSTS.split(",") if host.strip()]
+        if not hosts:
+            return ["*"]
+        return hosts
 
 settings = Settings()
