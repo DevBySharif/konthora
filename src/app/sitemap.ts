@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/terms',
     '/copyright',
     '/captions',
+    '/entity/kokoro',
   ];
 
   return routes.map((route) => ({
