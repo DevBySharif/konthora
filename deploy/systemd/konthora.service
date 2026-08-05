@@ -24,6 +24,10 @@ Documentation=https://github.com/DevBySharif/konthora
 After=network-online.target
 Wants=network-online.target
 
+# Rate-limit restarts: max 5 starts in a 10 minute window, then 90s pause.
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
 [Service]
 # Run as an unprivileged dedicated service account (created by deploy.sh).
 User=konthora
@@ -73,9 +77,6 @@ LimitNOFILE=65535
 #    8 GiB MVP (default)   -> 6G
 #    16 GiB scale-up       -> 12G
 MemoryMax=6G
-# Rate-limit restarts: max 5 starts in a 10 minute window, then 90s pause.
-StartLimitIntervalSec=600
-StartLimitBurst=5
 
 # CPUQuota = vCPU count to allow (vCPU x 100 = %).
 #   Adjust to your instance:
