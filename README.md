@@ -17,19 +17,21 @@ The application launches with:
 | [deploy/SECURITY.md](deploy/SECURITY.md) | Security review: CORS, trusted hosts, headers, rate limiting, uploads, tokens, storage, log sanitization. |
 | [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md) | Performance review: queue, memory, startup, model loading, compression, caching. |
 | [deploy/nginx/](deploy/nginx/) | Production Nginx configuration (TLS, security headers, uploads, timeouts). |
-| [deploy/systemd/](deploy/systemd/) | `konthora.service` systemd unit. |
-| [deploy/scripts/](deploy/scripts/) | Idempotent provisioning (`deploy.sh`, incl. TLS + model warm-up), update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
-| [.env.example](.env.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates. |
+| [deploy/systemd/](deploy/systemd/) | `konthora.service` and `konthora-web.service` systemd units (backend + frontend). |
+| [deploy/scripts/](deploy/scripts/) | Idempotent provisioning (`deploy.sh`, incl. TLS + model warm-up + frontend build), update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
+| [.env.example](.env.example) / [.env.production.example](.env.production.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates (`.env.production.example` → `/etc/konthora/web.env`). |
 
-> **Architecture:** Frontend on **Vercel** (`konthora.dev.bd`), backend on an
-> **AWS EC2** instance running **Ubuntu 24.04** behind **Nginx + Let's Encrypt**
-> (`api.konthora.dev.bd`), supervised by **systemd**. Continuous integration
-> runs in GitHub Actions (CI only — no automatic deployments).
+> **Architecture:** The **entire stack is self-hosted** on a single **AWS EC2**
+> instance running **Ubuntu 24.04** behind **Nginx + Let's Encrypt**, supervised
+> by **systemd**. `konthora.dev.bd` / `www.konthora.dev.bd` serve the Next.js
+> frontend on `127.0.0.1:3000`; `api.konthora.dev.bd` serves the FastAPI backend
+> on `127.0.0.1:8000`. Continuous integration runs in GitHub Actions (CI only —
+> no automatic deployments).
 
 > **Deploying:** `sudo bash deploy/scripts/deploy.sh` provisions a fresh Ubuntu
 > host end-to-end (packages, repo, venv, **spaCy + Kokoro + Faster Whisper model
-> warm-up**, secrets, Nginx, Let's Encrypt TLS, systemd) and is safe to re-run.
-> See [DEPLOYMENT.md](DEPLOYMENT.md).
+> warm-up**, secrets, **Next.js frontend build**, Nginx, Let's Encrypt TLS,
+> both systemd units) and is safe to re-run. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 

@@ -1,12 +1,14 @@
 # Konthora — Launch Checklist
 
-A step-by-step checklist for taking Konthora live on **AWS EC2** (backend) +
-**Vercel** (frontend). Work through the items top to bottom. Technical details
-live in [DEPLOYMENT.md](DEPLOYMENT.md), AWS sizing in [deploy/AWS.md](deploy/AWS.md),
+A step-by-step checklist for taking Konthora live entirely on a single
+**AWS EC2** instance (Next.js frontend **and** FastAPI backend, no Vercel).
+Work through the items top to bottom. Technical details live in
+[DEPLOYMENT.md](DEPLOYMENT.md), AWS sizing in [deploy/AWS.md](deploy/AWS.md),
 monitoring in [deploy/MONITORING.md](deploy/MONITORING.md).
 
-> Domains used throughout: `konthora.dev.bd` (frontend / Vercel) and
-> `api.konthora.dev.bd` (backend / EC2). Swap these if you use different domains.
+> Domains used throughout: `konthora.dev.bd` / `www.konthora.dev.bd`
+> (frontend / EC2) and `api.konthora.dev.bd` (backend / EC2). Swap these if you
+> use different domains.
 
 ---
 
@@ -97,10 +99,11 @@ monitoring in [deploy/MONITORING.md](deploy/MONITORING.md).
 
 - [ ] Registrar has **A record** `api.konthora.dev.bd` → EC2 **public IPv4 /
       Elastic IP**.
-- [ ] `konthora.dev.bd` → Vercel (`cname.vercel-dns.com` via CNAME/ALIAS) or
-      Vercel's IPs with an A record.
-- [ ] `www.konthora.dev.bd` → `konthora.dev.bd` (optional).
-- [ ] Propagated: `nslookup api.konthora.dev.bd` returns the Elastic IP.
+- [ ] Registrar has **A record** `konthora.dev.bd` → EC2 **public IPv4 /
+      Elastic IP** (the frontend is self-hosted on the same instance).
+- [ ] `www.konthora.dev.bd` → `konthora.dev.bd` (CNAME) or an A record.
+- [ ] Propagated: `nslookup api.konthora.dev.bd` **and**
+      `nslookup konthora.dev.bd` return the Elastic IP.
 
 ## 9. Instance software
 
@@ -110,7 +113,8 @@ manually, verify each:
 - [ ] Ubuntu 24.04 base updated (`sudo apt update && sudo apt upgrade -y`).
 - [ ] **Git**: `git --version`.
 - [ ] **Python 3.11**: `python3.11 --version` (deadsnakes; `deploy.sh` installs it).
-- [ ] **Node 20** (only needed if self-hosting the frontend — Vercel needs none).
+- [ ] **Node 22**: `node --version` (NodeSource; needed to build AND run the
+      frontend — `deploy.sh` installs it).
 - [ ] **FFmpeg**: `ffmpeg -version` (health endpoint reports
       `"ffmpegAvailable": true`).
 - [ ] **eSpeak NG**: `espeak-ng --version`.
@@ -134,7 +138,8 @@ manually, verify each:
       - `TRUSTED_HOSTS=api.konthora.dev.bd`
       - `TTS_STORAGE_ROOT=/opt/konthora/repo/backend/storage`
       - `LOG_DIR=/var/log/konthora`
-- [ ] **Frontend (Vercel):** production env vars set:
+- [ ] **Frontend:** `/etc/konthora/web.env` exists, mode `600`, owned by
+      `root:root`, with:
       - `NEXT_PUBLIC_SITE_URL=https://konthora.dev.bd`
       - `NEXT_PUBLIC_CONTACT_EMAIL=hello@konthora.dev.bd`
       - `NEXT_PUBLIC_API_URL=https://api.konthora.dev.bd/api/v1`
@@ -142,36 +147,47 @@ manually, verify each:
 
 ## 12. systemd
 
-- [ ] `konthora.service` installed and enabled:
+- [ ] `konthora.service` (backend) installed and enabled:
       `sudo systemctl enable --now konthora`.
-- [ ] Runs as unprivileged `konthora` user; `--workers 1`; loopback bind.
+- [ ] `konthora-web.service` (frontend, `next start` on 127.0.0.1:3000)
+      installed and enabled: `sudo systemctl enable --now konthora-web`.
+- [ ] Both run as unprivileged `konthora` user; backend `--workers 1`; both
+      loopback bind.
 - [ ] Auto-restart on failure and on boot.
-- [ ] `sudo systemctl status konthora` → `active (running)`.
+- [ ] `sudo systemctl status konthora konthora-web` → both `active (running)`.
 
 ## 13. Nginx
 
-- [ ] Configs installed (main `nginx.conf`, `api.konthora.dev.bd.conf`,
-      `security_headers.conf`, `proxy_params.conf`).
+- [ ] Configs installed (main `nginx.conf`, `konthora.dev.bd.conf`,
+      `api.konthora.dev.bd.conf`, `security_headers.conf`,
+      `frontend_security_headers.conf`, `proxy_params.conf`).
 - [ ] `sudo nginx -t` → `syntax is ok`.
-- [ ] Site enabled; `sudo systemctl reload nginx`.
-- [ ] HTTP → HTTPS redirect works (`curl -I http://api.konthora.dev.bd` → 301).
+- [ ] Both sites enabled; `sudo systemctl reload nginx`.
+- [ ] HTTP → HTTPS redirect works (`curl -I http://api.konthora.dev.bd` → 301,
+      `curl -I http://konthora.dev.bd` → 301).
+- [ ] `https://www.konthora.dev.bd` → 301 to `https://konthora.dev.bd`.
 - [ ] Security headers present on responses (nosniff, CSP, HSTS, X-Frame-Options).
+- [ ] gzip enabled on textual responses.
 
 ## 14. Let's Encrypt
 
 - [ ] Certificate issued for `api.konthora.dev.bd`.
-- [ ] Auto-renewal active: `sudo certbot renew --dry-run` succeeds.
+- [ ] Certificate issued for `konthora.dev.bd` + `www.konthora.dev.bd`
+      (one SAN cert).
+- [ ] Auto-renewal active: `sudo certbot renew --dry-run --no-random-sleep-on-renew`
+      succeeds for both.
 - [ ] `https://api.konthora.dev.bd/api/v1/health` → `{"status":"alive", ...}`
-      over TLS.
+      over TLS; `https://konthora.dev.bd/` → 200 over TLS.
 - [ ] (Optional) SSL Labs grade A+.
 
-## 15. Vercel (frontend)
+## 15. Frontend (self-hosted on EC2)
 
-- [ ] Repository `DevBySharif/konthora` imported into a Vercel project.
-- [ ] Framework preset **Next.js**; root directory `/`.
-- [ ] Production env vars set (section 9).
-- [ ] `konthora.dev.bd` (and `www.`) added as production domains.
-- [ ] Production deploy succeeds; `/sitemap.xml` and `/robots.txt` resolve.
+- [ ] `npm ci` + `next build` complete via `deploy.sh` / `update.sh`.
+- [ ] `/sitemap.xml` and `/robots.txt` resolve with `https://konthora.dev.bd`.
+- [ ] `/manifest.webmanifest` served with name/theme/icons.
+- [ ] `/text-to-speech` and `/audio-to-text` return 200.
+- [ ] `concurrency: both services start on reboot` — reboot the instance and
+      re-check both systemd units.
 
 ## 16. Production smoke tests
 
@@ -206,7 +222,7 @@ manually, verify each:
 
 - [ ] `/robots.txt` served with `sitemap: https://konthora.dev.bd/sitemap.xml`.
 - [ ] `/sitemap.xml` lists all 8 pages with `https://konthora.dev.bd` URLs.
-- [ ] `/manifest.json` served with name/theme/icons
+- [ ] `/manifest.webmanifest` served with name/theme/icons
       (`src/app/manifest.ts`).
 - [ ] Every page has title/description/canonical + `openGraph` + `twitter`
       metadata (`src/lib/metadata.ts`).

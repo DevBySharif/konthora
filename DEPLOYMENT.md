@@ -1,10 +1,11 @@
 # Konthora — Production Deployment
 
-This document describes how to deploy the Konthora backend to **AWS EC2**
+This document describes how to deploy the entire Konthora stack to **AWS EC2**
 (Ubuntu 24.04 LTS) behind **Nginx + Let's Encrypt**, managed by **systemd**.
-The frontend runs on **Vercel**.
+Both the Next.js frontend and the FastAPI backend run on the same VPS — no
+hosted platform (e.g. Vercel) is required.
 
-- Architecture: `konthora.dev.bd` (Vercel) + `api.konthora.dev.bd` (AWS EC2)
+- Architecture: `konthora.dev.bd` / `www.konthora.dev.bd` (Next.js on the VPS) + `api.konthora.dev.bd` (FastAPI on the VPS)
 - AWS provisioning & sizing: [deploy/AWS.md](deploy/AWS.md)
 - Launch checklist: [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
 - Monitoring: [deploy/MONITORING.md](deploy/MONITORING.md)
@@ -12,9 +13,9 @@ The frontend runs on **Vercel**.
 - Performance review: [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md)
 
 ```
-Browser ──► Vercel (Next.js)                     konthora.dev.bd
-Browser ──► EC2: Nginx:443 ──► uvicorn:127.0.0.1:8000   api.konthora.dev.bd
-              ▲ Let's Encrypt TLS, rate limits, security headers
+Browser ──► EC2: Nginx:443 ──► Next.js 127.0.0.1:3000         konthora.dev.bd / www.konthora.dev.bd
+Browser ──► EC2: Nginx:443 ──► uvicorn 127.0.0.1:8000          api.konthora.dev.bd
+              ▲ Let's Encrypt TLS, rate limits, security headers, gzip
 ```
 
 ---
@@ -91,13 +92,30 @@ works too — the pinned packages install on both; 3.11 is simply the tested one
 
 ## 4. Node.js installation
 
-Node is **only** needed to build the frontend. On Vercel you do not install Node
-at all (the platform builds for you). If you self-host the frontend on the VPS:
+Node.js is required to **build** the Next.js frontend. `deploy.sh` installs
+Node.js 22 automatically via the NodeSource binary repository, then runs
+`npm ci` + `next build`. The build output (`.next`) is served at runtime by the
+`konthora-web.service` systemd unit — Node stays on the box only to run
+`next start`.
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
-node --version
+node --version   # v22.x
+```
+
+### Frontend environment variables — `/etc/konthora/web.env`
+
+The frontend needs `NEXT_PUBLIC_*` variables at **both** build time (inlined
+into the client bundle) and runtime (read by the server for
+`robots.txt`/`sitemap.xml`/OpenGraph). `deploy.sh` copies
+`.env.production.example` to `/etc/konthora/web.env` (mode 600) and uses it for
+the build; `konthora-web.service` loads the same file via `EnvironmentFile`:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://konthora.dev.bd
+NEXT_PUBLIC_CONTACT_EMAIL=hello@konthora.dev.bd
+NEXT_PUBLIC_API_URL=https://api.konthora.dev.bd/api/v1
 ```
 
 ## 5. Git installation
@@ -172,7 +190,8 @@ certificate and model cache are preserved, and the venv is only created once.
 
 What `deploy.sh` does:
 
-1. Installs packages: python3.11, ffmpeg, espeak-ng, nginx, certbot, git, build tools.
+1. Installs packages: python3.11, Node.js 22, ffmpeg, espeak-ng, nginx, certbot,
+   git, build tools.
 2. Creates the unprivileged `konthora` system user.
 3. Clones/pulls the repository into `/opt/konthora/repo` (and keeps the venv
    root-owned so the service user cannot modify its own code).
@@ -180,18 +199,21 @@ What `deploy.sh` does:
    (then runs `pip check`).
 5. Installs `/etc/konthora/konthora.env` (mode 600) from
    `backend/.env.production.example`. **Review this file** before going live.
-6. Creates `backend/storage`, `/var/log/konthora` and the model cache
+6. Installs `/etc/konthora/web.env` (mode 600) from `.env.production.example`
+   and builds the Next.js frontend (`npm ci` + `next build`).
+7. Creates `backend/storage`, `/var/log/konthora` and the model cache
    (`/opt/konthora/.cache`) owned by `konthora`.
-7. **Provisions ML models** (`deploy/scripts/provision_models.sh`): installs the
+8. **Provisions ML models** (`deploy/scripts/provision_models.sh`): installs the
    spaCy `en_core_web_sm` model Kokoro's G2P needs, warms the Kokoro + Faster
    Whisper weights into the cache, and verifies cache ownership/permissions.
    Fails fast if anything is wrong. Skippable with `SKIP_MODEL_WARM=1`.
-8. Installs Nginx configs and the systemd unit, disables the unused `default`
-   site, enables the service.
-9. Issues a Let's Encrypt certificate for `api.konthora.dev.bd` (standalone
-   bootstrap, then renewal hooks) or reuses an existing one.
-10. Validates and starts Nginx.
-11. Starts the service.
+9. Installs Nginx configs and the two systemd units (`konthora` + `konthora-web`),
+   disables the unused `default` site, enables both services.
+10. Issues Let's Encrypt certificates for `api.konthora.dev.bd` and for
+    `konthora.dev.bd` + `www.konthora.dev.bd` (standalone bootstrap, then
+    renewal hooks) or reuses existing ones.
+11. Validates and starts Nginx.
+12. Starts both services.
 
 Manual equivalents of steps 8–11 are shown below.
 
@@ -240,25 +262,64 @@ sudo systemctl enable --now konthora
 sudo systemctl status konthora
 ```
 
+### systemd — `konthora-web.service`
+
+Installed to `/etc/systemd/system/konthora-web.service` (see
+[deploy/systemd/konthora-web.service](deploy/systemd/konthora-web.service)).
+Runs the Next.js production server on **127.0.0.1:3000**, supervised the same
+way as the backend (restart-on-failure, resource limits, security hardening,
+starts at boot).
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| `WorkingDirectory` | `/opt/konthora/repo` | where `package.json` / `.next` live |
+| `EnvironmentFile` | `/etc/konthora/web.env` | `NEXT_PUBLIC_*` runtime config |
+| `ExecStart` | `.../node_modules/.bin/next start -H 127.0.0.1 -p 3000` | loopback bind on 3000, prod mode |
+| `MemoryMax=1G`, `CPUQuota=100%`, `LimitNOFILE=65535` | | resource limits |
+| `Restart=always` / `RestartSec=5` | | self-healing |
+| `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=full`, `ProtectHome`, `RestrictSUIDSGID` | | security hardening |
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now konthora-web
+sudo journalctl -u konthora-web -f   # logs
+```
+
+> **Both units must run.** Nginx routes `konthora.dev.bd` to port 3000 and
+> `api.konthora.dev.bd` to port 8000; without both services the corresponding
+> upstream returns 502.
+
 ### Nginx — reverse proxy
 
 Configs installed by the deploy script (see [deploy/nginx/](deploy/nginx/)):
 
 | File | Installed as |
 | --- | --- |
-| `nginx.conf` (http tuning, gzip, rate-limit zones, HTTP→HTTPS) | `/etc/nginx/nginx.conf` |
+| File | Installed as |
+| --- | --- |
+| `nginx.conf` (http tuning, gzip, rate-limit zones, HTTP→HTTPS redirects for all three domains) | `/etc/nginx/nginx.conf` |
+| `konthora.dev.bd.conf` (TLS site for the frontend + www → apex redirect) | `/etc/nginx/sites-available/` |
 | `api.konthora.dev.bd.conf` (TLS site for the API) | `/etc/nginx/sites-available/` |
-| `security_headers.conf` | `/etc/nginx/conf.d/` |
+| `security_headers.conf` (API headers) | `/etc/nginx/conf.d/` |
+| `frontend_security_headers.conf` (frontend headers) | `/etc/nginx/conf.d/` |
 | `proxy_params.conf` | `/etc/nginx/proxy_params.conf` |
 
-Highlights:
+Routing:
+
+- `konthora.dev.bd` / `www.konthora.dev.bd` → `http://konthora_web`
+  (Next.js 127.0.0.1:3000); `www` does a TLS-tier 301 canonical redirect to the
+  apex.
+- `api.konthora.dev.bd` → `http://konthora_api` (uvicorn 127.0.0.1:8000).
+
+Preserved everywhere:
 
 - `client_max_body_size 110m` — supports 100 MB transcription uploads.
 - `proxy_read_timeout 600s` / `proxy_send_timeout 600s` — long inference jobs.
-- `proxy_buffering off` — streams large audio downloads.
+- `proxy_buffering off` — streams large audio/downloads.
 - gzip on textual responses only (never audio).
-- Rate-limit zones: `konthora_api` (30 r/s) and `konthora_jobs` (5 r/s) as
-  defense-in-depth; the backend also rate-limits per IP.
+- Rate-limit zones: `konthora_api` (30 r/s), `konthora_jobs` (5 r/s),
+  `konthora_web` (10 r/s, burst 30) as defense-in-depth; the backend also
+  rate-limits per IP.
 - `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for` + uvicorn
   `--forwarded-allow-ips 127.0.0.1` keeps client-IP rate limiting correct.
 
@@ -267,21 +328,29 @@ Enable and validate:
 ```bash
 sudo ln -s /etc/nginx/sites-available/api.konthora.dev.bd.conf \
            /etc/nginx/sites-enabled/api.konthora.dev.bd.conf
+sudo ln -s /etc/nginx/sites-available/konthora.dev.bd.conf \
+           /etc/nginx/sites-enabled/konthora.dev.bd.conf
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
 ### Let's Encrypt
 
-The API server block is TLS-only (`listen 443 ssl`) and points at the
-certificate path, so on a fresh host the certificate must exist *before* Nginx
-can start. `deploy.sh` bootstraps it with the **standalone** authenticator while
-port 80 is free, then installs renewal hooks that stop/start Nginx around each
-renewal (standalone needs port 80 free):
+Both server blocks are TLS-only (`listen 443 ssl`) and point at certificate
+paths, so on a fresh host the certificates must exist *before* Nginx can start.
+`deploy.sh` bootstraps both with the **standalone** authenticator while port 80
+is free, then installs renewal hooks that stop/start Nginx around each renewal
+(standalone needs port 80 free):
 
 ```bash
 sudo apt install -y certbot
+
+# Backend certificate (single domain)
 sudo certbot certonly --standalone -d api.konthora.dev.bd \
+     --non-interactive --agree-tos -m hello@konthora.dev.bd
+
+# Frontend certificate (SAN covering apex + www)
+sudo certbot certonly --standalone -d konthora.dev.bd -d www.konthora.dev.bd \
      --non-interactive --agree-tos -m hello@konthora.dev.bd
 
 # Renewal hooks injected by deploy.sh:
@@ -289,7 +358,7 @@ sudo certbot certonly --standalone -d api.konthora.dev.bd \
 #   /etc/letsencrypt/renewal-hooks/post/start-nginx.sh
 
 # Renewal (certbot.timer runs automatically; test it):
-sudo certbot renew --dry-run
+sudo certbot renew --dry-run --no-random-sleep-on-renew
 ```
 
 Certificates renew automatically via the `certbot.timer` systemd timer.
@@ -303,28 +372,46 @@ Certificates renew automatically via the `certbot.timer` systemd timer.
 curl https://api.konthora.dev.bd/api/v1/health
 # expect: {"status":"alive","environment":"production","ffmpegAvailable":true,...}
 
-# Frontend (after the Vercel deployment)
-curl -I https://konthora.dev.bd
+# Frontend
+curl -I https://konthora.dev.bd                     # 200, gzip, security headers
+curl -I https://konthora.dev.bd/robots.txt          # Sitemap: https://konthora.dev.bd/sitemap.xml
+curl -I https://konthora.dev.bd/sitemap.xml         # urls under https://konthora.dev.bd
+curl -I https://konthora.dev.bd/manifest.webmanifest
+curl -I https://konthora.dev.bd/text-to-speech      # 200
+curl -I https://konthora.dev.bd/audio-to-text       # 200
+
+# Redirects
+curl -I http://konthora.dev.bd/                     # 301 -> https://konthora.dev.bd/
+curl -I http://www.konthora.dev.bd/                 # 301 -> https://konthora.dev.bd/
+curl -I https://www.konthora.dev.bd/                # 301 -> https://konthora.dev.bd/
+curl -I http://api.konthora.dev.bd/api/v1/health    # 301 -> https://api.konthora.dev.bd/...
 ```
 
 The deploy scripts also provide helpers:
 
 ```bash
-sudo bash deploy/scripts/healthcheck.sh      # systemd + local + public health
+sudo bash deploy/scripts/healthcheck.sh      # systemd + local + public health (both services)
 sudo bash deploy/scripts/logs.sh -f     # tail backend logs
+sudo journalctl -u konthora-web -f       # tail frontend logs
 ```
 
 ---
 
-## 11. Frontend (Vercel)
+## 11. Frontend (self-hosted on the VPS — no Vercel)
 
-1. Import `DevBySharif/konthora` into Vercel (framework preset Next.js).
-2. Set production env vars:
+The frontend is built and served on the same EC2 instance. No hosted platform
+is used.
+
+1. DNS (registrar): `konthora.dev.bd` A → VPS IP, `www.konthora.dev.bd` CNAME →
+   `konthora.dev.bd` (or an A record).
+2. `deploy.sh` builds the app with `npm ci` + `next build` using
+   `/etc/konthora/web.env` (from `.env.production.example`):
    - `NEXT_PUBLIC_SITE_URL=https://konthora.dev.bd`
    - `NEXT_PUBLIC_CONTACT_EMAIL=hello@konthora.dev.bd`
    - `NEXT_PUBLIC_API_URL=https://api.konthora.dev.bd/api/v1`
-3. Add `konthora.dev.bd` as a custom domain.
-4. Deploy `main`. Verify `/robots.txt`, `/sitemap.xml` and an end-to-end job.
+3. `konthora-web.service` runs `next start -H 127.0.0.1 -p 3000`; Nginx serves
+   it at `https://konthora.dev.bd`.
+4. Rebuild + deploy a new frontend release: `sudo bash deploy/scripts/update.sh`.
 
 > The backend `CORS_ORIGINS` must contain exactly `https://konthora.dev.bd`
 > (browsers block calls otherwise).
@@ -340,12 +427,14 @@ sudo bash deploy/scripts/update.sh
 ```
 
 What it does: `git reset --hard origin/main` → reinstall Python requirements →
-`pip check` → refresh Nginx/systemd files → `nginx -t` → reload Nginx → restart
-`konthora`. If a deploy introduces a schema/config change that needs manual
-attention, review `/etc/konthora/konthora.env` after updating.
+`pip check` → provision models → **rebuild the frontend** (`npm ci` +
+`next build`) → refresh Nginx/systemd files → `nginx -t` → reload Nginx →
+restart `konthora` and `konthora-web`. If a deploy introduces a schema/config
+change that needs manual attention, review `/etc/konthora/konthora.env` and
+`/etc/konthora/web.env` after updating.
 
-Frontend updates are pushed to Vercel automatically on merge to `main`
-(deploy the `main` branch, or use Vercel's "Production" deployment setting).
+Both services are updated in one run — there is no separate frontend deploy
+step or hosted platform.
 
 ---
 
@@ -369,35 +458,46 @@ sudo systemctl restart konthora
 sudo bash deploy/scripts/healthcheck.sh
 ```
 
-Rollback only touches the code, not the config — the secrets file
-(`/etc/konthora/konthora.env`) is intentionally left untouched so a rollback
-never breaks environment variables.
+Rollback only touches the code, not the config — the secrets files
+(`/etc/konthora/konthora.env`, `/etc/konthora/web.env`) are intentionally left
+untouched so a rollback never breaks environment variables.
 
-### Frontend (Vercel)
+### Frontend (EC2)
 
-Use **Instant Rollback** in the Vercel dashboard (Deployments → three-dot menu →
-Rollback to previous deployment).
+The frontend is a commit in the same repo. `update.sh` writes the previously
+deployed commit to `backups/last-release`; to roll back the frontend (and
+backend) together, use `rollback.sh` and re-run `update.sh`, or rebuild from an
+older tag:
+
+```bash
+cd /opt/konthora/repo
+git checkout --force <previous-sha>
+sudo bash deploy/scripts/update.sh     # rebuilds the frontend + reinstalls backend deps
+```
 
 ---
 
 ## 14. Operations cheat-sheet
 
 ```bash
-sudo systemctl status konthora          # unit state
-sudo journalctl -u konthora -f          # live backend logs
-sudo bash deploy/scripts/backup.sh      # storage + config backup
-sudo bash deploy/scripts/cleanup.sh     # manual storage/journal cleanup
+sudo systemctl status konthora konthora-web    # unit states
+sudo journalctl -u konthora -f                 # live backend logs
+sudo journalctl -u konthora-web -f             # live frontend logs
+sudo bash deploy/scripts/backup.sh             # storage + config backup
+sudo bash deploy/scripts/cleanup.sh            # manual storage/journal cleanup
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
 ## 15. Deploying from a fresh machine (summary)
 
 ```bash
-# 1. DNS: A record api -> EC2 Elastic IP (create before deploy.sh runs)
-# 2. Provision (installs packages, repo, venv, models, TLS, service — all in one):
+# 1. DNS (registrar): A records api.konthora.dev.bd, konthora.dev.bd and
+#    www.konthora.dev.bd -> EC2 Elastic IP (create BEFORE deploy.sh runs)
+# 2. Provision (installs packages, repo, venv, models, TLS, both services — all in one):
 sudo bash deploy/scripts/deploy.sh
 # 3. Verify:
 curl https://api.konthora.dev.bd/api/v1/health
+curl -I https://konthora.dev.bd
 ```
 
 ---
@@ -448,12 +548,19 @@ resumes rather than restarting.
 
 ### `502 Bad Gateway` from Nginx
 
-Uvicorn is down, or the service is restarting:
+The relevant upstream is down or restarting. Check which port is failing first
+(`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/api/v1/health`
+and `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/`), then
+restart the corresponding unit:
 
 ```bash
-sudo systemctl restart konthora
+sudo systemctl restart konthora       # backend -> port 8000
+sudo systemctl restart konthora-web   # frontend -> port 3000
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+If the frontend 502s right after a deploy, `.next` may be stale or missing —
+re-run `sudo bash deploy/scripts/update.sh` to rebuild.
 
 ### Certificate does not renew / expires
 
@@ -461,7 +568,7 @@ Renewal runs via `certbot.timer`:
 
 ```bash
 sudo systemctl list-timers certbot.timer
-sudo certbot renew --dry-run
+sudo certbot renew --dry-run --no-random-sleep-on-renew   # both certs must say "success"
 ```
 
 ### High memory usage

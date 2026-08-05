@@ -15,19 +15,19 @@ reference/planning document only — **no resources are created here**. Follow
 | Reference | Value |
 | --- | --- |
 | Backend host | AWS EC2 (Ubuntu 24.04 LTS, x86_64) |
-| Frontend host | **Vercel** (kept — never host Next.js on EC2) |
+| Frontend host | **AWS EC2 (same instance — self-hosted Next.js)** |
 | Region (example used throughout) | **`ap-south-1`** (Mumbai — nearest to the `.bd` audience) |
 | Compare regions | `ap-south-1`, `ap-southeast-1`, `us-east-1` |
 
 ```
-                 ┌──────────────────────────────────────────────┐
-                 │ AWS  ──  single EC2 (validation / MVP)       │
-Browser ──┐      │  Public IPv4 ──► Nginx:443 ──► uvicorn:8000  │
-          │      │  (api.konthora.dev.bd)                       │
-          └────► │                                              │
-Browser ──┐      └──────────────────────────────────────────────┘
-          │
-          └──►  Vercel (konthora.dev.bd, Next.js)
+                 ┌─────────────────────────────────────────────────────┐
+                 │ AWS  ──  single EC2 (validation / MVP)             │
+Browser ──┐      │  Public IPv4 ──► Nginx:443 ──► uvicorn:8000        │
+          │      │  (api.konthora.dev.bd)                             │
+          │      │                                                    │
+          │      │  Public IPv4 ──► Nginx:443 ──► Next.js:3000        │
+          └────► │  (konthora.dev.bd / www.konthora.dev.bd)           │
+                 └─────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -234,21 +234,22 @@ RUN_TTS_INTEGRATION_TESTS=1 RUN_TRANSCRIPTION_INTEGRATION_TESTS=1 \
 
 ## 6. Storage (EBS) — reduced default
 
-**Default: 40 GiB gp3** (encrypted). Actual needs are small because the
-frontend is on Vercel (not EC2):
+**Default: 40 GiB gp3** (encrypted). The frontend also lives on this instance,
+so add Node + `.next` to the baseline:
 
 | Consumes disk | Approx |
 | --- | --- |
 | Ubuntu + Nginx + tools | ~5 GB |
 | Python 3.11 + venv | ~4 GB |
+| Node.js 22 + node_modules + `.next` build | ~1–2 GB |
 | Kokoro + faster-whisper model cache | ~1 GB |
 | Temp uploads (100 MB at a time buffering) | 0.5–1 GB |
 | Generated audio/transcript files (60-min retention) | <1 GB |
 | Logs (rotating, 50 MB × 7) | <1 GB |
 | Safety margin + filesystem overhead | remaining |
-| **Total comfortable** | **30–40 GB** |
+| **Total comfortable** | **40–45 GB** |
 
-- **30–40 GB gp3** is adequate to start (~$2.40–3.20/mo).
+- **40–45 GB gp3** is adequate to start (~$3.20–3.60/mo).
 - **80 GB** remains an **optional safer tier**, not the default.
 - **Do not undersize temp space** — keep ≥ a few GB free so FFmpeg can decode
   a 100 MB upload alongside the model.
