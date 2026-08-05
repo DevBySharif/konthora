@@ -1,4 +1,4 @@
-﻿# Konthora Editorial Content Framework
+# Konthora Editorial Content Framework
 
 ---
 
@@ -30,9 +30,18 @@ A page that enters the writing phase without a completed specification will be r
 
 ---
 
-## Section 1 â€” Core Definitions
+## Section 1 — Core Definitions
 
 These definitions apply to every field in this framework. Writers and reviewers must understand them before completing a specification.
+
+### Editorial Governance Rule
+**"Technical implementation details must always remain secondary to user outcomes."**
+When uncertain between explaining a feature and explaining the underlying model, always choose the feature first. Only explain the model if it directly helps the reader accomplish their goal.
+
+### Content Priority Flow
+Future content decisions must follow this priority:
+User benefit → Workflow → Capability → Privacy → Formats → Limitations → Technology → Implementation → Model.
+The model itself is always the lowest-priority message.
 
 ### Search Intent Types
 

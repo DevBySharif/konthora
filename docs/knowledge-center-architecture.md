@@ -1,4 +1,4 @@
-﻿# Konthora Knowledge Center â€” SEO Architecture Blueprint
+# Konthora Knowledge Center â€” SEO Architecture Blueprint
 
 ---
 
@@ -26,6 +26,23 @@ Establish Konthora as the definitive topical authority for:
 - Free, private, browser-based English audio transcription with timestamps (Whisper-powered)
 
 The informational layer is called the **Knowledge Center** â€” not a blog. It has no blog taxonomy, no `/blog/` URL prefix, no post dates as primary content signals. Every page ships as a product-integrated knowledge page with a clear search intent and a live tool conversion path.
+---
+
+## 2.1 Core Product Principle
+
+General users should see benefits, outcomes, supported capabilities, practical limitations, privacy, formats, and supported workflows. Users should never need to understand Kokoro, Whisper, model architecture, parameter counts, open-weight terminology, ML pipelines, backend infrastructure, or implementation details.
+
+Technology must support the product, not become the product.
+
+**Product Positioning:** Konthora is an AI audio platform. It is NOT marketed as a Kokoro website, a Whisper website, an open-source showcase, or an AI model catalogue. The product brand always comes before the underlying technology.
+
+---
+
+## 2.2 Content Hierarchy
+
+**Layer 1 (Primary):** Homepage, Tool pages, Landing pages, Pricing (future), About, Privacy, Contact. Focuses only on user value.
+**Layer 2 (Educational):** Knowledge Center (concepts, workflows, formats, accessibility, best practices, practical guides).
+**Layer 3 (Technical References):** Entity pages (Kokoro, Whisper, Neural TTS, Automatic Speech Recognition). These exist for SEO entity coverage, transparency, advanced readers, developers, and technical documentation. They are NOT part of the normal user journey and must be kept out of the main navigation.
 
 ---
 
@@ -337,9 +354,10 @@ The `/entity/` cluster is the knowledge-graph layer. Each entity page:
 
 - Answers "what is X" as its primary intent
 - Is written as a factual TechArticle, not a commercial page
-- Links to 2â€“3 sibling entities on the same graph
+- **Is strictly a Layer 3 Technical Reference** (kept out of main navigation, not part of the primary conversion funnel)
+- Links to 2–3 sibling entities on the same graph
 - Links up to `/entity/` hub
-- Links to the owning product pillar (e.g., `/entity/kokoro/` â†’ `/text-to-speech`)
+- Links to the owning product pillar with a neutral CTA (e.g., `/entity/kokoro/` → `/text-to-speech`)
 - Links to the live tool wherever applicable
 - Carries `TechArticle` + `DefinedTerm` or `SoftwareApplication` schema where verifiable
 - Contains no invented capabilities, invented release dates, or unverifiable performance claims
