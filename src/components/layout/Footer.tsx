@@ -48,7 +48,7 @@ export function Footer() {
               href={siteConfig.links.home}
               className="group inline-flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
             >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from to-brand-to text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
                 <AudioLines className="h-5 w-5" strokeWidth={2.5} />
               </span>
               <span className="font-sans font-extrabold">{siteConfig.name}</span>

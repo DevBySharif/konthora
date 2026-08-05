@@ -12,8 +12,8 @@ export function FinalCTA() {
         <Reveal>
           <div className="relative overflow-hidden rounded-[2.5rem] border border-border/70 bg-card px-6 py-16 text-center shadow-card md:px-16 md:py-20">
             {/* gradient backdrop */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-cyan-500/10" aria-hidden="true" />
-            <div className="orb absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 bg-indigo-500/15" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-from/10 via-transparent to-brand-to/10" aria-hidden="true" />
+            <div className="orb absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 bg-primary/15" aria-hidden="true" />
             <div className="relative">
               <h2 className="mx-auto max-w-3xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl md:text-[2.75rem] md:leading-[1.1]">
                 Your text, spoken with{' '}
@@ -25,7 +25,7 @@ export function FinalCTA() {
               <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href={siteConfig.links.textToSpeech}
-                  className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3 text-base font-semibold text-white shadow-glow transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-brand-from to-brand-to px-6 py-3 text-base font-semibold text-white shadow-glow transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   Generate speech now
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />

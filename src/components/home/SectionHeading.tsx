@@ -13,7 +13,7 @@ export function SectionHeading({ eyebrow, title, description, align = 'center' }
   return (
     <Reveal className={centered ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
       {eyebrow && (
-        <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-indigo-300">
+        <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-primary-soft">
           {eyebrow}
         </span>
       )}

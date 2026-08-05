@@ -81,7 +81,7 @@ export function ProductFacts() {
             {facts.map((f) => (
               <StaggerItem key={f.title}>
                 <div className="h-full rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                     <f.icon className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>

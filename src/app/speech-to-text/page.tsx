@@ -155,11 +155,11 @@ export default function SpeechToTextPage() {
         {/* Decorative orbs */}
         <div
           aria-hidden="true"
-          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-indigo-500/10 dark:bg-indigo-500/8"
+          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-primary/10 dark:bg-primary/5"
         />
         <div
           aria-hidden="true"
-          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-cyan-500/8"
+          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-primary-soft/10"
         />
 
         <Container className="relative z-10 max-w-4xl">
@@ -286,14 +286,14 @@ export default function SpeechToTextPage() {
                 </p>
 
                 {/* Inline numbered steps — readable summary */}
-                <ol className="mt-2 space-y-2 list-none">
+                <ol className="mt-2 space-y-4">
                   {[
                     'Your file is securely uploaded and validated.',
                     'FFmpeg extracts and normalises the audio to a 16 kHz mono WAV — the format Whisper expects.',
                     'Whisper processes the audio and returns a transcript with word-level timing data, which Konthora then groups into the timestamp mode you selected.',
                   ].map((step, i) => (
-                    <li key={i} className="flex gap-3">
-                      <span className="mt-0.5 flex-shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-xs font-bold text-white">
+                    <li key={i} className="flex gap-4">
+                      <span className="mt-0.5 flex-shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-brand-from to-brand-to text-xs font-bold text-white">
                         {i + 1}
                       </span>
                       <span>{step}</span>
@@ -324,7 +324,7 @@ export default function SpeechToTextPage() {
               <div className="mt-8 grid gap-5 sm:grid-cols-3">
                 {/* H3: Podcasters and Creators */}
                 <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-card">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary mb-4">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary mb-4">
                     <Mic className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">
@@ -340,7 +340,7 @@ export default function SpeechToTextPage() {
 
                 {/* H3: Students and Researchers */}
                 <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-card">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary mb-4">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary mb-4">
                     <BookOpen className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">
@@ -355,7 +355,7 @@ export default function SpeechToTextPage() {
 
                 {/* H3: Accessibility and Assistive Technology */}
                 <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-card">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary mb-4">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary mb-4">
                     <Users className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">
@@ -486,7 +486,7 @@ export default function SpeechToTextPage() {
                     key={step.n}
                     className="relative rounded-2xl border border-border/70 bg-card p-6 shadow-card"
                   >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-sm font-bold text-white">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-from to-brand-to text-sm font-bold text-white">
                       {step.n}
                     </span>
                     <h3 className="mt-4 font-semibold text-foreground">{step.title}</h3>
@@ -527,7 +527,7 @@ export default function SpeechToTextPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Child page: how-to-transcribe-audio */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
-                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                     <FileText className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
@@ -549,7 +549,7 @@ export default function SpeechToTextPage() {
 
                 {/* Child page: timestamps */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
-                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                     <Clock className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
@@ -571,7 +571,7 @@ export default function SpeechToTextPage() {
 
                 {/* Lateral: captions */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
-                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                     <Captions className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>
@@ -589,7 +589,7 @@ export default function SpeechToTextPage() {
 
                 {/* Lateral: entity/automatic-speech-recognition */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
-                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                  <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                     <Mic className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div>

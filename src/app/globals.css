@@ -1,47 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #4f46e5;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #64748b;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
-  --ring: rgba(79, 70, 229, 0.4);
+  --background: #F7FAF7;
+  --background-secondary: #EEF5F0;
+  --foreground: #102018;
+  --card: #FFFFFF;
+  --card-elevated: #F9FCFA;
+  --card-foreground: #102018;
+  --primary: #047857;
+  --primary-strong: #065F46;
+  --primary-soft: #0F9F78;
+  --primary-foreground: #FFFFFF;
+  --premium-accent: #A9792B;
+  --secondary: #EEF5F0;
+  --secondary-foreground: #102018;
+  --muted: #D8E5DC;
+  --muted-foreground: #607067;
+  --border: #D8E5DC;
+  --ring: rgba(4, 120, 87, 0.4);
   --success: #16a34a;
   --error: #dc2626;
 
-  /* Brand gradient stops (indigo → violet → cyan) */
-  --brand-from: #6366f1;
-  --brand-via: #8b5cf6;
-  --brand-to: #06b6d4;
+  /* Brand gradient stops (Emerald → Jade) */
+  --brand-from: #10B981;
+  --brand-via: #34D399;
+  --brand-to: #5EEAD4;
 
   --glass-bg: rgba(255, 255, 255, 0.72);
   --glass-border: rgba(255, 255, 255, 0.6);
 
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(15, 23, 42, 0.1);
-  --shadow-card-hover: 0 2px 4px rgba(15, 23, 42, 0.05), 0 20px 48px -16px rgba(79, 70, 229, 0.24);
-  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.12), 0 24px 64px -24px rgba(99, 102, 241, 0.5);
+  --shadow-card: 0 1px 2px rgba(16, 32, 24, 0.04), 0 8px 24px -8px rgba(16, 32, 24, 0.1);
+  --shadow-card-hover: 0 2px 4px rgba(16, 32, 24, 0.05), 0 20px 48px -16px rgba(4, 120, 87, 0.24);
+  --shadow-glow: 0 0 0 1px rgba(4, 120, 87, 0.12), 0 24px 64px -24px rgba(4, 120, 87, 0.35);
 }
 
 .dark {
-  --background: #070a13;
-  --foreground: #f1f5f9;
-  --card: #101624;
-  --card-foreground: #f1f5f9;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #161d30;
-  --secondary-foreground: #f8fafc;
-  --muted: #94a3b8;
-  --muted-foreground: #94a3b8;
-  --border: #1e2740;
-  --ring: rgba(99, 102, 241, 0.5);
+  --background: #07100C;
+  --background-secondary: #0B1510;
+  --foreground: #F3F7F4;
+  --card: #101C16;
+  --card-elevated: #15231C;
+  --card-foreground: #F3F7F4;
+  --primary: #34D399;
+  --primary-strong: #10B981;
+  --primary-soft: #5EEAD4;
+  --primary-foreground: #07100C;
+  --premium-accent: #D8B56A;
+  --secondary: #0B1510;
+  --secondary-foreground: #F3F7F4;
+  --muted: #25362D;
+  --muted-foreground: #9EADA4;
+  --border: #25362D;
+  --ring: rgba(52, 211, 153, 0.5);
   --success: #22c55e;
   --error: #ef4444;
 
@@ -49,17 +59,22 @@
   --glass-border: rgba(255, 255, 255, 0.08);
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.5);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 28px 60px -20px rgba(99, 102, 241, 0.35);
-  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.2), 0 28px 72px -28px rgba(99, 102, 241, 0.45);
+  --shadow-card-hover: 0 18px 50px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(52, 211, 153, 0.05) inset;
+  --shadow-glow: 0 0 0 1px rgba(52, 211, 153, 0.2), 0 28px 72px -28px rgba(52, 211, 153, 0.3);
 }
 
 @theme {
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
+  --color-card-elevated: var(--card-elevated);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
   --color-primary-foreground: var(--primary-foreground);
+  --color-premium-accent: var(--premium-accent);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -92,7 +107,7 @@ body {
 }
 
 ::selection {
-  background-color: rgba(99, 102, 241, 0.25);
+  background-color: rgba(52, 211, 153, 0.25);
 }
 
 /* ---- Reduced motion settings ---- */

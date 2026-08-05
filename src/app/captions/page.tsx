@@ -145,11 +145,11 @@ export default function CaptionsPage() {
         {/* Decorative orbs */}
         <div
           aria-hidden="true"
-          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-indigo-500/10 dark:bg-indigo-500/8"
+          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-primary/10 dark:bg-primary/5"
         />
         <div
           aria-hidden="true"
-          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-cyan-500/8"
+          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-primary-soft/10"
         />
 
         <Container className="relative z-10 max-w-4xl">
@@ -435,7 +435,7 @@ Today, we will learn about SRT and VTT files.`}
                     key={step.n}
                     className="relative rounded-2xl border border-border/70 bg-card p-6 shadow-card"
                   >
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 text-sm font-bold text-white">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-from to-brand-to text-sm font-bold text-white">
                       {step.n}
                     </span>
                     <h3 className="mt-4 font-semibold text-foreground">{step.title}</h3>

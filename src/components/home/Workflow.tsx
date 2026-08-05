@@ -19,7 +19,7 @@ const transSteps = [
 export function Workflow() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="workflow-heading">
-      <div className="orb top-[-8rem] left-[-8rem] h-[22rem] w-[22rem] bg-cyan-400/10" aria-hidden="true" />
+      <div className="orb top-[-8rem] left-[-8rem] h-[22rem] w-[22rem] bg-primary-soft/10" aria-hidden="true" />
       <Container className="py-20 md:py-28">
         <SectionHeading
           eyebrow="Workflow"
@@ -34,8 +34,8 @@ export function Workflow() {
 
         <div className="mt-16 grid gap-10 lg:grid-cols-2 lg:gap-16">
           {[
-            { label: 'Speech', colour: 'from-indigo-500 to-violet-500', steps: ttsSteps },
-            { label: 'Transcription', colour: 'from-cyan-500 to-blue-500', steps: transSteps },
+            { label: 'Speech', colour: 'from-brand-from to-brand-to', steps: ttsSteps },
+            { label: 'Transcription', colour: 'from-primary to-primary-soft', steps: transSteps },
           ].map((track) => (
             <Stagger key={track.label} className="rounded-3xl border border-border/70 bg-card p-7 shadow-card" stagger={0.09}>
               <div className="flex items-center gap-3">
@@ -47,7 +47,7 @@ export function Workflow() {
                   <StaggerItem key={s.title}>
                     <li className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                        <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                           <s.icon className="h-5 w-5" aria-hidden="true" />
                         </span>
                         {i < track.steps.length - 1 && (

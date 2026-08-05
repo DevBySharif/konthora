@@ -28,8 +28,8 @@ export function Hero() {
     <section className="relative overflow-hidden" aria-labelledby="hero-heading">
       {/* Ambient background */}
       <div className="absolute inset-0 bg-radial-faint" aria-hidden="true" />
-      <div className="orb top-[-12rem] left-[-8rem] h-[26rem] w-[26rem] bg-indigo-500/20 dark:bg-indigo-500/15" aria-hidden="true" />
-      <div className="orb top-[-6rem] right-[-10rem] h-[28rem] w-[28rem] bg-cyan-400/15 dark:bg-cyan-400/10" aria-hidden="true" />
+      <div className="orb top-[-12rem] left-[-8rem] h-[26rem] w-[26rem] bg-primary/20 dark:bg-primary/15" aria-hidden="true" />
+      <div className="orb top-[-6rem] right-[-10rem] h-[28rem] w-[28rem] bg-primary-soft/15 dark:bg-primary-soft/10" aria-hidden="true" />
       <div
         className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent"
         aria-hidden="true"
@@ -45,7 +45,7 @@ export function Hero() {
             className="text-center lg:text-left"
           >
             <motion.div variants={item(0)}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-indigo-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-primary-soft">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 AI Voice & Transcription Studio
               </span>
@@ -109,7 +109,7 @@ export function Hero() {
           >
             <div className="relative mx-auto max-w-md">
               {/* Glow */}
-              <div className="absolute inset-0 -z-10 translate-y-4 rounded-[2rem] bg-gradient-to-tr from-indigo-500/20 via-violet-500/10 to-cyan-400/20 blur-2xl" />
+              <div className="absolute inset-0 -z-10 translate-y-4 rounded-[2rem] bg-gradient-to-tr from-brand-from/20 via-brand-via/10 to-brand-to/20 blur-2xl" />
 
               {/* Glass card */}
               <div className="glass rounded-[1.75rem] p-6 shadow-glow">
@@ -118,7 +118,7 @@ export function Hero() {
                   {[10, 22, 14, 34, 18, 48, 26, 62, 40, 76, 50, 84, 46, 66, 34, 52, 24, 40, 18, 30, 12, 20, 8].map((h, i) => (
                     <motion.span
                       key={i}
-                      className="w-full rounded-full bg-gradient-to-t from-indigo-500 to-cyan-400"
+                      className="w-full rounded-full bg-gradient-to-t from-brand-from to-brand-to"
                       style={{ height: reduce ? `${h}%` : undefined }}
                       animate={reduce ? undefined : { height: [`${h}%`, `${Math.max(10, h - (i % 5) * 7)}%`, `${h}%`] }}
                       transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', delay: i * 0.06 }}
@@ -154,7 +154,7 @@ export function Hero() {
                 animate={reduce ? undefined : { y: [0, 8, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft/15 text-primary-soft dark:text-primary-soft">
                   <Mic2 className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm font-semibold">word-level sync</span>

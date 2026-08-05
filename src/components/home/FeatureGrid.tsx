@@ -40,7 +40,7 @@ const features = [
 export function FeatureGrid() {
   return (
     <section className="relative overflow-hidden bg-secondary/25" aria-labelledby="features-heading">
-      <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-indigo-500/10" aria-hidden="true" />
+      <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-primary/10" aria-hidden="true" />
       <Container className="py-20 md:py-28">
         <SectionHeading
           eyebrow="Features"
@@ -59,7 +59,7 @@ export function FeatureGrid() {
               <div className="group relative h-full overflow-hidden rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
                 {/* subtle top glow on hover */}
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                   <f.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <h3 className="mt-4 text-base font-semibold text-foreground">{f.title}</h3>

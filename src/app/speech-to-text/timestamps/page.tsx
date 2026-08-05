@@ -119,11 +119,11 @@ export default function TranscriptionTimestampsPage() {
       >
         <div
           aria-hidden="true"
-          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-indigo-500/10 dark:bg-indigo-500/8"
+          className="orb w-[520px] h-[520px] -top-64 -right-32 bg-primary/10 dark:bg-primary/5"
         />
         <div
           aria-hidden="true"
-          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-cyan-500/8"
+          className="orb w-[320px] h-[320px] bottom-0 left-0 bg-primary-soft/10"
         />
 
         <Container className="relative z-10 max-w-4xl">

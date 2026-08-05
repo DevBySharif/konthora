@@ -62,7 +62,7 @@ export function ThemeToggle() {
         className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-border bg-card text-foreground hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
       >
         {resolvedTheme === 'dark' ? (
-          <Moon className="w-5 h-5 text-indigo-400" />
+          <Moon className="w-5 h-5 text-primary-soft" />
         ) : (
           <Sun className="w-5 h-5 text-amber-500" />
         )}

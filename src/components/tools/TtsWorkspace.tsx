@@ -520,7 +520,7 @@ export function TtsWorkspace() {
             id="tts-submit-status"
             type="info"
             message={getProgressLabel()}
-            className="border-indigo-500/20"
+            className="border-primary/20"
           />
         )}
       </form>

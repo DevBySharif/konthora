@@ -32,7 +32,7 @@ const features = [
 export function TextToSpeech() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="tts-heading">
-      <div className="orb bottom-[-10rem] left-[-6rem] h-[22rem] w-[22rem] bg-violet-500/10" aria-hidden="true" />
+      <div className="orb bottom-[-10rem] left-[-6rem] h-[22rem] w-[22rem] bg-primary/10" aria-hidden="true" />
       <Container className="py-20 md:py-28">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}
@@ -52,7 +52,7 @@ export function TextToSpeech() {
               {features.map((f) => (
                 <StaggerItem key={f.title}>
                   <div className="group h-full rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-card-hover">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                       <f.icon className="h-5 w-5" aria-hidden="true" />
                     </div>
                     <h3 className="mt-4 font-semibold text-foreground">{f.title}</h3>
@@ -75,7 +75,7 @@ export function TextToSpeech() {
           {/* Visual */}
           <Reveal delay={0.1}>
             <div className="relative mx-auto max-w-lg">
-              <div className="absolute inset-0 -z-10 translate-y-5 rounded-[2rem] bg-gradient-to-tr from-indigo-500/15 via-violet-500/10 to-cyan-400/15 blur-2xl" aria-hidden="true" />
+              <div className="absolute inset-0 -z-10 translate-y-5 rounded-[2rem] bg-gradient-to-tr from-brand-from/15 via-brand-via/10 to-brand-to/15 blur-2xl" aria-hidden="true" />
               <div className="glass rounded-[1.75rem] p-6 shadow-glow">
                 <div className="flex items-center justify-between border-b border-border/60 pb-4">
                   <div>
@@ -92,7 +92,7 @@ export function TextToSpeech() {
                   {[26, 48, 34, 64, 42, 78, 60, 96, 44, 88, 52, 72, 40, 58, 32, 46, 24, 38, 18, 30].map((h, i) => (
                     <span
                       key={i}
-                      className="w-1.5 rounded-full bg-gradient-to-t from-indigo-500 to-cyan-400"
+                      className="w-1.5 rounded-full bg-gradient-to-t from-brand-from to-brand-to"
                       style={{ height: `${h}%` }}
                     />
                   ))}

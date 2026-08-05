@@ -51,7 +51,7 @@ export function Header() {
           href={siteConfig.links.home}
           className="group flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg px-2 py-1.5"
         >
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from to-brand-to text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
             <AudioLines className="h-5 w-5" strokeWidth={2.5} />
           </span>
           <span className="font-sans font-extrabold">{siteConfig.name}</span>
@@ -95,7 +95,7 @@ export function Header() {
           {/* CTA Button (desktop) */}
           <Link
             href={siteConfig.links.textToSpeech}
-            className="group hidden lg:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+            className="group hidden lg:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-from to-brand-to px-4 py-2.5 text-sm font-semibold text-white shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
           >
             Get Started
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function Header() {
                   <Link
                     href={siteConfig.links.textToSpeech}
                     onClick={handleLinkClick}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-base font-semibold text-white shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-from to-brand-to px-4 py-3 text-base font-semibold text-white shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   >
                     Get Started
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />

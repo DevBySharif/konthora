@@ -20,7 +20,7 @@ const extras = [
 export function SupportedLanguages() {
   return (
     <section className="relative overflow-hidden bg-secondary/25" aria-labelledby="languages-heading">
-      <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-violet-500/10" aria-hidden="true" />
+      <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-primary/10" aria-hidden="true" />
       <Container className="py-20 md:py-28">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           <div>
@@ -40,7 +40,7 @@ export function SupportedLanguages() {
                 <Stagger key={c} delay={i * 0.06}>
                   <StaggerItem>
                     <li className="flex items-center gap-3">
-                      <span className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 text-primary">
+                      <span className="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-from/20 to-brand-to/20 text-primary">
                         <Check className="h-3.5 w-3.5" aria-hidden="true" />
                       </span>
                       <span className="text-foreground/90">{c}</span>
@@ -63,7 +63,7 @@ export function SupportedLanguages() {
                     </span>
                   </div>
                   <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-                    <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400" />
+                    <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-brand-from to-brand-to" />
                   </div>
                   <div className="mt-2 font-mono text-[11px] text-muted-foreground">{v.id}</div>
                 </div>

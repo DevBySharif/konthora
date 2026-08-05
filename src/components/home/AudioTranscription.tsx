@@ -23,20 +23,20 @@ const bullets = [
 export function AudioTranscription() {
   return (
     <section className="relative overflow-hidden bg-secondary/25" aria-labelledby="transcription-heading">
-      <div className="orb top-[-8rem] right-[-8rem] h-[24rem] w-[24rem] bg-cyan-400/10 dark:bg-cyan-500/10" aria-hidden="true" />
+      <div className="orb top-[-8rem] right-[-8rem] h-[24rem] w-[24rem] bg-primary-soft/10 dark:bg-primary-soft/10" aria-hidden="true" />
       <Container className="py-20 md:py-28">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           {/* Visual */}
           <Reveal delay={0.1} className="order-2 lg:order-1">
             <div className="relative mx-auto max-w-lg">
-              <div className="absolute inset-0 -z-10 translate-y-5 rounded-[2rem] bg-gradient-to-tr from-cyan-400/15 via-sky-500/10 to-indigo-500/15 blur-2xl" aria-hidden="true" />
+              <div className="absolute inset-0 -z-10 translate-y-5 rounded-[2rem] bg-gradient-to-tr from-brand-from/15 via-brand-via/10 to-brand-to/15 blur-2xl" aria-hidden="true" />
               <div className="glass rounded-[1.75rem] p-6 shadow-glow">
                 <div className="flex items-center justify-between border-b border-border/60 pb-4">
                   <div>
                     <div className="text-sm font-semibold text-foreground">meeting-notes.mp3</div>
                     <div className="text-xs text-muted-foreground">Faster-Whisper · English</div>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:text-primary-soft">
                     Done
                   </span>
                 </div>
@@ -86,7 +86,7 @@ export function AudioTranscription() {
               {bullets.map((b, i) => (
                 <Reveal key={b.text} delay={i * 0.06}>
                   <li className="flex items-center gap-3">
-                    <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500/15 to-indigo-500/15 text-primary">
+                    <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                       <b.icon className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <span className="text-foreground/90">{b.text}</span>

@@ -21,13 +21,13 @@ const reasons = [
     icon: Sparkles,
     title: 'Precision output',
     desc: 'Word-level timestamps and natural prosody deliver results built for real podcasts, videos, and captions.',
-    accent: 'from-violet-400/20 to-purple-500/10 text-violet-600 dark:text-violet-400',
+    accent: 'from-primary/20 to-primary-soft/10 text-primary dark:text-primary-soft',
   },
   {
     icon: ShieldCheck,
     title: 'Trustworthy & safe',
     desc: 'Rate limits, secure token access, and strict storage boundaries keep your work protected at every step.',
-    accent: 'from-sky-400/20 to-blue-500/10 text-sky-600 dark:text-sky-400',
+    accent: 'from-brand-from/20 to-brand-to/10 text-primary dark:text-primary-soft',
   },
 ];
 
