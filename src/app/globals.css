@@ -15,23 +15,42 @@
   --ring: rgba(79, 70, 229, 0.4);
   --success: #16a34a;
   --error: #dc2626;
+
+  /* Brand gradient stops (indigo → violet → cyan) */
+  --brand-from: #6366f1;
+  --brand-via: #8b5cf6;
+  --brand-to: #06b6d4;
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.6);
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(15, 23, 42, 0.1);
+  --shadow-card-hover: 0 2px 4px rgba(15, 23, 42, 0.05), 0 20px 48px -16px rgba(79, 70, 229, 0.24);
+  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.12), 0 24px 64px -24px rgba(99, 102, 241, 0.5);
 }
 
 .dark {
-  --background: #0b0f19;
+  --background: #070a13;
   --foreground: #f1f5f9;
-  --card: #131b2e;
+  --card: #101624;
   --card-foreground: #f1f5f9;
   --primary: #6366f1;
   --primary-foreground: #ffffff;
-  --secondary: #1e293b;
+  --secondary: #161d30;
   --secondary-foreground: #f8fafc;
   --muted: #94a3b8;
   --muted-foreground: #94a3b8;
-  --border: #1e293b;
+  --border: #1e2740;
   --ring: rgba(99, 102, 241, 0.5);
   --success: #22c55e;
   --error: #ef4444;
+
+  --glass-bg: rgba(16, 22, 36, 0.66);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -12px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.3), 0 28px 60px -20px rgba(99, 102, 241, 0.35);
+  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.2), 0 28px 72px -28px rgba(99, 102, 241, 0.45);
 }
 
 @theme {
@@ -49,21 +68,34 @@
   --color-ring: var(--ring);
   --color-success: var(--success);
   --color-error: var(--error);
+
+  --color-brand-from: var(--brand-from);
+  --color-brand-via: var(--brand-via);
+  --color-brand-to: var(--brand-to);
+
   --font-sans: var(--font-inter), system-ui, sans-serif;
 }
 
-/* Base resets & transitions */
+/* ---- Base resets & transitions ---- */
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
-/* Reduced motion settings */
+::selection {
+  background-color: rgba(99, 102, 241, 0.25);
+}
+
+/* ---- Reduced motion settings ---- */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -73,13 +105,13 @@ body {
   }
 }
 
-/* Accessible focus visible rings */
+/* ---- Accessible focus visible rings ---- */
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* Skip link styling */
+/* ---- Skip link styling ---- */
 .skip-to-content {
   position: absolute;
   left: -9999px;
@@ -103,4 +135,73 @@ body {
   font-weight: 500;
   outline: none;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ---- Premium helpers ---- */
+.text-gradient {
+  background-image: linear-gradient(120deg, var(--brand-from), var(--brand-via) 50%, var(--brand-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-radial-faint {
+  background-image: radial-gradient(
+    60% 55% at 50% 0%,
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent 70%
+  );
+}
+
+.glass {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Animated gradient border for premium cards */
+.border-gradient {
+  position: relative;
+  background-clip: padding-box;
+}
+
+.border-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-from) 55%, transparent),
+    color-mix(in srgb, var(--brand-via) 45%, transparent) 45%,
+    color-mix(in srgb, var(--brand-to) 45%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Soft glowing orb used behind hero and CTA */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
 }
