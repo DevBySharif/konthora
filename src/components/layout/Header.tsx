@@ -134,7 +134,7 @@ export function Header() {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu drawer"
-            className="fixed inset-0 top-16 z-30 lg:hidden"
+            className="fixed inset-x-0 top-16 z-30 lg:hidden h-[calc(100vh-4rem)]"
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduce ? undefined : { opacity: 0 }}
