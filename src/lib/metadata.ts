@@ -8,6 +8,8 @@ interface MetadataProps {
   noIndex?: boolean;
 }
 
+const OG_IMAGE = '/opengraph-image';
+
 export function constructMetadata({
   title,
   description,
@@ -32,11 +34,20 @@ export function constructMetadata({
       siteName: siteConfig.name,
       type: 'website',
       locale: 'en_US',
+      images: [
+        {
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: `${siteConfig.name} — AI text to speech and timestamped audio transcription`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [OG_IMAGE],
     },
     robots: noIndex
       ? {

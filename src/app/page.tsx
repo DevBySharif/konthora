@@ -13,12 +13,13 @@ import { WhyKonthora } from '@/components/home/WhyKonthora';
 import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { Workflow } from '@/components/home/Workflow';
 import { SupportedLanguages } from '@/components/home/SupportedLanguages';
+import { ProductFacts } from '@/components/home/ProductFacts';
 import { FinalCTA } from '@/components/home/FinalCTA';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Konthora | Free AI Text to Speech & Audio Transcription',
+  title: 'Konthora | Free AI Text to Speech & Timestamped Transcription',
   description:
-    'Convert text into natural AI speech or transcribe audio and video with accurate timestamps. Create downloadable speech and timestamped transcripts with Konthora.',
+    'Use Konthora free in your browser: convert text to natural AI speech in US or British English, or transcribe audio and video into timestamped text you can export as TXT, SRT, VTT, or JSON.',
   path: '/',
 });
 
@@ -74,10 +75,24 @@ export default function HomePage() {
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: homeFaqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.answer,
+      },
+    })),
+  };
+
   return (
     <>
       <JsonLd schema={websiteSchema} />
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={faqSchema} />
 
       <Hero />
         <Trusted />
@@ -87,6 +102,7 @@ export default function HomePage() {
         <FeatureGrid />
         <Workflow />
         <SupportedLanguages />
+        <ProductFacts />
 
         {/* FAQ Section */}
         <section className="relative overflow-hidden" aria-labelledby="faq-heading">
