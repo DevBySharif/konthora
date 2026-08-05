@@ -10,5 +10,7 @@ source "$SCRIPT_DIR/konthora.env"
 
 [[ "$(id -u)" -eq 0 ]] || { printf 'Run with sudo (sudo bash stop.sh).\n' >&2; exit 1; }
 
-systemctl stop "$SERVICE_NAME"
-printf 'Konthora service stopped.\n'
+WEB_SERVICE_NAME="${WEB_SERVICE_NAME:-konthora-web.service}"
+
+systemctl stop "$SERVICE_NAME" "$WEB_SERVICE_NAME"
+printf 'Konthora backend + frontend services stopped.\n'

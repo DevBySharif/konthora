@@ -1,0 +1,80 @@
+# =============================================================================
+# Konthora Frontend — systemd unit (konthora-web.service)
+# =============================================================================
+# Runs the Next.js production server (localhost:3000). Nginx terminates TLS on
+# konthora.dev.bd / www.konthora.dev.bd and reverse-proxies to this port.
+#
+# Install:
+#   sudo cp konthora-web.service /etc/systemd/system/konthora-web.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now konthora-web
+#
+# Environment: NEXT_PUBLIC_* variables are loaded from /etc/konthora/web.env
+# (mode 600 root) via EnvironmentFile. These must match the values baked into
+# the build (deploy.sh reuses the same file), because NEXT_PUBLIC_* are inlined
+# at build time while also read at runtime for metadata (robots/sitemap/OG).
+#
+# Logs:
+#   stdout/stderr -> journald:  journalctl -u konthora-web
+# =============================================================================
+
+[Unit]
+Description=Konthora Frontend (Next.js production server)
+Documentation=https://github.com/DevBySharif/konthora
+After=network-online.target
+Wants=network-online.target
+
+# Rate-limit restarts: max 5 starts in a 10 minute window, then 90s pause.
+StartLimitIntervalSec=600
+StartLimitBurst=5
+
+[Service]
+# Run as the same dedicated unprivileged service account as the backend.
+User=konthora
+Group=konthora
+
+# Application root (repo root, where package.json / .next live).
+WorkingDirectory=/opt/konthora/repo
+
+# NEXT_PUBLIC_* configuration (same file deploy.sh uses for the build).
+EnvironmentFile=/etc/konthora/web.env
+
+# Runtime tuning: production mode, loopback bind on port 3000.
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_TELEMETRY_DISABLED=1
+
+# The .bin/next binary is a symlink into node_modules; run it with the node
+# shipped by npm/nodesource. `next start` launches `next-server`.
+ExecStartPre=/usr/bin/test -d /opt/konthora/repo/.next
+ExecStart=/opt/konthora/repo/node_modules/.bin/next start -H 127.0.0.1 -p 3000
+
+# -------- Restart policy --------
+Restart=always
+RestartSec=5
+
+# -------- Resource limits --------
+# Next.js dev/prod server is a single Node process; 1G of the 8G box is ample
+# (the backend, with both ML models, is capped at 6G).
+LimitNOFILE=65535
+MemoryMax=1G
+CPUQuota=100%
+
+# Keep stdout/stderr on the journal.
+StandardOutput=journal
+StandardError=journal
+
+# Graceful shutdown.
+TimeoutStopSec=30
+
+# Security hardening (mirrors the backend unit; the repo's .next output is
+# under /opt, which stays writable so Next.js can lazily revalidate ISR paths).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target
