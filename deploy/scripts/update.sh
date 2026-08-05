@@ -24,16 +24,19 @@ log "Current release: $BEFORE"
 mkdir -p "$BACKUP_DIR"
 printf '%s\n' "$BEFORE" > "$BACKUP_DIR/last-release"
 
-log "1/4 Fetching latest main..."
+log "1/5 Fetching latest remote..."
 git -C "$REPO_DIR" fetch --prune origin
 git -C "$REPO_DIR" reset --hard origin/main
 
-log "2/4 Updating Python dependencies..."
+log "2/5 Updating Python dependencies..."
 "$BACKEND_DIR/.venv/bin/pip" install --upgrade pip
 "$BACKEND_DIR/.venv/bin/pip" install -r "$BACKEND_DIR/requirements.txt"
 "$BACKEND_DIR/.venv/bin/python" -m pip check
 
-log "3/4 Refreshing Nginx and systemd configuration..."
+log "3/5 Provisioning ML models (spaCy + Kokoro + Whisper warm-up)..."
+bash "$SCRIPT_DIR/provision_models.sh"
+
+log "4/5 Refreshing Nginx and systemd configuration..."
 install -o root -g root -m 644 "$SCRIPT_DIR/../nginx/nginx.conf" /etc/nginx/nginx.conf
 install -o root -g root -m 644 "$SCRIPT_DIR/../nginx/security_headers.conf" "$NGINX_CONF_DIR/security_headers.conf"
 install -o root -g root -m 644 "$SCRIPT_DIR/../nginx/proxy_params.conf" /etc/nginx/proxy_params.conf
@@ -43,7 +46,7 @@ nginx -t
 systemctl daemon-reload
 systemctl reload nginx
 
-log "4/4 Restarting service..."
+log "5/5 Restarting service..."
 systemctl restart "$SERVICE_NAME"
 
 AFTER=$(git -C "$REPO_DIR" rev-parse --short HEAD)

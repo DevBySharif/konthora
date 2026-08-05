@@ -167,21 +167,33 @@ sudo nano deploy/scripts/konthora.env   # review paths/domains
 sudo bash deploy/scripts/deploy.sh
 ```
 
+`deploy.sh` is **idempotent** — re-running it is safe: an existing secrets file,
+certificate and model cache are preserved, and the venv is only created once.
+
 What `deploy.sh` does:
 
-1. Installs packages: python3.11, ffmpeg, espeak-ng, nginx, git, build tools.
+1. Installs packages: python3.11, ffmpeg, espeak-ng, nginx, certbot, git, build tools.
 2. Creates the unprivileged `konthora` system user.
-3. Clones/pulls the repository into `/opt/konthora/repo`.
+3. Clones/pulls the repository into `/opt/konthora/repo` (and keeps the venv
+   root-owned so the service user cannot modify its own code).
 4. Creates `backend/.venv` and installs `backend/requirements.txt`
    (then runs `pip check`).
 5. Installs `/etc/konthora/konthora.env` (mode 600) from
    `backend/.env.production.example`. **Review this file** before going live.
-6. Creates `backend/storage` and `/var/log/konthora` owned by `konthora`.
-7. Installs Nginx configs and the systemd unit, enables the service.
-8. Issues a Let's Encrypt certificate for `api.konthora.dev.bd`.
-9. Starts the service and reloads Nginx.
+6. Creates `backend/storage`, `/var/log/konthora` and the model cache
+   (`/opt/konthora/.cache`) owned by `konthora`.
+7. **Provisions ML models** (`deploy/scripts/provision_models.sh`): installs the
+   spaCy `en_core_web_sm` model Kokoro's G2P needs, warms the Kokoro + Faster
+   Whisper weights into the cache, and verifies cache ownership/permissions.
+   Fails fast if anything is wrong. Skippable with `SKIP_MODEL_WARM=1`.
+8. Installs Nginx configs and the systemd unit, disables the unused `default`
+   site, enables the service.
+9. Issues a Let's Encrypt certificate for `api.konthora.dev.bd` (standalone
+   bootstrap, then renewal hooks) or reuses an existing one.
+10. Validates and starts Nginx.
+11. Starts the service.
 
-Manual equivalents of steps 7–11 are shown below.
+Manual equivalents of steps 8–11 are shown below.
 
 ### Backend secrets file — `/etc/konthora/konthora.env`
 
@@ -217,6 +229,7 @@ Key properties:
 | `EnvironmentFile` | `/etc/konthora/konthora.env` | secret config, not in the unit |
 | `ExecStart` | `.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --http httptools` | loopback bind, 1 worker, trust only local proxy |
 | `Restart=always` / `RestartSec=5` | | self-healing |
+| `StartLimitIntervalSec=600` / `StartLimitBurst=5` | | restart-storm protection (in `[Unit]`) |
 | `MemoryMax=6G`, `LimitNOFILE=65535`, `CPUQuota=400%` | | resource limits — adjust per instance tier (see the unit file) |
 | `StandardOutput/StandardError=journal` | | logs via journald |
 | `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=full`, `ProtectHome`, `ReadWritePaths=...` | | security hardening |
@@ -260,10 +273,21 @@ sudo systemctl reload nginx
 
 ### Let's Encrypt
 
+The API server block is TLS-only (`listen 443 ssl`) and points at the
+certificate path, so on a fresh host the certificate must exist *before* Nginx
+can start. `deploy.sh` bootstraps it with the **standalone** authenticator while
+port 80 is free, then installs renewal hooks that stop/start Nginx around each
+renewal (standalone needs port 80 free):
+
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot certonly --nginx -d api.konthora.dev.bd \
+sudo apt install -y certbot
+sudo certbot certonly --standalone -d api.konthora.dev.bd \
      --non-interactive --agree-tos -m hello@konthora.dev.bd
+
+# Renewal hooks injected by deploy.sh:
+#   /etc/letsencrypt/renewal-hooks/pre/stop-nginx.sh
+#   /etc/letsencrypt/renewal-hooks/post/start-nginx.sh
+
 # Renewal (certbot.timer runs automatically; test it):
 sudo certbot renew --dry-run
 ```
@@ -370,7 +394,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ```bash
 # 1. DNS: A record api -> EC2 Elastic IP (create before deploy.sh runs)
-# 2. Provision:
+# 2. Provision (installs packages, repo, venv, models, TLS, service — all in one):
 sudo bash deploy/scripts/deploy.sh
 # 3. Verify:
 curl https://api.konthora.dev.bd/api/v1/health
@@ -410,20 +434,17 @@ sudo systemctl restart konthora
 ### Model downloads are slow or fail (first request 500s)
 
 Models download on first use to `/opt/konthora/.cache/huggingface`
-(`HF_HOME`, see the systemd unit). If a cold download times out, retry the
-request or pre-warm the cache once:
+(`HF_HOME`, see the systemd unit). `deploy.sh` / `update.sh` pre-warm this cache
+via `provision_models.sh`, so a fresh deploy is already warm. If you skipped the
+warm-up (`SKIP_MODEL_WARM=1`) or the cache was cleared, warm it manually once:
 
 ```bash
-sudo -u konthora /opt/konthora/repo/backend/.venv/bin/python - <<'PY'
-import os
-os.environ.setdefault("HF_HOME", "/opt/konthora/.cache/huggingface")
-from app.services.kokoro_service import KokoroService
-from app.services.transcription_service import TranscriptionService
-KokoroService().load_pipeline(lang_code="a")
-TranscriptionService().load_model()
-print("models pre-warmed")
-PY
+sudo bash deploy/scripts/provision_models.sh
 ```
+
+If the warm-up fails, confirm outbound access to Hugging Face
+(`huggingface.co`) and retry — completed downloads are cached, so a re-run
+resumes rather than restarting.
 
 ### `502 Bad Gateway` from Nginx
 

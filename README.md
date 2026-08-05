@@ -18,13 +18,18 @@ The application launches with:
 | [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md) | Performance review: queue, memory, startup, model loading, compression, caching. |
 | [deploy/nginx/](deploy/nginx/) | Production Nginx configuration (TLS, security headers, uploads, timeouts). |
 | [deploy/systemd/](deploy/systemd/) | `konthora.service` systemd unit. |
-| [deploy/scripts/](deploy/scripts/) | Provision, update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
+| [deploy/scripts/](deploy/scripts/) | Idempotent provisioning (`deploy.sh`, incl. TLS + model warm-up), update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
 | [.env.example](.env.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates. |
 
 > **Architecture:** Frontend on **Vercel** (`konthora.dev.bd`), backend on an
 > **AWS EC2** instance running **Ubuntu 24.04** behind **Nginx + Let's Encrypt**
 > (`api.konthora.dev.bd`), supervised by **systemd**. Continuous integration
 > runs in GitHub Actions (CI only — no automatic deployments).
+
+> **Deploying:** `sudo bash deploy/scripts/deploy.sh` provisions a fresh Ubuntu
+> host end-to-end (packages, repo, venv, **spaCy + Kokoro + Faster Whisper model
+> warm-up**, secrets, Nginx, Let's Encrypt TLS, systemd) and is safe to re-run.
+> See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
