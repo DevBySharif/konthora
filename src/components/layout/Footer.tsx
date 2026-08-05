@@ -80,18 +80,18 @@ export function Footer() {
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 gap-8 col-span-2 sm:grid-cols-none sm:grid-cols-3 md:col-span-1 lg:col-span-8">
+          <div className="grid grid-cols-2 gap-12 col-span-2 sm:grid-cols-none sm:grid-cols-3 md:col-span-1 lg:col-span-8">
             {columns.map((col) => (
               <div key={col.title}>
-                <h3 className="text-sm font-semibold uppercase tracking-widest text-foreground">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-foreground">
                   {col.title}
                 </h3>
-                <ul className="mt-5 space-y-3">
+                <ul className="mt-6 space-y-4">
                   {col.links.map((link) => (
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
+                        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
                       >
                         {link.label}
                       </Link>
