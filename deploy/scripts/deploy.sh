@@ -38,6 +38,12 @@ source "$SCRIPT_DIR/konthora.env"
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Robust defaults (overridable in konthora.env). They match the systemd unit's
+# HF_HOME/XDG_CACHE_HOME so hosts with a pre-existing konthora.env (created
+# before these keys existed) keep working without editing that file.
+CACHE_ROOT="${CACHE_ROOT:-/opt/konthora/.cache}"
+HF_CACHE_DIR="${HF_CACHE_DIR:-${CACHE_ROOT}/huggingface}"
+
 log() { printf '\033[1;34m[deploy]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[deploy] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
