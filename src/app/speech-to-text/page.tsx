@@ -558,7 +558,12 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       Understand the difference between sentence, paragraph, and word-level{' '}
-                      <span className="font-medium text-foreground">transcription with timestamps</span>{' '}
+                      <Link
+                        href="/speech-to-text/timestamps"
+                        className="text-primary underline-offset-4 hover:underline transition-colors"
+                      >
+                        transcription with timestamps
+                      </Link>{' '}
                       — and which mode to use for SRT captions, research, or JSON archives.
                     </p>
                   </div>

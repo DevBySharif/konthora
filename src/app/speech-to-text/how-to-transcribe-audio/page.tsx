@@ -388,6 +388,16 @@ export default function HowToTranscribeAudioPage() {
                 Understanding Timestamp Options
               </h2>
               <div className="space-y-6 text-muted-foreground leading-relaxed">
+                <p>
+                  For a detailed breakdown of timestamp modes and format compatibility, see our guide on{' '}
+                  <Link
+                    href="/speech-to-text/timestamps"
+                    className="text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
+                  >
+                    transcription timestamps
+                  </Link>
+                  .
+                </p>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     Sentence Timestamps
