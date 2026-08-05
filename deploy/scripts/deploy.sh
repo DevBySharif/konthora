@@ -215,12 +215,16 @@ fi
 
 # Frontend certificate (apex + www in one SAN certificate).
 WEB_CERT_DOMAINS="${WEB_CERT_DOMAINS:-konthora.dev.bd www.konthora.dev.bd}"
-WEB_CERT_DIR="$(printf '%s' "$WEB_CERT_DOMAINS" | awk '{print $1}')"
+# Each domain needs its own -d flag; build the argument list explicitly.
+WEB_CERT_ARGS=()
+for d in $WEB_CERT_DOMAINS; do
+  WEB_CERT_ARGS+=(-d "$d")
+done
+WEB_CERT_DIR="${WEB_CERT_ARGS[1]/-d /}"
 if [ ! -f "/etc/letsencrypt/live/$WEB_CERT_DIR/fullchain.pem" ]; then
-  # shellcheck disable=SC2086
-  certbot certonly --standalone -d $WEB_CERT_DOMAINS --non-interactive --agree-tos -m "$CERT_EMAIL" \
+  certbot certonly --standalone "${WEB_CERT_ARGS[@]}" --non-interactive --agree-tos -m "$CERT_EMAIL" \
     || die "Certificate issuance failed for $WEB_CERT_DOMAINS. Confirm DNS resolves to this host and that port 80 is reachable, then re-run."
-  # www.konthora.dev.bd and the apex live in one directory; the cert paths in
+  # The apex and www live in one certificate directory; the cert paths in
   # konthora.dev.bd.conf already point at konthora.dev.bd (the first domain).
   log "Certificate issued for $WEB_CERT_DOMAINS."
 else
