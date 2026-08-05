@@ -143,6 +143,8 @@ manually, verify each:
       - `NEXT_PUBLIC_SITE_URL=https://konthora.dev.bd`
       - `NEXT_PUBLIC_CONTACT_EMAIL=hello@konthora.dev.bd`
       - `NEXT_PUBLIC_API_URL=https://api.konthora.dev.bd/api/v1`
+      - `NEXT_PUBLIC_GA_MEASUREMENT_ID=<GA4 Measurement ID>` (optional; blank = disabled)
+      - `NEXT_PUBLIC_CLARITY_PROJECT_ID=<Clarity project ID>` (optional; blank = disabled)
 - [ ] Backend `CORS_ORIGINS` origin matches `NEXT_PUBLIC_SITE_URL`.
 
 ## 12. systemd
@@ -201,9 +203,21 @@ manually, verify each:
 
 ## 17. Analytics
 
-- [ ] Analytics script installed (e.g. Plausible / Google Analytics 4 /
-      Cloudflare Web Analytics) in the frontend.
-- [ ] Verify a pageview fires on `https://konthora.dev.bd`.
+- [ ] **Google Analytics 4** Measurement ID set in `/etc/konthora/web.env`
+      (`NEXT_PUBLIC_GA_MEASUREMENT_ID`); gtag.js loads in production only via the
+      official `@next/third-parties` component and tracks client-side route changes.
+- [ ] **Microsoft Clarity** project ID set in `/etc/konthora/web.env`
+      (`NEXT_PUBLIC_CLARITY_PROJECT_ID`); loaded in production only, after the
+      page becomes interactive, non-blocking.
+- [ ] Verify GA4: GA Realtime shows a live `page_view`; Google Tag Assistant
+      detects the GA4 tag on `https://konthora.dev.bd`.
+- [ ] Verify Clarity: a live session appears in the Clarity dashboard (or devtools
+      shows a request to `https://www.clarity.ms/collect` and the `clarity` object
+      is defined).
+- [ ] CSP allows analytics: `script-src`/`connect-src`/`img-src` include
+      `www.googletagmanager.com`, `www.google-analytics.com`, `analytics.google.com`,
+      `www.clarity.ms`, `c.clarity.ms`, `api.clarity.ms` (in
+      `deploy/nginx/frontend_security_headers.conf`).
 
 ## 18. Google Search Console
 

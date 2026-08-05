@@ -116,7 +116,28 @@ the build; `konthora-web.service` loads the same file via `EnvironmentFile`:
 NEXT_PUBLIC_SITE_URL=https://konthora.dev.bd
 NEXT_PUBLIC_CONTACT_EMAIL=hello@konthora.dev.bd
 NEXT_PUBLIC_API_URL=https://api.konthora.dev.bd/api/v1
+NEXT_PUBLIC_GA_MEASUREMENT_ID=   # Google Analytics 4 Measurement ID (optional; production only)
+NEXT_PUBLIC_CLARITY_PROJECT_ID=   # Microsoft Clarity project ID (optional; production only)
 ```
+
+**Analytics** (optional): the frontend ships with **Google Analytics 4** and
+**Microsoft Clarity** integrations that activate only in production and never
+block the first render.
+
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` — GA4 Measurement ID (format `G-XXXXXXXXXX`) from
+  GA4 Admin → Data Streams. When set, the official Next.js integration
+  (`@next/third-parties` → `GoogleAnalytics`) loads `gtag.js` and tracks
+  client-side route changes automatically.
+- `NEXT_PUBLIC_CLARITY_PROJECT_ID` — Microsoft Clarity project ID from the
+  [Clarity dashboard](https://clarity.microsoft.com/) (Settings → Project ID). When
+  set, the Clarity script is loaded **in production only**, after the page becomes
+  interactive, and never blocks the first render.
+
+Leave either variable blank to disable that provider. The frontend CSP
+(`deploy/nginx/frontend_security_headers.conf`) already allows the minimum domains
+for GA4 and Clarity; no further configuration is needed. To verify, open the site in
+a browser and check the GA4 Realtime report for a live `page_view` and the Clarity
+dashboard for a live session.
 
 ## 5. Git installation
 
