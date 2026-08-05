@@ -133,11 +133,12 @@ block the first render.
   set, the Clarity script is loaded **in production only**, after the page becomes
   interactive, and never blocks the first render.
 
-Leave either variable blank to disable that provider. The frontend CSP
+Leave either variable blank to disable analytics. The frontend CSP
 (`deploy/nginx/frontend_security_headers.conf`) already allows the minimum domains
 for GA4 and Clarity; no further configuration is needed. To verify, open the site in
 a browser and check the GA4 Realtime report for a live `page_view` and the Clarity
-dashboard for a live session.
+dashboard for a live session (Clarity loads `clarity.js` from `scripts.clarity.ms`
+and its `c.gif` beacon via `c.clarity.ms`/`c.bing.com`, all covered by the CSP).
 
 ## 5. Git installation
 

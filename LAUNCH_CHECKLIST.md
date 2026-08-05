@@ -214,10 +214,12 @@ manually, verify each:
 - [ ] Verify Clarity: a live session appears in the Clarity dashboard (or devtools
       shows a request to `https://www.clarity.ms/collect` and the `clarity` object
       is defined).
-- [ ] CSP allows analytics: `script-src`/`connect-src`/`img-src` include
-      `www.googletagmanager.com`, `www.google-analytics.com`, `analytics.google.com`,
-      `www.clarity.ms`, `c.clarity.ms`, `api.clarity.ms` (in
-      `deploy/nginx/frontend_security_headers.conf`).
+- [ ] CSP allows analytics: `script-src`/`connect-src`/`img-src`/`font-src`
+      include `www.googletagmanager.com`, `www.google-analytics.com`,
+      `analytics.google.com`, `www.clarity.ms`, `scripts.clarity.ms`,
+      `static.clarity.ms`, `c.clarity.ms`, `api.clarity.ms`, and `c.bing.com`
+      (Clarity's `c.gif` beacon redirect target) in
+      `deploy/nginx/frontend_security_headers.conf`.
 
 ## 18. Google Search Console
 
