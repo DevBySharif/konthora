@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/terms',
     '/copyright',
     '/captions',
+    '/formats',
     '/entity/kokoro',
     '/entity/whisper',
   ];
