@@ -536,7 +536,12 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       A detailed walkthrough of{' '}
-                      <span className="font-medium text-foreground">how to transcribe audio step by step</span>{' '}
+                      <Link
+                        href="/speech-to-text/how-to-transcribe-audio"
+                        className="text-primary underline-offset-4 hover:underline transition-colors"
+                      >
+                        how to transcribe audio step by step
+                      </Link>{' '}
                       — including format tips, timestamp options, and export guidance.
                     </p>
                   </div>
