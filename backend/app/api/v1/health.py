@@ -11,6 +11,7 @@ from app.core.transcription_queue import TranscriptionQueueManager
 router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
+@router.head("/health", response_model=HealthResponse, include_in_schema=False)
 def get_health():
     """Returns safe, operational health checks for the TTS and Transcription services."""
     kokoro_service = KokoroService()

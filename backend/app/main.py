@@ -9,7 +9,6 @@ from loguru import logger
 
 from app.core.config import settings
 from app.core.exceptions import TtsException
-from app.core.security import SecurityHeadersMiddleware
 from app.core.queue import TtsQueueManager
 from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.cleanup_service import CleanupService
@@ -61,11 +60,12 @@ app = FastAPI(
 )
 
 # Middleware stack. Starlette wraps in reverse order, so the LAST added middleware
-# is the OUTERMOST. Order (outer -> inner): TrustedHost -> CORS -> SecurityHeaders -> GZip.
+# is the OUTERMOST. Order (outer -> inner): TrustedHost -> CORS -> GZip.
+# Security response headers are emitted solely by Nginx at the edge (see
+# deploy/nginx/security_headers.conf) to avoid duplication; Nginx is also the
+# only layer that covers CORS preflight responses.
 if settings.COMPRESSION_ENABLED:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS configuration (complying with cross-origin safety rules)
 app.add_middleware(

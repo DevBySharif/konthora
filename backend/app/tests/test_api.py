@@ -15,6 +15,11 @@ def test_health_endpoint(client):
     assert "storage" not in str(data)
     assert "C:\\" not in str(data)
 
+def test_health_head_endpoint(client):
+    response = client.head("/api/v1/health")
+    assert response.status_code == 200
+    assert response.content == b""
+
 def test_voices_list(client):
     response = client.get("/api/v1/tts/voices")
     assert response.status_code == 200
