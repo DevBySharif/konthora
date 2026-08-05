@@ -197,19 +197,9 @@ export default function SpeechToTextPage() {
           {/* Search promise — delivered before first scroll */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
             Speech-to-text converts spoken audio into written text using{' '}
-            <Link
-              href="/entity/automatic-speech-recognition"
-              className="text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
-            >
-              automatic speech recognition
-            </Link>{' '}
+            <span className="font-medium text-foreground">automatic speech recognition</span>{' '}
             (ASR) software. Modern free tools powered by neural models like{' '}
-            <Link
-              href="/entity/whisper"
-              className="text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
-            >
-              Whisper
-            </Link>{' '}
+            <span className="font-medium text-foreground">Whisper</span>{' '}
             can transcribe audio files, videos, and voice recordings directly in a
             browser — with no software to install and no account required.
           </p>
@@ -281,12 +271,7 @@ export default function SpeechToTextPage() {
                 </p>
                 <p>
                   Konthora uses the{' '}
-                  <Link
-                    href="/entity/whisper"
-                    className="text-primary underline underline-offset-4 hover:text-primary/80 transition-colors"
-                  >
-                    Whisper
-                  </Link>{' '}
+                  <span className="font-medium text-foreground">Whisper</span>{' '}
                   speech recognition model — an open-source neural network developed by
                   OpenAI and trained on 680,000 hours of multilingual audio. Konthora
                   specifically uses the{' '}
@@ -348,12 +333,7 @@ export default function SpeechToTextPage() {
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     Transcribing episodes creates searchable show notes, blog posts, and
                     social-media clips. SRT or VTT exports let creators add{' '}
-                    <Link
-                      href="/captions"
-                      className="text-primary underline-offset-4 hover:underline transition-colors"
-                    >
-                      captions and subtitles
-                    </Link>{' '}
+                    <span className="font-medium text-foreground">captions and subtitles</span>{' '}
                     to video content.
                   </p>
                 </div>
@@ -545,7 +525,7 @@ export default function SpeechToTextPage() {
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                {/* Child page: how-to-transcribe-audio (coming Phase 1) */}
+                {/* Child page: how-to-transcribe-audio */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
                   <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
                     <FileText className="h-5 w-5" aria-hidden="true" />
@@ -556,18 +536,13 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       A detailed walkthrough of{' '}
-                      <Link
-                        href="/speech-to-text/how-to-transcribe-audio"
-                        className="text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        how to transcribe audio step by step
-                      </Link>{' '}
+                      <span className="font-medium text-foreground">how to transcribe audio step by step</span>{' '}
                       — including format tips, timestamp options, and export guidance.
                     </p>
                   </div>
                 </div>
 
-                {/* Child page: timestamps (coming Phase 1) */}
+                {/* Child page: timestamps */}
                 <div className="group flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
                   <div className="flex-shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/15 to-cyan-500/15 text-primary">
                     <Clock className="h-5 w-5" aria-hidden="true" />
@@ -578,12 +553,7 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       Understand the difference between sentence, paragraph, and word-level{' '}
-                      <Link
-                        href="/speech-to-text/timestamps"
-                        className="text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        transcription with timestamps
-                      </Link>{' '}
+                      <span className="font-medium text-foreground">transcription with timestamps</span>{' '}
                       — and which mode to use for SRT captions, research, or JSON archives.
                     </p>
                   </div>
@@ -600,12 +570,7 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       Learn the difference between{' '}
-                      <Link
-                        href="/captions"
-                        className="text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        captions and subtitles
-                      </Link>
+                      <span className="font-medium text-foreground">captions and subtitles</span>
                       , what SRT and VTT files are, and how to create them from your
                       transcript.
                     </p>
@@ -623,12 +588,7 @@ export default function SpeechToTextPage() {
                     </h3>
                     <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       A technical explainer on{' '}
-                      <Link
-                        href="/entity/automatic-speech-recognition"
-                        className="text-primary underline-offset-4 hover:underline transition-colors"
-                      >
-                        automatic speech recognition
-                      </Link>{' '}
+                      <span className="font-medium text-foreground">automatic speech recognition</span>{' '}
                       — acoustic models, language models, and the neural networks that power
                       modern transcription.
                     </p>
