@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { AudioLines, Mail, Sparkles } from 'lucide-react';
+import { Mail, Sparkles } from 'lucide-react';
 import { footerNavLinks } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
 import { Container } from '../ui/Container';
@@ -46,12 +46,14 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1 lg:col-span-4">
             <Link
               href={siteConfig.links.home}
-              className="group inline-flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
+              className="group inline-flex items-center gap-2.5 text-xl tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
             >
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from to-brand-to text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
-                <AudioLines className="h-5 w-5" strokeWidth={2.5} />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+                  <path d="M8 4v16M17 4l-6.5 8 6.5 8" />
+                </svg>
               </span>
-              <span className="font-sans font-extrabold">{siteConfig.name}</span>
+              <span className="font-sans font-semibold tracking-[-0.02em]">{siteConfig.name}</span>
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
               {siteConfig.description}

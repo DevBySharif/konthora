@@ -8,7 +8,7 @@ import { headerNavLinks } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
 import { ThemeToggle } from '../ThemeToggle';
 import { Container } from '../ui/Container';
-import { Menu, X, AudioLines, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 export function Header() {
   const pathname = usePathname();
@@ -49,12 +49,14 @@ export function Header() {
         {/* Brand Wordmark */}
         <Link
           href={siteConfig.links.home}
-          className="group flex items-center gap-2.5 text-xl font-bold tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg px-2 py-1.5"
+          className="group flex items-center gap-2.5 text-xl tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg px-2 py-1.5"
         >
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from to-brand-to text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
-            <AudioLines className="h-5 w-5" strokeWidth={2.5} />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+              <path d="M8 4v16M17 4l-6.5 8 6.5 8" />
+            </svg>
           </span>
-          <span className="font-sans font-extrabold">{siteConfig.name}</span>
+          <span className="font-sans font-semibold tracking-[-0.02em]">{siteConfig.name}</span>
         </Link>
 
         {/* Desktop Navigation Links */}
