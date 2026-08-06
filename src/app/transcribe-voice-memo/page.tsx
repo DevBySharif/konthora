@@ -187,6 +187,9 @@ export default function TranscribeVoiceMemoPage() {
                 <p>
                   Once you turn your <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link>, you no longer have to listen to the entire recording just to find one specific detail.
                 </p>
+                <p>
+                  If you instead want to generate spoken narration from written text for short-form content, you should review our guide on <Link href="/text-to-speech-for-social-media" className="text-primary hover:underline">text-to-speech for social media</Link>.
+                </p>
               </div>
             </section>
 

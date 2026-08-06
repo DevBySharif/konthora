@@ -187,6 +187,9 @@ export default function TTSForSocialMediaPage() {
                 <p>
                   Generating voiceovers from text is useful when you want to produce content quickly, maintain a consistent voice style across multiple videos, or when you prefer not to record your own voice.
                 </p>
+                <p>
+                  If you already have a recorded voice memo and simply want to convert it into written notes, you should learn how to <Link href="/transcribe-voice-memo" className="text-primary hover:underline">transcribe a voice memo</Link> instead.
+                </p>
               </div>
             </section>
 
