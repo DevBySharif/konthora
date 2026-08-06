@@ -36,6 +36,7 @@ backend/storage/*
 storage/
 *.wav
 *.mp3
+!public/audio/voice-previews/*.mp3
 *.m4a
 *.aac
 *.webm
