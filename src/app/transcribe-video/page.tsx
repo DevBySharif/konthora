@@ -208,7 +208,7 @@ export default function TranscribeVideoPage() {
                   Before starting, ensure your file fits within the platform limits. The maximum upload size is 100 MB, and the maximum media duration is 10 minutes. Longer videos must be manually divided into shorter files before upload. 
                 </p>
                 <p>
-                  For the best <Link href="/speech-to-text/audio-transcription-accuracy" className="text-primary hover:underline">audio transcription accuracy</Link>, ensure the video's audio track is clear and free from heavy background noise.
+                  For the best <Link href="/speech-to-text/audio-transcription-accuracy" className="text-primary hover:underline">audio transcription accuracy</Link>, ensure the video&apos;s audio track is clear and free from heavy background noise.
                 </p>
               </div>
             </section>
