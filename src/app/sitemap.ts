@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/captions',
     '/formats',
     '/formats/mp3-vs-wav',
+    '/formats/srt',
     '/entity/kokoro',
     '/entity/whisper',
   ];
