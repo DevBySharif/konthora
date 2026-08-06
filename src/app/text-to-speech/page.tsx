@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
@@ -201,6 +202,88 @@ export default function TextToSpeechPage() {
           },
         ]}
       />
+
+      {/* ── Explore Guides ── */}
+      <Section aria-labelledby="explore-guides-heading">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl" id="explore-guides-heading">
+              Explore Text-to-Speech Guides
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Learn more about how the technology works, explore voice options, and discover practical use cases.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                href: '/text-to-speech/how-does-text-to-speech-work',
+                label: 'How it works',
+                description: 'Understand the technology behind AI speech generation.',
+              },
+              {
+                href: '/voices',
+                label: 'Explore AI Voices',
+                description: 'Listen to and select from our American and British English voices.',
+              },
+              {
+                href: '/text-to-speech-for-youtube-videos',
+                label: 'YouTube Videos',
+                description: 'Generate consistent voiceovers for your YouTube channel.',
+              },
+              {
+                href: '/text-to-speech-for-podcasts',
+                label: 'Podcasts',
+                description: 'Draft podcast scripts and hear them spoken aloud.',
+              },
+              {
+                href: '/text-to-speech-for-presentations',
+                label: 'Presentations',
+                description: 'Add clear audio narration to your slides.',
+              },
+              {
+                href: '/text-to-speech-for-elearning',
+                label: 'E-Learning',
+                description: 'Convert written courses into accessible audio lessons.',
+              },
+              {
+                href: '/text-to-speech-for-social-media',
+                label: 'Social Media',
+                description: 'Create engaging voiceovers for short-form video content.',
+              },
+              {
+                href: '/text-to-speech-for-audiobooks',
+                label: 'Audiobooks',
+                description: 'Turn chapters of text into continuous spoken audio.',
+              },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+              >
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {l.label}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.description}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Read guide
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
+                  </svg>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </Section>
 
       {/* Tool FAQ Section */}
       <Section className="bg-secondary/10">
