@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/text-to-speech-for-presentations',
     '/text-to-speech-for-elearning',
     '/text-to-speech-for-social-media',
+    '/text-to-speech-for-audiobooks',
     '/text-to-speech/how-does-text-to-speech-work',
     '/audio-to-text',
     '/speech-to-text',
