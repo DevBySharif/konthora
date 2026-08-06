@@ -23,6 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/entity/kokoro',
     '/entity/whisper',
     '/voices',
+    '/voices/american-english-voices',
   ];
 
   return routes.map((route) => ({

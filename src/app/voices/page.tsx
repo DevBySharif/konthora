@@ -192,7 +192,9 @@ export default function VoicesPage() {
               <div className="mb-10">
                 <h3 className="text-xl font-bold text-foreground flex items-center gap-2 mb-4">
                   <Globe2 className="h-5 w-5 text-primary" />
-                  American English Voices
+                  <Link href="/voices/american-english-voices" className="hover:underline text-foreground">
+                    American English Voices
+                  </Link>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   There are 6 American English voices available, providing a standard North American pronunciation style.
