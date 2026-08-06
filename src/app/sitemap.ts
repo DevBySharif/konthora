@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/speech-to-text/audio-transcription-accuracy',
     '/speech-to-text/how-to-transcribe-audio',
     '/speech-to-text/timestamps',
+    '/transcribe-podcast',
     '/about',
     '/contact',
     '/privacy-policy',
