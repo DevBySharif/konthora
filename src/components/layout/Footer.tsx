@@ -46,14 +46,16 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1 lg:col-span-4">
             <Link
               href={siteConfig.links.home}
-              className="group inline-flex items-center gap-2.5 text-xl tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
+              aria-label="Konthora Home"
+              className="group inline-flex items-center gap-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
             >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from to-brand-to text-white shadow-card-hover transition-transform duration-200 group-hover:scale-105">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-                  <path d="M8 4v16M17 4l-6.5 8 6.5 8" />
+              <span className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-gradient-to-b from-primary to-primary-strong shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_2px_4px_rgba(16,185,129,0.15)] transition-transform duration-200 group-hover:scale-105">
+                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-[22px] w-[22px] text-white drop-shadow-sm">
+                  <path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V6a2 2 0 0 0-2-2z" />
+                  <path d="M18.41 5.59a2 2 0 0 0-2.82 0l-4.59 4.59a2 2 0 0 0 0 2.82l4.59 4.59a2 2 0 1 0 2.82-2.82L15.41 12l3-3a2 2 0 0 0 0-2.82z" />
                 </svg>
               </span>
-              <span className="font-sans font-semibold tracking-[-0.02em]">{siteConfig.name}</span>
+              <span className="font-sans text-[19px] font-[650] tracking-[-0.03em] text-foreground leading-none mt-[1px]">{siteConfig.name}</span>
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
               {siteConfig.description}
