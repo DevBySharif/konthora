@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/transcribe-meeting',
     '/transcribe-lecture',
     '/transcribe-video',
+    '/transcribe-voice-memo',
     '/about',
     '/contact',
     '/privacy-policy',
