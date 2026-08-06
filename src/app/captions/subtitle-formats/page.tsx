@@ -225,7 +225,7 @@ export default function SubtitleFormatsPage() {
                   <Link href="/formats/json" className="text-primary hover:underline">JSON</Link> is a lightweight data-interchange format designed to be easily parsed by software. A JSON transcript file contains highly structured data, often breaking down the transcript word-by-word alongside detailed timing information.
                 </p>
                 <p>
-                  JSON is primarily used by developers who need to process transcript data programmatically, such as building custom search interfaces or integrating transcription data into another application.
+                  JSON is primarily used when you need to process transcript data programmatically, such as building custom search interfaces or organizing transcript text and timestamp data for structured workflows.
                 </p>
               </div>
             </section>
@@ -277,9 +277,9 @@ export default function SubtitleFormatsPage() {
                     </tr>
                     <tr className="bg-secondary/5">
                       <td className="border border-border/70 px-4 py-3 text-foreground font-medium">JSON</td>
-                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Software development</td>
-                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Yes (Detailed)</td>
-                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Data processing and API integration</td>
+                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Structured transcript data</td>
+                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Yes</td>
+                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Organizing transcript text and timestamp data for structured workflows</td>
                     </tr>
                   </tbody>
                 </table>
