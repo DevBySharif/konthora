@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/entity/whisper',
     '/voices',
     '/voices/american-english-voices',
+    '/voices/british-english-voices',
   ];
 
   return routes.map((route) => ({

@@ -213,7 +213,9 @@ export default function VoicesPage() {
               <div>
                 <h3 className="text-xl font-bold text-foreground flex items-center gap-2 mb-4">
                   <Globe2 className="h-5 w-5 text-primary" />
-                  British English Voices
+                  <Link href="/voices/british-english-voices" className="hover:underline text-foreground">
+                    British English Voices
+                  </Link>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   There are 4 British English voices available, offering a traditional UK pronunciation style.
