@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
@@ -206,6 +207,122 @@ export default function AudioToTextPage() {
           },
         ]}
       />
+
+      {/* ── Explore Guides ── */}
+      <Section aria-labelledby="explore-guides-heading">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl" id="explore-guides-heading">
+              Explore Audio Transcription Guides
+            </h2>
+          </div>
+          
+          <div className="mt-12">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Learn the workflow</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  href: '/speech-to-text',
+                  label: 'Speech to Text Overview',
+                  description: 'Learn how automatic speech recognition converts spoken words into text.',
+                },
+                {
+                  href: '/speech-to-text/how-to-transcribe-audio',
+                  label: 'How to Transcribe Audio',
+                  description: 'A step-by-step walkthrough on turning any audio file into text.',
+                },
+                {
+                  href: '/speech-to-text/timestamps',
+                  label: 'Transcription Timestamps',
+                  description: 'Understand the difference between sentence, paragraph, and word-level timing.',
+                },
+                {
+                  href: '/speech-to-text/audio-transcription-accuracy',
+                  label: 'Audio Transcription Accuracy',
+                  description: 'Discover what factors affect the results of speech-to-text software.',
+                },
+              ].map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                >
+                  <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {l.label}
+                  </div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.description}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    Read guide
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
+                    </svg>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Explore practical use cases</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  href: '/transcribe-podcast',
+                  label: 'Podcast Transcription',
+                  description: 'Convert podcast episodes into searchable show notes and blogs.',
+                },
+                {
+                  href: '/transcribe-interview',
+                  label: 'Interview Transcription',
+                  description: 'Turn recorded interviews into accurate text for research or journalism.',
+                },
+                {
+                  href: '/transcribe-meeting',
+                  label: 'Meeting Transcription',
+                  description: 'Generate written records of business meetings and conference calls.',
+                },
+                {
+                  href: '/transcribe-lecture',
+                  label: 'Lecture Transcription',
+                  description: 'Transcribe academic lectures and seminars for easier studying.',
+                },
+                {
+                  href: '/transcribe-video',
+                  label: 'Video Transcription',
+                  description: 'Extract and transcribe dialogue from MP4, WebM, and MOV files.',
+                },
+                {
+                  href: '/transcribe-voice-memo',
+                  label: 'Voice Memo Transcription',
+                  description: 'Turn personal voice notes and quick ideas into written text.',
+                },
+                {
+                  href: '/transcribe-webinar',
+                  label: 'Webinar Transcription',
+                  description: 'Create text transcripts of recorded webinars for accessibility.',
+                },
+              ].map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                >
+                  <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {l.label}
+                  </div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.description}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    Read guide
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
+                    </svg>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </Section>
 
       {/* Tool FAQ Section */}
       <Section className="bg-secondary/10">
