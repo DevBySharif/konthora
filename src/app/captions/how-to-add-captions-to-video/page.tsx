@@ -15,7 +15,7 @@ import { Captions } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "How to Add Captions to a Video | Konthora",
   description:
-    "Learn the simple 3-step workflow to generate a transcript, export a subtitle file, and add closed captions to your videos without complex editing tools.",
+    "Learn the 3-step workflow to generate a transcript, export an SRT or VTT subtitle file, and add it to a compatible video platform or editor.",
   path: '/captions/how-to-add-captions-to-video',
 });
 
@@ -59,7 +59,7 @@ export default function HowToAddCaptionsPage() {
         '@type': 'HowToStep',
         position: 3,
         name: 'Add the Subtitle File to Your Video Platform or Editor',
-        text: 'Upload the exported text file alongside your video file on platforms like YouTube or your video editor.',
+        text: 'Upload or import the exported SRT or VTT file into a compatible video platform or editor.',
       },
     ],
   };
@@ -238,10 +238,9 @@ export default function HowToAddCaptionsPage() {
                 <p>
                   Konthora does not edit your original video file or permanently burn the text into the image. Instead, you use the subtitle file you just downloaded.
                 </p>
-                <ul className="list-disc pl-5 space-y-2 mt-4">
-                  <li><strong>For Web Platforms (like YouTube):</strong> When you upload your video, navigate to the subtitles or captions section. There will be an option to &quot;Upload File.&quot; Select the SRT or VTT file you exported. The platform will handle the rest, giving viewers a CC button to turn the text on or off.</li>
-                  <li><strong>For Video Editors:</strong> If you prefer to hardcode (burn-in) the captions before publishing, you can drag and drop the SRT file directly into professional video editors like Premiere Pro or DaVinci Resolve. The software will automatically align the text to the timeline using the timestamps.</li>
-                </ul>
+                <p>
+                  The exported SRT or VTT file can be uploaded or imported into a compatible video platform or editor.
+                </p>
               </div>
             </section>
 
