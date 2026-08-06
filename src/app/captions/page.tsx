@@ -270,7 +270,7 @@ export default function CaptionsPage() {
                 id="captions-vs-subtitles"
                 className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
               >
-                Captions vs. Subtitles: The Key Differences
+                <Link href="/captions/closed-captions-vs-subtitles" className="hover:underline text-foreground">Captions vs. Subtitles</Link>: The Key Differences
               </h2>
               <div className="overflow-x-auto mt-6">
                 <table className="w-full text-left border-collapse border border-border/70 text-sm">

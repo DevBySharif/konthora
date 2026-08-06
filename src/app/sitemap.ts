@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/terms',
     '/copyright',
     '/captions',
+    '/captions/closed-captions-vs-subtitles',
     '/formats',
     '/formats/json',
     '/formats/mp3-vs-wav',
