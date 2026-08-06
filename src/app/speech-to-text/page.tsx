@@ -412,7 +412,7 @@ export default function SpeechToTextPage() {
                 id="stt-accuracy"
                 className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
               >
-                Transcription Accuracy: What to Expect
+                <Link href="/speech-to-text/audio-transcription-accuracy" className="hover:underline text-foreground">Transcription Accuracy</Link>: What to Expect
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
