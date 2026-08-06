@@ -7,7 +7,7 @@ import { Section } from '@/components/ui/Section';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
-import { Mic, ArrowRight } from 'lucide-react';
+import { Mic } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
    Metadata
