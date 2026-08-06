@@ -8,6 +8,7 @@ import { headerNavLinks } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
 import { ThemeToggle } from '../ThemeToggle';
 import { Container } from '../ui/Container';
+import { KonthoraBrand } from '../brand/KonthoraBrand';
 import { Menu, X, ArrowRight } from 'lucide-react';
 
 export function Header() {
@@ -47,19 +48,7 @@ export function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/75 backdrop-blur-xl shadow-card">
       <Container className="relative flex h-16 items-center justify-between">
         {/* Brand Wordmark */}
-        <Link
-          href={siteConfig.links.home}
-          aria-label="Konthora Home"
-          className="group flex items-center gap-[9px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg px-1.5 py-1"
-        >
-          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[10px] bg-gradient-to-b from-primary to-primary-strong shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_2px_4px_rgba(16,185,129,0.15)] transition-transform duration-200 group-hover:scale-105">
-            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-[20px] w-[20px] text-white drop-shadow-sm">
-              <path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V6a2 2 0 0 0-2-2z" />
-              <path d="M18.41 5.59a2 2 0 0 0-2.82 0l-4.59 4.59a2 2 0 0 0 0 2.82l4.59 4.59a2 2 0 1 0 2.82-2.82L15.41 12l3-3a2 2 0 0 0 0-2.82z" />
-            </svg>
-          </span>
-          <span className="font-sans text-[17px] font-[650] tracking-[-0.03em] text-foreground leading-none mt-[1px]">{siteConfig.name}</span>
-        </Link>
+        <KonthoraBrand variant="header" />
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Main Navigation" role="list">

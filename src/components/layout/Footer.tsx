@@ -4,6 +4,7 @@ import { Mail, Sparkles } from 'lucide-react';
 import { footerNavLinks } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
 import { Container } from '../ui/Container';
+import { KonthoraBrand } from '../brand/KonthoraBrand';
 
 const socials = [
   {
@@ -43,20 +44,8 @@ export function Footer() {
       <Container className="py-14 md:py-20">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-2 lg:grid-cols-12">
           {/* Brand section */}
-          <div className="col-span-2 md:col-span-1 lg:col-span-4">
-            <Link
-              href={siteConfig.links.home}
-              aria-label="Konthora Home"
-              className="group inline-flex items-center gap-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
-            >
-              <span className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-gradient-to-b from-primary to-primary-strong shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_2px_4px_rgba(16,185,129,0.15)] transition-transform duration-200 group-hover:scale-105">
-                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="h-[22px] w-[22px] text-white drop-shadow-sm">
-                  <path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V6a2 2 0 0 0-2-2z" />
-                  <path d="M18.41 5.59a2 2 0 0 0-2.82 0l-4.59 4.59a2 2 0 0 0 0 2.82l4.59 4.59a2 2 0 1 0 2.82-2.82L15.41 12l3-3a2 2 0 0 0 0-2.82z" />
-                </svg>
-              </span>
-              <span className="font-sans text-[19px] font-[650] tracking-[-0.03em] text-foreground leading-none mt-[1px]">{siteConfig.name}</span>
-            </Link>
+          <div className="col-span-2 md:col-span-1 lg:col-span-4 flex flex-col items-start">
+            <KonthoraBrand variant="footer" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
               {siteConfig.description}
             </p>
@@ -70,7 +59,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={s.label}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:text-primary hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:text-primary hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   >
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
                       <path d={s.path} />
@@ -117,11 +106,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-6 pt-6 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
+        <div className="mt-8 pt-6 border-t border-border/70 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+          <p className="text-[13px] font-medium text-muted-foreground">
             &copy; {currentYear} {siteConfig.name}. All rights reserved.
           </p>
-          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/80">
+          <p className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
             Built with modern AI audio tools
           </p>
