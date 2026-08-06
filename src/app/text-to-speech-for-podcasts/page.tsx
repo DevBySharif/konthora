@@ -187,6 +187,9 @@ export default function TTSForPodcastsPage() {
                 <p>
                   Generating voiceovers from text is useful when you do not have access to a quiet recording environment, lack a high-quality microphone, or prefer to write your episodes rather than speak them.
                 </p>
+                <p>
+                  Conversely, if you already have recorded audio and need to convert it into a written format, see our <Link href="/transcribe-podcast" className="text-primary hover:underline">podcast transcription</Link> guide.
+                </p>
               </div>
             </section>
 

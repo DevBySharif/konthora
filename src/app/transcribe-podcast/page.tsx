@@ -187,6 +187,9 @@ export default function TranscribePodcastPage() {
                 <p>
                   Transcribing your episodes also helps provide accessible content for users who are deaf, hard of hearing, or those who simply prefer to read <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> rather than listen to media.
                 </p>
+                <p>
+                  Alternatively, if you are looking to generate spoken narration from a written script rather than converting existing audio into text, see our <Link href="/text-to-speech-for-podcasts" className="text-primary hover:underline">text-to-speech for podcasts</Link> guide.
+                </p>
               </div>
             </section>
 
