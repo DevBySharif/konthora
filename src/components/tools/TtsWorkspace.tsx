@@ -144,7 +144,7 @@ export function TtsWorkspace() {
       setPreviewStatus('paused');
       return;
     }
-    
+
     if (previewStatus === 'paused') {
       previewAudioRef.current?.play();
       setPreviewStatus('playing');
@@ -156,10 +156,10 @@ export function TtsWorkspace() {
     if (previewAudioRef.current) {
       previewAudioRef.current.pause();
     }
-    
+
     const audio = new Audio(`/audio/voice-previews/${selectedVoiceId}.mp3`);
     previewAudioRef.current = audio;
-    
+
     audio.oncanplaythrough = () => {
       if (previewAudioRef.current !== audio) return;
       audio.play().then(() => {
@@ -183,17 +183,17 @@ export function TtsWorkspace() {
         setPreviewStatus('error');
       });
     };
-    
+
     audio.onended = () => {
       if (previewAudioRef.current !== audio) return;
       setPreviewStatus('idle');
     };
-    
+
     audio.onerror = () => {
       if (previewAudioRef.current !== audio) return;
       setPreviewStatus('error');
     };
-    
+
     audio.load();
   };
 
@@ -587,96 +587,106 @@ export function TtsWorkspace() {
             <label htmlFor="voice-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Voice Model
             </label>
-            <select
-              id="voice-select"
-              value={selectedVoiceId}
-              onChange={(e) => {
-                const newVoiceId = e.target.value;
-                setSelectedVoiceId(newVoiceId);
-                
-                // Reset preview state for new voice
-                setPreviewStatus('idle');
-                if (previewAudioRef.current) {
-                  previewAudioRef.current.oncanplaythrough = null;
-                  previewAudioRef.current.onerror = null;
-                  previewAudioRef.current.onended = null;
-                  previewAudioRef.current.pause();
-                  previewAudioRef.current.src = '';
-                  previewAudioRef.current = null;
-                }
-                previewTrackedRef.current = false;
+            <div className="flex flex-col sm:flex-row gap-2">
+              <select
+                id="voice-select"
+                value={selectedVoiceId}
+                onChange={(e) => {
+                  const newVoiceId = e.target.value;
+                  setSelectedVoiceId(newVoiceId);
 
-                const voice = voices.find(v => v.id === newVoiceId);
-                if (voice) {
-                  trackTtsVoiceChanged({
-                    voice_id: voice.id,
-                    accent: voice.accent,
-                    gender: voice.gender,
-                    recommended: voice.recommended,
-                  });
+                  // Reset preview state for new voice
+                  setPreviewStatus('idle');
+                  if (previewAudioRef.current) {
+                    previewAudioRef.current.oncanplaythrough = null;
+                    previewAudioRef.current.onerror = null;
+                    previewAudioRef.current.onended = null;
+                    previewAudioRef.current.pause();
+                    previewAudioRef.current.src = '';
+                    previewAudioRef.current = null;
+                  }
+                  previewTrackedRef.current = false;
+
+                  const voice = voices.find(v => v.id === newVoiceId);
+                  if (voice) {
+                    trackTtsVoiceChanged({
+                      voice_id: voice.id,
+                      accent: voice.accent,
+                      gender: voice.gender,
+                      recommended: voice.recommended,
+                    });
+                  }
+                }}
+                disabled={status === 'submitting' || status === 'polling' || loadingVoices}
+                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
+              >
+                {loadingVoices ? (
+                  <option>Loading voices...</option>
+                ) : (
+                  filteredVoices.map((v) => (
+                    <option key={v.id} value={v.id} className="py-1">
+                      {v.displayName} {v.recommended ? '★' : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={togglePreview}
+                className="w-full sm:w-auto h-10 px-4 shrink-0 text-sm"
+                aria-pressed={previewStatus === 'playing'}
+                disabled={previewStatus === 'loading'}
+                aria-label={
+                  previewStatus === 'loading' ? `Loading preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                  previewStatus === 'playing' ? `Pause preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                  previewStatus === 'paused' ? `Resume preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                  previewStatus === 'idle' ? `Preview ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                  `Preview unavailable for ${voices.find(v => v.id === selectedVoiceId)?.displayName}`
                 }
-              }}
-              disabled={status === 'submitting' || status === 'polling' || loadingVoices}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
-            >
-              {loadingVoices ? (
-                <option>Loading voices...</option>
+              >
+                {previewStatus === 'loading' && 'Loading preview...'}
+                {previewStatus === 'playing' && (
+                  <>
+                    <Pause className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    Pause
+                  </>
+                )}
+                {previewStatus === 'paused' && (
+                  <>
+                    <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    Preview
+                  </>
+                )}
+                {previewStatus === 'idle' && (
+                  <>
+                    <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    Preview
+                  </>
+                )}
+                {previewStatus === 'error' && (
+                  <>
+                    <AlertCircle className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    Preview
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="text-[11px] text-muted-foreground -mt-0.5 h-4 flex items-center">
+              {previewStatus === 'error' ? (
+                <span className="text-destructive/80">Preview unavailable. You can still generate speech.</span>
               ) : (
-                filteredVoices.map((v) => (
-                  <option key={v.id} value={v.id} className="py-1">
-                    {v.displayName} {v.recommended ? '★' : ''}
-                  </option>
-                ))
+                <span>
+                  {(() => {
+                    const v = voices.find(v => v.id === selectedVoiceId);
+                    if (!v) return null;
+                    return `${v.accent} • ${v.gender.charAt(0).toUpperCase() + v.gender.slice(1)}`;
+                  })()}
+                </span>
               )}
-            </select>
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={togglePreview}
-              className="w-full text-xs h-8"
-              aria-pressed={previewStatus === 'playing'}
-              disabled={previewStatus === 'loading'}
-              aria-label={
-                previewStatus === 'loading' ? `Loading preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                previewStatus === 'playing' ? `Pause preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                previewStatus === 'paused' ? `Resume preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                previewStatus === 'idle' ? `Preview ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                `Preview unavailable for ${voices.find(v => v.id === selectedVoiceId)?.displayName}`
-              }
-            >
-              {previewStatus === 'loading' && 'Loading preview...'}
-              {previewStatus === 'playing' && (
-                <>
-                  <Pause className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
-                  Pause preview
-                </>
-              )}
-              {previewStatus === 'paused' && (
-                <>
-                  <Play className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
-                  Resume preview
-                </>
-              )}
-              {previewStatus === 'idle' && (
-                <>
-                  <Play className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
-                  Preview voice
-                </>
-              )}
-              {previewStatus === 'error' && (
-                <>
-                  <AlertCircle className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
-                  Preview unavailable
-                </>
-              )}
-            </Button>
+            </div>
           </div>
-          {previewStatus === 'error' && (
-            <span className="text-[10px] text-muted-foreground -mt-1">
-              Preview unavailable. You can still generate speech with this voice.
-            </span>
-          )}
 
           {/* Speed Slider */}
           <div className="flex flex-col gap-2">
