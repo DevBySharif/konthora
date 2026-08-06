@@ -261,6 +261,9 @@ export default function HowToAddCaptionsPage() {
                 <p>
                   If you are building a custom HTML5 web player for a website, <strong>VTT</strong> is the modern standard designed specifically for the web.
                 </p>
+                <p>
+                  For a detailed comparison of all available <Link href="/captions/subtitle-formats" className="text-primary hover:underline">subtitle and transcript formats</Link>—including plain TXT and structured JSON—refer to our format guide.
+                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center bg-secondary/10 p-6 rounded-xl border border-secondary/20 mt-8">
