@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { StatusMessage } from '@/components/ui/StatusMessage';
-import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Volume2,
   Trash2,
@@ -559,21 +558,35 @@ export function TtsWorkspace() {
 
         <div className="bg-card border border-border p-6 rounded-2xl shadow-xs">
           {status !== 'completed' && (
-            <EmptyState
-              title={status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
-              description={
-                status === 'failed'
-                  ? 'There was an error generating your speech. Check the error message above.'
-                  : 'Enter your script and click Generate Speech to create natural-sounding voiceovers. Output controls will appear here.'
-              }
-              icon={
-                status === 'failed' ? (
+            <div className="flex flex-col items-center justify-center text-center p-8 md:p-12 border-2 border-dashed border-border rounded-2xl bg-card/30">
+              <div className="mb-4 text-muted-foreground">
+                {status === 'failed' ? (
                   <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
                 ) : (
                   <Music className="w-8 h-8 opacity-40" />
-                )
-              }
-            />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">
+                {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                {status === 'failed'
+                  ? 'There was an error generating your speech. Check the error message above.'
+                  : 'Enter your script and click Generate Speech to create natural-sounding voiceovers. Output controls will appear here.'}
+              </p>
+              {status !== 'failed' && (
+                <div className="mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleInsertSample}
+                  >
+                    Try a sample script
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
 
           {status === 'completed' && audioUrl && (
