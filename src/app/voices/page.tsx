@@ -47,6 +47,20 @@ export default function VoicesPage() {
     { name: 'Nova', gender: 'Female' },
     { name: 'Adam', gender: 'Male' },
     { name: 'Michael', gender: 'Male' },
+    { name: 'Alloy', gender: 'Female' },
+    { name: 'Aoede', gender: 'Female' },
+    { name: 'Jessica', gender: 'Female' },
+    { name: 'Kore', gender: 'Female' },
+    { name: 'River', gender: 'Female' },
+    { name: 'Sarah', gender: 'Female' },
+    { name: 'Sky', gender: 'Female' },
+    { name: 'Echo', gender: 'Male' },
+    { name: 'Eric', gender: 'Male' },
+    { name: 'Fenrir', gender: 'Male' },
+    { name: 'Liam', gender: 'Male' },
+    { name: 'Onyx', gender: 'Male' },
+    { name: 'Puck', gender: 'Male' },
+    { name: 'Santa', gender: 'Male' },
   ];
 
   const britishVoices = [
@@ -54,13 +68,17 @@ export default function VoicesPage() {
     { name: 'Isabella', gender: 'Female' },
     { name: 'George', gender: 'Male' },
     { name: 'Lewis', gender: 'Male' },
+    { name: 'Alice', gender: 'Female' },
+    { name: 'Lily', gender: 'Female' },
+    { name: 'Daniel', gender: 'Male' },
+    { name: 'Fable', gender: 'Male' },
   ];
 
   /* ── Schema: FAQPage ── */
   const faqs: FAQItem[] = [
     {
       question: "How many voices are available in Konthora?",
-      answer: "Konthora currently exposes 10 distinct English voices: 6 American English voices and 4 British English voices.",
+      answer: "Konthora currently exposes 28 distinct English voices: 20 American English voices and 8 British English voices.",
     },
     {
       question: "Are these the only voices available in AI?",
@@ -139,7 +157,7 @@ export default function VoicesPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Konthora provides a curated catalogue of 10 English voices for generating natural speech. 
+            Konthora provides a curated catalogue of 28 English voices for generating natural speech. 
             Learn about the available American and British accents, and how to choose the right voice for your content.
           </p>
 
@@ -183,7 +201,7 @@ export default function VoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
                 <p>
-                  Konthora currently exposes 10 verified English voices to support a variety of audio workflows. 
+                  Konthora currently exposes 28 verified English voices to support a variety of audio workflows. 
                   These are split into two major accent groups: American English and British English.
                 </p>
               </div>
@@ -197,7 +215,7 @@ export default function VoicesPage() {
                   </Link>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  There are 6 American English voices available, providing a standard North American pronunciation style.
+                  There are 20 American English voices available, providing a standard North American pronunciation style.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {americanVoices.map((voice) => (
@@ -218,7 +236,7 @@ export default function VoicesPage() {
                   </Link>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  There are 4 British English voices available, offering a traditional UK pronunciation style.
+                  There are 8 British English voices available, offering a traditional UK pronunciation style.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {britishVoices.map((voice) => (
@@ -290,7 +308,7 @@ export default function VoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  All 10 voices are available to test in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. 
+                  All 28 voices are available to test in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. 
                   The platform uses a browser-based workflow, meaning you can generate audio immediately without creating an account.
                 </p>
                 <p>

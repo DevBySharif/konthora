@@ -668,7 +668,7 @@ The following facts are verified from the live backend. Every page must use thes
 | TTS character limit | 2,000 characters per generation |
 | TTS output formats | MP3, WAV |
 | TTS speed range | 0.75Ã— to 1.25Ã— |
-| TTS voice count | 10 (6 US, 4 UK; male and female) |
+| TTS voice count | 28 (20 US, 8 UK; male and female) |
 | TTS model | Kokoro-based neural synthesis |
 | TTS language | English only |
 | Transcription file size limit | 100 MB |
@@ -710,7 +710,7 @@ The following patterns are prohibited in all Knowledge Center pages. Reviewers m
 | Author bio for a non-existent or unnamed author | E-E-A-T violation |
 | Schema for ratings/reviews without real data | Schema spam â€” grounds for manual action |
 | Any claim that Konthora supports languages beyond English | Product fact error |
-| Any claim that Konthora supports more than 10 voices | Product fact error (update if voices are added) |
+| Any claim that Konthora supports more than 28 voices | Product fact error (update if voices are added) |
 
 ---
 

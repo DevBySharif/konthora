@@ -55,7 +55,7 @@ Free + private + browser-only + English (US/UK) + genuine captions pipeline for 
 
 | Product | Verified Facts |
 |---|---|
-| **Text-to-Speech** | 10 voices (6 US, 4 UK; male + female), Kokoro-based neural synthesis, 2,000-character limit per generation, MP3 and WAV output, speed 0.75Ã—â€“1.25Ã—, English only |
+| **Text-to-Speech** | 28 voices (20 US, 8 UK; male + female), Kokoro-based neural synthesis, 2,000-character limit per generation, MP3 and WAV output, speed 0.75Ã—â€“1.25Ã—, English only |
 | **Transcription** | Accepts MP3, WAV, M4A, AAC, MP4, WebM, MOV; 100 MB file limit; 10-minute duration limit; English (auto-detect routes to English); sentence / paragraph / word timestamp grouping; TXT, SRT, VTT, JSON export; Whisper model |
 | **Privacy** | 60-minute automatic deletion of all uploaded files and generated transcripts; TTS text processed in-memory only; no user account required |
 
@@ -663,7 +663,7 @@ The following are explicitly deferred and must not be built until conditions are
 | `/compare/` cluster (all versus / alternatives / best pages) | Domain authority established; editorial foundation indexed and ranking |
 | `/documentation/api/` | Public API exists and is documented |
 | Language pages beyond English | Additional languages actually shipped in the product |
-| Voice pages beyond current 10-voice catalogue | New voices shipped and verified in backend |
+| Voice pages beyond current 28-voice catalogue | New voices shipped and verified in backend |
 | Programmatic pages (any cluster) | Editorial foundation indexed and performing (Phases 1â€“4 complete) |
 | Speaker diarization content | Feature shipped |
 | Multi-language transcription content | Feature shipped |

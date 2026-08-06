@@ -125,6 +125,204 @@ VOICES_CATALOGUE = [
         "defaultSpeed": 1.0,
         "minimumSpeed": 0.75,
         "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_alloy",
+        "displayName": "Alloy (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_aoede",
+        "displayName": "Aoede (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_jessica",
+        "displayName": "Jessica (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_kore",
+        "displayName": "Kore (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_river",
+        "displayName": "River (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_sarah",
+        "displayName": "Sarah (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "af_sky",
+        "displayName": "Sky (Female)",
+        "gender": "female",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_echo",
+        "displayName": "Echo (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_eric",
+        "displayName": "Eric (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_fenrir",
+        "displayName": "Fenrir (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_liam",
+        "displayName": "Liam (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_onyx",
+        "displayName": "Onyx (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_puck",
+        "displayName": "Puck (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "am_santa",
+        "displayName": "Santa (Male)",
+        "gender": "male",
+        "accent": "American English",
+        "language": "en-US",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "bf_alice",
+        "displayName": "Alice (Female)",
+        "gender": "female",
+        "accent": "British English",
+        "language": "en-GB",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "bf_lily",
+        "displayName": "Lily (Female)",
+        "gender": "female",
+        "accent": "British English",
+        "language": "en-GB",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "bm_daniel",
+        "displayName": "Daniel (Male)",
+        "gender": "male",
+        "accent": "British English",
+        "language": "en-GB",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "bm_fable",
+        "displayName": "Fable (Male)",
+        "gender": "male",
+        "accent": "British English",
+        "language": "en-GB",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
     }
 ]
 
