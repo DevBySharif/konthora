@@ -5,6 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
     '/text-to-speech',
+    '/text-to-speech/how-does-text-to-speech-work',
     '/audio-to-text',
     '/speech-to-text',
     '/speech-to-text/how-to-transcribe-audio',
