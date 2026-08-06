@@ -8,7 +8,6 @@ import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import {
-  FileText,
   Clock,
   Video,
   MonitorPlay,
