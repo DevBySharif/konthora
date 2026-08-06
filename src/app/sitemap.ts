@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/formats/vtt',
     '/entity/kokoro',
     '/entity/whisper',
+    '/voices',
   ];
 
   return routes.map((route) => ({
