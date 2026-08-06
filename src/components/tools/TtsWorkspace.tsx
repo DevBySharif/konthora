@@ -55,7 +55,7 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 };
 
 const SAMPLE_TEXT =
-  'Welcome to Konthora. This is a live demonstration of our neural speech synthesis engine. By chunking text into grammatical sentences and using the Kokoro model, we convert written words into natural, expressive speech in real-time. Feel free to adjust the playback rate and try different accents.';
+  'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
 
 export function TtsWorkspace() {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
