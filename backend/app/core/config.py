@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     TTS_MAX_SPEED: float = 1.25
     TTS_SENTENCE_PAUSE_MS: int = 220
     TTS_PARAGRAPH_PAUSE_MS: int = 500
+    TTS_TERMINAL_SILENCE_MS: int = 200
     TTS_ENABLE_MP3: bool = True
 
     TTS_RATE_LIMIT_REQUESTS: int = 10

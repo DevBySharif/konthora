@@ -99,6 +99,14 @@ class AudioService:
             # This protects against clipping and sets a unified loudness level
             master_waveform = (master_waveform / max_val) * 0.95
 
+        # 7. Append terminal silence
+        terminal_silence_samples = int(self.sample_rate * (settings.TTS_TERMINAL_SILENCE_MS / 1000.0))
+        if terminal_silence_samples > 0:
+            master_waveform = np.concatenate([
+                master_waveform,
+                np.zeros(terminal_silence_samples, dtype=np.float32)
+            ])
+
         # Calculate duration
         duration_seconds = len(master_waveform) / self.sample_rate
         return master_waveform, duration_seconds
