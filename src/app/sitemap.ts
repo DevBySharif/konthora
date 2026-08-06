@@ -24,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/transcribe-video',
     '/transcribe-voice-memo',
     '/transcribe-webinar',
+    '/accessibility/tts-vs-screen-reader',
     '/about',
     '/contact',
     '/privacy-policy',
