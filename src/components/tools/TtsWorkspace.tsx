@@ -23,6 +23,18 @@ import {
   fetchAudioBlob,
   ApiVoice
 } from '@/lib/api';
+import {
+  trackTtsSampleInserted,
+  trackTtsVoiceChanged,
+  trackTtsSpeedChanged,
+  trackTtsFormatChanged,
+  trackTtsGenerateClicked,
+  trackTtsGenerationCompleted,
+  trackTtsGenerationFailed,
+  trackTtsPreviewPlayed,
+  trackTtsAudioDownloaded,
+  getCharacterCountBucket
+} from '@/components/analytics/events';
 
 const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'af_heart', displayName: 'Heart (Female)', gender: 'female', accent: 'American English', language: 'en-US', recommended: true, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
@@ -103,6 +115,10 @@ export function TtsWorkspace() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
+  // Analytics refs
+  const jobStartTimeRef = useRef<number | null>(null);
+  const hasTrackedPlayRef = useRef<boolean>(false);
+
   // Fetch voices list on mount
   useEffect(() => {
     async function loadVoices() {
@@ -174,11 +190,13 @@ export function TtsWorkspace() {
       setAudioUrl(null);
     }
     setIsPlaying(false);
+    hasTrackedPlayRef.current = false;
   };
 
-  const handleInsertSample = () => {
+  const handleInsertSample = (source: 'input_action' | 'empty_state' = 'input_action') => {
     setText(SAMPLE_TEXT);
     setErrorMsg(null);
+    trackTtsSampleInserted(source);
   };
 
   // Polls status check endpoint recursively
@@ -211,16 +229,45 @@ export function TtsWorkspace() {
 
           setStatus('completed');
           clearRunningTasks();
+
+          const voice = voices.find(v => v.id === selectedVoiceId);
+          if (voice && jobStartTimeRef.current) {
+            trackTtsGenerationCompleted({
+              voice_id: voice.id,
+              accent: voice.accent,
+              gender: voice.gender,
+              speed,
+              format: outputFormat,
+              character_count: text.length,
+              character_count_bucket: getCharacterCountBucket(text.length),
+              duration_seconds: data.durationSeconds ?? undefined,
+              elapsed_seconds: Math.round((Date.now() - jobStartTimeRef.current) / 1000)
+            });
+            jobStartTimeRef.current = null;
+          }
         } else if (data.status === 'failed') {
           setProgressStage('failed');
           setStatus('failed');
           setErrorMsg(data.errorMessage || 'Generation failed on worker.');
           clearRunningTasks();
+
+          trackTtsGenerationFailed({
+            stage: 'poll',
+            voice_id: selectedVoiceId,
+            format: outputFormat
+          });
         } else if (data.status === 'expired') {
           setProgressStage('expired');
           setStatus('failed');
           setErrorMsg('This audio file cache has expired. Please run synthesis again.');
           clearRunningTasks();
+
+          trackTtsGenerationFailed({
+            stage: 'poll',
+            error_code: 'expired',
+            voice_id: selectedVoiceId,
+            format: outputFormat
+          });
         } else {
           // Update status stage
           setProgressStage(data.progressStage);
@@ -255,6 +302,22 @@ export function TtsWorkspace() {
       setAudioUrl(null);
     }
     setIsPlaying(false);
+    hasTrackedPlayRef.current = false;
+
+    const voice = voices.find(v => v.id === selectedVoiceId);
+    if (voice) {
+      trackTtsGenerateClicked({
+        voice_id: voice.id,
+        accent: voice.accent,
+        gender: voice.gender,
+        speed,
+        format: outputFormat,
+        character_count: text.length,
+        character_count_bucket: getCharacterCountBucket(text.length)
+      });
+    }
+
+    jobStartTimeRef.current = Date.now();
 
     try {
       const jobData = await createTtsJob(
@@ -279,6 +342,13 @@ export function TtsWorkspace() {
         ? (error.message || 'Rate limit exceeded. Please try again later.')
         : (error.message || 'Could not connect to the speech synthesis server.');
       setErrorMsg(friendlyMsg);
+
+      trackTtsGenerationFailed({
+        stage: 'submit',
+        error_code: error.code,
+        voice_id: selectedVoiceId,
+        format: outputFormat
+      });
     }
   };
 
@@ -294,6 +364,11 @@ export function TtsWorkspace() {
         console.error('Audio play error:', err);
       });
       setIsPlaying(true);
+
+      if (!hasTrackedPlayRef.current) {
+        trackTtsPreviewPlayed({ voice_id: selectedVoiceId, format: outputFormat });
+        hasTrackedPlayRef.current = true;
+      }
     }
   };
 
@@ -340,7 +415,7 @@ export function TtsWorkspace() {
                 variant="ghost"
                 size="sm"
                 type="button"
-                onClick={handleInsertSample}
+                onClick={() => handleInsertSample('input_action')}
                 className="text-xs h-8 px-2.5 cursor-pointer"
                 disabled={status === 'submitting' || status === 'polling'}
                 aria-label="Insert sample text"
@@ -437,7 +512,19 @@ export function TtsWorkspace() {
             <select
               id="voice-select"
               value={selectedVoiceId}
-              onChange={(e) => setSelectedVoiceId(e.target.value)}
+              onChange={(e) => {
+                const newVoiceId = e.target.value;
+                setSelectedVoiceId(newVoiceId);
+                const voice = voices.find(v => v.id === newVoiceId);
+                if (voice) {
+                  trackTtsVoiceChanged({
+                    voice_id: voice.id,
+                    accent: voice.accent,
+                    gender: voice.gender,
+                    recommended: voice.recommended,
+                  });
+                }
+              }}
               disabled={status === 'submitting' || status === 'polling' || loadingVoices}
               className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
             >
@@ -445,7 +532,7 @@ export function TtsWorkspace() {
                 <option>Loading voices...</option>
               ) : (
                 filteredVoices.map((v) => (
-                  <option key={v.id} value={v.id}>
+                  <option key={v.id} value={v.id} className="py-1">
                     {v.displayName} {v.recommended ? '★' : ''}
                   </option>
                 ))
@@ -472,6 +559,8 @@ export function TtsWorkspace() {
                 step="0.05"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                onPointerUp={() => trackTtsSpeedChanged(speed)}
+                onKeyUp={() => trackTtsSpeedChanged(speed)}
                 disabled={status === 'submitting' || status === 'polling'}
                 className="w-full accent-primary bg-secondary h-1.5 rounded-lg appearance-none cursor-pointer"
               />
@@ -488,7 +577,10 @@ export function TtsWorkspace() {
                 <button
                   key={fmt}
                   type="button"
-                  onClick={() => setOutputFormat(fmt)}
+                  onClick={() => {
+                    setOutputFormat(fmt);
+                    trackTtsFormatChanged(fmt);
+                  }}
                   disabled={status === 'submitting' || status === 'polling'}
                   aria-pressed={outputFormat === fmt}
                   className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
@@ -585,7 +677,7 @@ export function TtsWorkspace() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleInsertSample}
+                    onClick={() => handleInsertSample('empty_state')}
                   >
                     Try a sample script
                   </Button>
@@ -634,6 +726,7 @@ export function TtsWorkspace() {
                     href={audioUrl}
                     download={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
                     className="flex-1 md:flex-none"
+                    onClick={() => trackTtsAudioDownloaded({ voice_id: selectedVoiceId, format: outputFormat })}
                   >
                     <Button variant="primary" size="md" className="w-full gap-2 cursor-pointer">
                       <Download className="w-4 h-4" />
