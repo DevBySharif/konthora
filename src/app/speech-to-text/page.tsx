@@ -610,6 +610,88 @@ export default function SpeechToTextPage() {
         </Container>
       </article>
 
+      {/* ── Explore Use Cases ── */}
+      <Section aria-labelledby="explore-stt-use-cases">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl" id="explore-stt-use-cases">
+              Explore Speech-to-Text Use Cases
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Discover how to transcribe different types of audio and video content with our specific guides.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                href: '/transcribe-podcast',
+                label: 'Podcast Transcription',
+                description: 'Convert podcast episodes into searchable show notes and blogs.',
+              },
+              {
+                href: '/transcribe-interview',
+                label: 'Interview Transcription',
+                description: 'Turn recorded interviews into accurate text for research or journalism.',
+              },
+              {
+                href: '/transcribe-meeting',
+                label: 'Meeting Transcription',
+                description: 'Generate written records of business meetings and conference calls.',
+              },
+              {
+                href: '/transcribe-lecture',
+                label: 'Lecture Transcription',
+                description: 'Transcribe academic lectures and seminars for easier studying.',
+              },
+              {
+                href: '/transcribe-video',
+                label: 'Video Transcription',
+                description: 'Extract and transcribe dialogue from MP4, WebM, and MOV files.',
+              },
+              {
+                href: '/transcribe-voice-memo',
+                label: 'Voice Memo Transcription',
+                description: 'Turn personal voice notes and quick ideas into written text.',
+              },
+              {
+                href: '/transcribe-webinar',
+                label: 'Webinar Transcription',
+                description: 'Create text transcripts of recorded webinars for accessibility.',
+              },
+              {
+                href: '/speech-to-text/how-to-transcribe-audio',
+                label: 'How to Transcribe Audio',
+                description: 'A step-by-step walkthrough on turning any audio file into text.',
+              },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+              >
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {l.label}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.description}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Read guide
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
+                  </svg>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </Section>
+
       {/* ── FAQ SECTION ── */}
       <Section className="bg-secondary/10" id="stt-faq-section">
         <Container className="max-w-4xl">
