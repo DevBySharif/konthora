@@ -222,7 +222,7 @@ export default function AmericanEnglishVoicesPage() {
                     <Globe2 className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-foreground">American Spelling and Slang:</strong> 
-                      These voices are trained to naturally interpret American spellings (e.g., "color" instead of "colour") and regional phrasing without unnatural hesitation.
+                      These voices are trained to naturally interpret American spellings (e.g., &quot;color&quot; instead of &quot;colour&quot;) and regional phrasing without unnatural hesitation.
                     </div>
                   </li>
                 </ul>
