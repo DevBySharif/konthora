@@ -6,7 +6,7 @@ import { StatusMessage } from '@/components/ui/StatusMessage';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Upload, X, FileText, Download, Copy, FileAudio, FileVideo,
-  Loader2, CheckCircle2, Clock
+  Loader2, CheckCircle2, Clock, Lock
 } from 'lucide-react';
 import {
   createTranscriptionJob,
@@ -505,19 +505,29 @@ export function TranscriptionWorkspace() {
         </div>
 
         {/* ── Submit Button ── */}
-        <div className="flex justify-end p-5 bg-secondary/15 border border-border/80 rounded-2xl">
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full sm:w-auto"
-            disabled={!form.file || isRunning || capsUnavailable}
-          >
-            {isRunning ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> Transcribing…</>
-            ) : (
-              <><Upload className="w-5 h-5" /> Transcribe Audio</>
-            )}
-          </Button>
+        <div className="space-y-3">
+          <div className="flex justify-end p-5 bg-secondary/15 border border-border/80 rounded-2xl">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full sm:w-auto"
+              disabled={!form.file || isRunning || capsUnavailable}
+            >
+              {isRunning ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Transcribing…</>
+              ) : (
+                <><Upload className="w-5 h-5" /> Transcribe Audio</>
+              )}
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground px-4 text-center">
+            <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>
+              Your files are processed securely and automatically deleted after 60 minutes.{' '}
+              <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">Privacy</a>
+            </span>
+          </div>
         </div>
       </form>
 
