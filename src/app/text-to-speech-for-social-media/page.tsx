@@ -202,7 +202,7 @@ export default function TTSForSocialMediaPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Konthora provides 10 distinct English <Link href="/voices" className="text-primary hover:underline">voices</Link>. Selecting a voice that sounds energetic and clear can help hold the viewer's attention.
+                  Konthora provides 10 distinct English <Link href="/voices" className="text-primary hover:underline">voices</Link>. Selecting a voice that sounds energetic and clear can help hold the viewer&apos;s attention.
                 </p>
                 <p>
                   You can choose from 6 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices and 4 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices. Consistency is key; using the same voice across your videos can help build a recognizable audio brand for your channel or profile.
