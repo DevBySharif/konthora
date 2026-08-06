@@ -187,6 +187,9 @@ export default function TTSForElearningPage() {
                 <p>
                   Generating voiceovers from text is especially useful when creating large volumes of instructional content, when you need to update course modules frequently without re-recording audio, or when you lack a high-quality recording setup.
                 </p>
+                <p>
+                  Alternatively, if you already have a recorded lecture and want to generate written notes or transcripts from the audio, see our <Link href="/transcribe-lecture" className="text-primary hover:underline">lecture transcription</Link> guide.
+                </p>
               </div>
             </section>
 

@@ -187,6 +187,9 @@ export default function TranscribeLecturePage() {
                 <p>
                   Converting <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> also provides a valuable accessibility resource for individuals who rely on written formats or prefer reading to listening.
                 </p>
+                <p>
+                  If you instead want to create spoken narration from lesson notes or educational scripts rather than converting recorded lectures into text, see our <Link href="/text-to-speech-for-elearning" className="text-primary hover:underline">text-to-speech for e-learning</Link> guide.
+                </p>
               </div>
             </section>
 
