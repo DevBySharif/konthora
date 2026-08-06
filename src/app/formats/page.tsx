@@ -156,7 +156,8 @@ export default function FormatsPage() {
                 <p>
                   When you convert written text into spoken audio, the resulting file can be downloaded 
                   in two standard formats. Each generation is currently subject to a verified limit of 
-                  <strong> 2,000 characters</strong> per request to ensure optimal performance.
+                  <strong> 2,000 characters</strong> per request to ensure optimal performance. 
+                  For a detailed comparison of these outputs, see the <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 vs WAV guide</Link>.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4 mt-6">
                   <div className="rounded-xl border border-border/70 bg-card p-5">
