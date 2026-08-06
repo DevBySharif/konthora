@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/copyright',
     '/captions',
     '/captions/closed-captions-vs-subtitles',
+    '/captions/how-to-add-captions-to-video',
     '/formats',
     '/formats/json',
     '/formats/mp3-vs-wav',

@@ -394,7 +394,7 @@ Today, we will learn about SRT and VTT files.`}
                 id="how-to-create-captions"
                 className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
               >
-                How to Create Captions for Your Video
+                <Link href="/captions/how-to-add-captions-to-video" className="hover:underline text-foreground">How to Create Captions for Your Video</Link>
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8">
                 You can generate SRT or VTT files automatically using Konthora&apos;s free{' '}
