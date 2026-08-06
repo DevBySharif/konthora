@@ -187,6 +187,9 @@ export default function TranscribeMeetingPage() {
                 <p>
                   Converting <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> eliminates the need to watch long video recordings simply to find one piece of information.
                 </p>
+                <p>
+                  Note that meeting transcription is used to convert recorded discussions into text. If you instead need to generate spoken narration from a written script, see our guide on <Link href="/text-to-speech-for-presentations" className="text-primary hover:underline">text-to-speech for presentations</Link>.
+                </p>
               </div>
             </section>
 

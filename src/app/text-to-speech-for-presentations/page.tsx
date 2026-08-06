@@ -187,6 +187,9 @@ export default function TTSForPresentationsPage() {
                 <p>
                   Generating voiceovers from text is useful when you do not have access to a quiet recording environment, lack a high-quality microphone, or simply prefer to generate clear narration rather than record your own voice.
                 </p>
+                <p>
+                  Be aware that generating presentation narration from text is entirely different from converting recorded meetings into written notes. If you need the latter, see our <Link href="/transcribe-meeting" className="text-primary hover:underline">meeting transcription</Link> guide.
+                </p>
               </div>
             </section>
 
