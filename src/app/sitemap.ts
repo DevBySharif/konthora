@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/text-to-speech-for-youtube-videos',
     '/text-to-speech-for-podcasts',
     '/text-to-speech-for-presentations',
+    '/text-to-speech-for-elearning',
     '/text-to-speech/how-does-text-to-speech-work',
     '/audio-to-text',
     '/speech-to-text',
