@@ -561,7 +561,7 @@ export function TtsWorkspace() {
         )}
 
         {/* Controls Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
           {/* Accent Options */}
           <div className="flex flex-col gap-2">
             <label htmlFor="accent-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -587,7 +587,7 @@ export function TtsWorkspace() {
             <label htmlFor="voice-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Voice Model
             </label>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-row gap-2">
               <select
                 id="voice-select"
                 value={selectedVoiceId}
@@ -618,7 +618,7 @@ export function TtsWorkspace() {
                   }
                 }}
                 disabled={status === 'submitting' || status === 'polling' || loadingVoices}
-                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
+                className="w-full flex-1 h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
               >
                 {loadingVoices ? (
                   <option>Loading voices...</option>
@@ -635,7 +635,7 @@ export function TtsWorkspace() {
                 size="sm"
                 type="button"
                 onClick={togglePreview}
-                className="w-full sm:w-auto h-10 px-4 shrink-0 text-sm"
+                className="w-full sm:w-[110px] h-10 px-4 shrink-0 text-sm"
                 aria-pressed={previewStatus === 'playing'}
                 disabled={previewStatus === 'loading'}
                 aria-label={
@@ -646,7 +646,7 @@ export function TtsWorkspace() {
                   `Preview unavailable for ${voices.find(v => v.id === selectedVoiceId)?.displayName}`
                 }
               >
-                {previewStatus === 'loading' && 'Loading preview...'}
+                {previewStatus === 'loading' && 'Loading...'}
                 {previewStatus === 'playing' && (
                   <>
                     <Pause className="w-4 h-4 mr-1.5" aria-hidden="true" />
@@ -656,26 +656,26 @@ export function TtsWorkspace() {
                 {previewStatus === 'paused' && (
                   <>
                     <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Preview
+                    Listen
                   </>
                 )}
                 {previewStatus === 'idle' && (
                   <>
                     <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Preview
+                    Listen
                   </>
                 )}
                 {previewStatus === 'error' && (
                   <>
                     <AlertCircle className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Preview
+                    Listen
                   </>
                 )}
               </Button>
             </div>
-            <div className="text-[11px] text-muted-foreground -mt-0.5 h-4 flex items-center">
+            <div className="text-xs text-muted-foreground mt-0.5 flex items-center">
               {previewStatus === 'error' ? (
-                <span className="text-destructive/80">Preview unavailable. You can still generate speech.</span>
+                <span className="text-destructive/90">Preview unavailable. You can still generate speech.</span>
               ) : (
                 <span>
                   {(() => {
@@ -695,7 +695,7 @@ export function TtsWorkspace() {
                 Speech Speed
               </label>
               <span className="text-xs font-mono font-bold text-primary">
-                {speed.toFixed(2)}x
+                {speed === 1.0 ? 'Normal (1.00×)' : speed < 1.0 ? `Slow (${speed.toFixed(2)}×)` : `Fast (${speed.toFixed(2)}×)`}
               </span>
             </div>
             <div className="flex items-center h-10">
