@@ -129,6 +129,9 @@ export function TtsWorkspace() {
   useEffect(() => {
     return () => {
       if (previewAudioRef.current) {
+        previewAudioRef.current.oncanplaythrough = null;
+        previewAudioRef.current.onerror = null;
+        previewAudioRef.current.onended = null;
         previewAudioRef.current.pause();
         previewAudioRef.current.src = '';
       }
@@ -157,8 +160,10 @@ export function TtsWorkspace() {
     const audio = new Audio(`/audio/voice-previews/${selectedVoiceId}.mp3`);
     previewAudioRef.current = audio;
     
-    audio.addEventListener('canplaythrough', () => {
+    audio.oncanplaythrough = () => {
+      if (previewAudioRef.current !== audio) return;
       audio.play().then(() => {
+        if (previewAudioRef.current !== audio) return;
         setPreviewStatus('playing');
         if (!previewTrackedRef.current) {
           previewTrackedRef.current = true;
@@ -173,18 +178,21 @@ export function TtsWorkspace() {
           }
         }
       }).catch((err) => {
+        if (previewAudioRef.current !== audio) return;
         console.error('Preview play failed', err);
         setPreviewStatus('error');
       });
-    });
+    };
     
-    audio.addEventListener('ended', () => {
+    audio.onended = () => {
+      if (previewAudioRef.current !== audio) return;
       setPreviewStatus('idle');
-    });
+    };
     
-    audio.addEventListener('error', () => {
+    audio.onerror = () => {
+      if (previewAudioRef.current !== audio) return;
       setPreviewStatus('error');
-    });
+    };
     
     audio.load();
   };
@@ -589,6 +597,9 @@ export function TtsWorkspace() {
                 // Reset preview state for new voice
                 setPreviewStatus('idle');
                 if (previewAudioRef.current) {
+                  previewAudioRef.current.oncanplaythrough = null;
+                  previewAudioRef.current.onerror = null;
+                  previewAudioRef.current.onended = null;
                   previewAudioRef.current.pause();
                   previewAudioRef.current.src = '';
                   previewAudioRef.current = null;
