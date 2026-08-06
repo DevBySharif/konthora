@@ -187,6 +187,9 @@ export default function TranscribeVideoPage() {
                 <p>
                   Additionally, transcribing a video is the first required step if you plan to create <Link href="/captions" className="text-primary hover:underline">captions</Link> or subtitles to improve the accessibility of your content.
                 </p>
+                <p>
+                  Note that video transcription converts existing spoken audio into text. If you instead need to generate voice narration from a written script, see our guide on <Link href="/text-to-speech-for-youtube-videos" className="text-primary hover:underline">text-to-speech for YouTube videos</Link>.
+                </p>
               </div>
             </section>
 

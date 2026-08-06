@@ -187,6 +187,9 @@ export default function TTSForYouTubePage() {
                 <p>
                   Generating voiceovers from text is useful when you do not have access to a quiet recording environment, lack a high-quality microphone, or prefer not to record your own voice.
                 </p>
+                <p>
+                  Note that text-to-speech generates narration from written scripts. If you already have a video with spoken audio that you need to convert into text, see our <Link href="/transcribe-video" className="text-primary hover:underline">video transcription</Link> guide.
+                </p>
               </div>
             </section>
 
