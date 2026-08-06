@@ -501,6 +501,11 @@ export function TtsWorkspace() {
                 </button>
               ))}
             </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+              {outputFormat === 'mp3'
+                ? 'MP3: Smaller file, suitable for web, sharing, and everyday use.'
+                : 'WAV: Uncompressed audio, suitable for editing and workflows that need maximum source quality.'}
+            </p>
           </div>
         </div>
 
