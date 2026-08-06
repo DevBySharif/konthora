@@ -149,23 +149,57 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
 
 def split_into_sentences(text: str, offset: int) -> List[tuple[str, int, int, str]]:
     """Splits a string into sentences and returns (text, start_offset, end_offset, boundary_type)"""
-    # Regex split on sentence endings (. ! ?) keeping them
-    sentence_endings = re.compile(r'(?<=[.!?])\s+')
+    import re
+    pattern = re.compile(r'([.!?])(\s+)')
+
+    boundaries = []
+    for match in pattern.finditer(text):
+        punct = match.group(1)
+        start_idx = match.start()
+        end_idx = match.end()
+
+        is_boundary = True
+        if punct == '.':
+            before = text[:start_idx]
+            after = text[end_idx:]
+
+            # Rule 1: Single-letter initials (e.g., 'J.', 'A.') - ensure not preceded by period
+            if re.search(r'(^|\s|[^a-zA-Z.])[a-zA-Z]$', before):
+                is_boundary = False
+
+            # Rule 2: Acronyms (e.g., 'U.S.A.', 'Ph.D.')
+            elif re.search(r'(^|\s|[^a-zA-Z])([a-zA-Z]\.)+[a-zA-Z]$', before):
+                if after and after[0].isupper():
+                    is_boundary = True
+                else:
+                    is_boundary = False
+
+            # Rule 3: Common abbreviations (a.m., p.m.)
+            elif re.search(r'\b(a\.m|p\.m)$', before, re.IGNORECASE):
+                if after and after[0].isupper():
+                    is_boundary = True
+                else:
+                    is_boundary = False
+
+        if is_boundary:
+            boundaries.append((start_idx, end_idx))
+
+    parts = []
+    last_idx = 0
+    for start_idx, end_idx in boundaries:
+        parts.append(text[last_idx:start_idx+1])
+        last_idx = end_idx
+    parts.append(text[last_idx:])
 
     sentences: List[tuple[str, int, int, str]] = []
     current_pos = 0
-
-    parts = sentence_endings.split(text)
     for part in parts:
         if not part.strip():
             continue
         start_idx = text.find(part, current_pos)
         end_idx = start_idx + len(part)
         current_pos = end_idx
-
-        # Determine ending punctuation for boundary
-        boundary = "sentence"
-        sentences.append((part.strip(), offset + start_idx, offset + end_idx, boundary))
+        sentences.append((part.strip(), offset + start_idx, offset + end_idx, 'sentence'))
 
     return sentences
 
