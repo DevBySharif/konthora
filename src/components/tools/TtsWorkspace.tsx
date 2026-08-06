@@ -32,6 +32,7 @@ import {
   trackTtsGenerationCompleted,
   trackTtsGenerationFailed,
   trackTtsPreviewPlayed,
+  trackTtsVoicePreviewPlayed,
   trackTtsAudioDownloaded,
   getCharacterCountBucket
 } from '@/components/analytics/events';
@@ -108,6 +109,11 @@ export function TtsWorkspace() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
 
+  // Voice preview states
+  const [previewStatus, setPreviewStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'error'>('idle');
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const previewTrackedRef = useRef<boolean>(false);
+
   const charLimit = 2000;
 
   // References for polling and audio elements
@@ -118,6 +124,70 @@ export function TtsWorkspace() {
   // Analytics refs
   const jobStartTimeRef = useRef<number | null>(null);
   const hasTrackedPlayRef = useRef<boolean>(false);
+
+  // Stop preview on unmount
+  useEffect(() => {
+    return () => {
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+        previewAudioRef.current.src = '';
+      }
+    };
+  }, []);
+
+  const togglePreview = () => {
+    if (previewStatus === 'playing') {
+      previewAudioRef.current?.pause();
+      setPreviewStatus('paused');
+      return;
+    }
+    
+    if (previewStatus === 'paused') {
+      previewAudioRef.current?.play();
+      setPreviewStatus('playing');
+      return;
+    }
+
+    // Start fresh preview for the current voice
+    setPreviewStatus('loading');
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+    }
+    
+    const audio = new Audio(`/audio/voice-previews/${selectedVoiceId}.mp3`);
+    previewAudioRef.current = audio;
+    
+    audio.addEventListener('canplaythrough', () => {
+      audio.play().then(() => {
+        setPreviewStatus('playing');
+        if (!previewTrackedRef.current) {
+          previewTrackedRef.current = true;
+          const currentVoice = voices.find((v) => v.id === selectedVoiceId);
+          if (currentVoice) {
+            trackTtsVoicePreviewPlayed({
+              voice_id: currentVoice.id,
+              accent: currentVoice.accent,
+              gender: currentVoice.gender,
+              recommended: currentVoice.recommended
+            });
+          }
+        }
+      }).catch((err) => {
+        console.error('Preview play failed', err);
+        setPreviewStatus('error');
+      });
+    });
+    
+    audio.addEventListener('ended', () => {
+      setPreviewStatus('idle');
+    });
+    
+    audio.addEventListener('error', () => {
+      setPreviewStatus('error');
+    });
+    
+    audio.load();
+  };
 
   // Fetch voices list on mount
   useEffect(() => {
@@ -515,6 +585,16 @@ export function TtsWorkspace() {
               onChange={(e) => {
                 const newVoiceId = e.target.value;
                 setSelectedVoiceId(newVoiceId);
+                
+                // Reset preview state for new voice
+                setPreviewStatus('idle');
+                if (previewAudioRef.current) {
+                  previewAudioRef.current.pause();
+                  previewAudioRef.current.src = '';
+                  previewAudioRef.current = null;
+                }
+                previewTrackedRef.current = false;
+
                 const voice = voices.find(v => v.id === newVoiceId);
                 if (voice) {
                   trackTtsVoiceChanged({
@@ -538,7 +618,54 @@ export function TtsWorkspace() {
                 ))
               )}
             </select>
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={togglePreview}
+              className="w-full text-xs h-8"
+              aria-pressed={previewStatus === 'playing'}
+              disabled={previewStatus === 'loading'}
+              aria-label={
+                previewStatus === 'loading' ? `Loading preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                previewStatus === 'playing' ? `Pause preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                previewStatus === 'paused' ? `Resume preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                previewStatus === 'idle' ? `Preview ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
+                `Preview unavailable for ${voices.find(v => v.id === selectedVoiceId)?.displayName}`
+              }
+            >
+              {previewStatus === 'loading' && 'Loading preview...'}
+              {previewStatus === 'playing' && (
+                <>
+                  <Pause className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                  Pause preview
+                </>
+              )}
+              {previewStatus === 'paused' && (
+                <>
+                  <Play className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                  Resume preview
+                </>
+              )}
+              {previewStatus === 'idle' && (
+                <>
+                  <Play className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                  Preview voice
+                </>
+              )}
+              {previewStatus === 'error' && (
+                <>
+                  <AlertCircle className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                  Preview unavailable
+                </>
+              )}
+            </Button>
           </div>
+          {previewStatus === 'error' && (
+            <span className="text-[10px] text-muted-foreground -mt-1">
+              Preview unavailable. You can still generate speech with this voice.
+            </span>
+          )}
 
           {/* Speed Slider */}
           <div className="flex flex-col gap-2">

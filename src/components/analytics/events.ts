@@ -87,3 +87,12 @@ export const trackTtsPreviewPlayed = (params: { voice_id: string; format: TtsFor
 export const trackTtsAudioDownloaded = (params: { voice_id: string; format: TtsFormat }) => {
   trackEvent('tts_audio_downloaded', params);
 };
+
+export const trackTtsVoicePreviewPlayed = (params: {
+  voice_id: string;
+  accent: string;
+  gender: string;
+  recommended: boolean;
+}) => {
+  trackEvent('tts_voice_preview_played', params);
+};
