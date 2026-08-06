@@ -343,7 +343,7 @@ export default function CaptionsPage() {
                 id="caption-file-formats"
                 className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
               >
-                Caption File Formats: SRT and VTT
+                <Link href="/captions/subtitle-formats" className="hover:underline text-foreground">Caption File Formats</Link>: SRT and VTT
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
