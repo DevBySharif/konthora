@@ -321,8 +321,8 @@ export default function FormatsPage() {
                   <li>Choose <strong>MP3</strong> for compact audio sharing or web embedding.</li>
                   <li>Choose <strong>WAV</strong> for higher-quality audio editing workflows.</li>
                   <li>Choose <strong>TXT</strong> for a readable plain transcript to review or publish as an article.</li>
-                  <li>Choose <strong>SRT</strong> for broadly supported timed subtitles in video editors or YouTube.</li>
-                  <li>Choose <strong>VTT</strong> for detailed <Link href="/captions" className="text-primary hover:underline">captions</Link> workflows in HTML5 web players.</li>
+                  <li>Choose <strong><Link href="/formats/srt" className="text-primary hover:underline">SRT</Link></strong> for broadly supported timed subtitles in video editors or YouTube.</li>
+                  <li>Choose <strong><Link href="/formats/vtt" className="text-primary hover:underline">VTT</Link></strong> for detailed <Link href="/captions" className="text-primary hover:underline">captions</Link> workflows in HTML5 web players.</li>
                   <li>Choose <strong>JSON</strong> for structured transcript and timestamp data in custom applications.</li>
                 </ul>
               </div>
