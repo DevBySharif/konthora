@@ -623,9 +623,17 @@ export function TranscriptionWorkspace() {
               </div>
 
               {/* ── Action Bar ── */}
-              <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-border/60 bg-secondary/10">
-                <span className="text-xs text-muted-foreground font-medium">Export options</span>
-                <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 px-6 py-4 border-t border-border/60 bg-secondary/10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetWorkspace}
+                  className="order-2 sm:order-1"
+                >
+                  New file
+                </Button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -650,13 +658,6 @@ export function TranscriptionWorkspace() {
                     <Download className="w-4 h-4" />
                     Download .{form.exportFormat.toUpperCase()}
                   </Button>
-                  <button
-                    type="button"
-                    onClick={resetWorkspace}
-                    className="text-xs text-muted-foreground underline hover:text-foreground transition-colors cursor-pointer ml-2"
-                  >
-                    New file
-                  </button>
                 </div>
               </div>
             </>
