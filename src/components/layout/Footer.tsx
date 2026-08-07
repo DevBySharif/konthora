@@ -40,7 +40,8 @@ const footerColumns = [
     title: 'Resources',
     links: [
       { label: 'Voice Library', href: '/voices' },
-      { label: 'Blog (Coming Soon)', href: '#' },
+      { label: 'Guides', href: '#' },
+      { label: 'FAQ', href: '#' },
     ],
   },
   {
@@ -54,7 +55,7 @@ const footerColumns = [
     title: 'Legal',
     links: [
       { label: 'Privacy Policy', href: siteConfig.links.privacy },
-      { label: 'Terms of Service', href: siteConfig.links.terms },
+      { label: 'Terms', href: siteConfig.links.terms },
       { label: 'Copyright Removal', href: siteConfig.links.copyright },
     ],
   },
@@ -66,17 +67,17 @@ export function Footer() {
   return (
     <footer className="border-t border-border/70 bg-card/40 text-foreground transition-colors duration-200" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">Footer</h2>
-      <Container className="pt-16 pb-8 md:pt-20 md:pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-12">
+      <Container className="pt-20 pb-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16">
           {/* Brand section */}
-          <div className="flex flex-col items-start lg:col-span-2">
+          <div className="flex flex-col items-start lg:col-span-4">
             <KonthoraBrand variant="footer" />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground line-clamp-2">
-              {siteConfig.description}
+            <p className="mt-6 max-w-[280px] text-sm leading-relaxed text-muted-foreground line-clamp-2">
+              Fast, natural AI speech and transcription powered by modern open models.
             </p>
 
             {/* Social icons */}
-            <ul className="mt-6 flex items-center gap-4" aria-label="Social links">
+            <ul className="mt-8 flex items-center gap-4" aria-label="Social links">
               {socials.map((s) => (
                 <li key={s.label}>
                   <a
@@ -84,7 +85,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={s.label}
-                    className="inline-block text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 text-muted-foreground transition-all duration-200 hover:-translate-y-1 hover:scale-105 hover:bg-primary/5 hover:border-primary/50 hover:text-primary hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   >
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]" aria-hidden="true">
                       <path d={s.path} />
@@ -96,44 +97,46 @@ export function Footer() {
             
             {/* Contact Card */}
             <a
-              href={`mailto:contact@konthora.dev.bd`}
-              className="mt-8 inline-flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              href={`mailto:hello@konthora.dev.bd`}
+              className="mt-8 inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:bg-card hover:text-foreground hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             >
-              <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              contact@konthora.dev.bd
+              <Mail className="h-4 w-4 text-muted-foreground/80" aria-hidden="true" />
+              hello@konthora.dev.bd
             </a>
           </div>
 
           {/* Link columns */}
-          {footerColumns.map((col) => (
-            <div key={col.title}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                {col.title}
-              </h3>
-              <ul className="mt-5 space-y-3.5">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-10 sm:gap-8">
+            {footerColumns.map((col) => (
+              <div key={col.title}>
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+                  {col.title}
+                </h3>
+                <ul className="mt-6 space-y-4">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="inline-block text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-primary hover:translate-x-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-20 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <p className="text-sm text-muted-foreground font-medium">
             &copy; {currentYear} Konthora. All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Built with open-source AI
-          </p>
+          <div className="inline-flex items-center rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground shadow-sm">
+            Built with Open Models
+          </div>
         </div>
       </Container>
     </footer>
