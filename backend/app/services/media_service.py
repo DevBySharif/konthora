@@ -76,10 +76,6 @@ class MediaService:
 
         return None
 
-    def is_available(self) -> bool:
-        """Returns True if both FFmpeg and FFprobe binaries are found."""
-        return self.ffmpeg_path is not None and self.ffprobe_path is not None
-
     def inspect_media(self, source_path: Path) -> Dict[str, Any]:
         """
         Executes FFprobe on the source file to inspect duration and stream details.

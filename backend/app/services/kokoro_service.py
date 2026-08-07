@@ -496,7 +496,13 @@ class KokoroService:
         return self._model_ready, self._model_status, self._error_message
 
     def get_voices(self) -> List[Dict[str, Any]]:
-        return VOICES_CATALOGUE
+        voices = []
+        for voice in VOICES_CATALOGUE:
+            item = dict(voice)
+            item["engine"] = "kokoro"
+            item["previewUrl"] = f"/audio/voice-previews/{item['id']}.mp3"
+            voices.append(item)
+        return voices
 
     def get_lang_code_for_voice(self, voice_id: str) -> str:
         for voice in VOICES_CATALOGUE:

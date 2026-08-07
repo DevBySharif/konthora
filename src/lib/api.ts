@@ -8,6 +8,8 @@ export interface ApiVoice {
   defaultSpeed: number;
   minimumSpeed: number;
   maximumSpeed: number;
+  engine?: string;
+  previewUrl?: string;
 }
 
 export interface ApiJobResponse {

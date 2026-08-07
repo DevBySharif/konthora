@@ -27,6 +27,10 @@ def test_voices_list(client):
     assert len(voices) > 0
     assert voices[0]["id"] == "af_heart"
     assert voices[0]["gender"] == "female"
+    assert voices[0]["engine"] == "kokoro"
+    assert voices[0]["previewUrl"] == "/audio/voice-previews/af_heart.mp3"
+    for voice in voices:
+        assert voice["previewUrl"].endswith(f"{voice['id']}.mp3")
 
 def test_create_job_invalid_inputs(client):
     # Empty text

@@ -5,8 +5,7 @@ import * as Popover from '@radix-ui/react-popover';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Search, Play, Pause, AlertCircle, Check, ChevronDown, X } from 'lucide-react';
 import { useVoicePreview } from '@/hooks/useVoicePreview';
-
-import { SupportedLanguage } from './TtsWorkspace';
+import { SupportedLanguage } from '@/config/tts';
 
 export interface Voice {
   id: string;
@@ -15,6 +14,7 @@ export interface Voice {
   gender: string;
   language?: string;
   recommended?: boolean;
+  previewUrl?: string;
 }
 
 interface VoicePickerProps {
@@ -122,11 +122,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
         onClick={(e) => {
           e.stopPropagation();
           if (!selectedVoice) return;
-          if (activePreviewId === selectedVoice.id) {
-             playPreview(selectedVoice.id, selectedVoice); // toggle
-          } else {
-             playPreview(selectedVoice.id, selectedVoice);
-          }
+          playPreview(selectedVoice.id, selectedVoice); // toggle
         }}
         role="button"
         aria-label={`Listen to ${selectedVoice?.displayName || 'voice'}`}

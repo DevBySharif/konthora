@@ -71,6 +71,8 @@ class VoiceInfo(BaseModel):
     defaultSpeed: float = 1.0
     minimumSpeed: float = 0.75
     maximumSpeed: float = 1.25
+    engine: str = "kokoro"
+    previewUrl: str
 
 class HealthResponse(BaseModel):
     status: str

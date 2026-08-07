@@ -51,7 +51,7 @@ export function useVoicePreview() {
     }
   }, [previewStatus]);
 
-  const playPreview = useCallback((voiceId: string, voiceMetadata: { accent: string, gender: string, recommended?: boolean }) => {
+  const playPreview = useCallback((voiceId: string, voiceMetadata: { accent: string, gender: string, recommended?: boolean, previewUrl?: string }) => {
     if (activePreviewId === voiceId) {
       if (previewStatus === 'playing') {
         pausePreview();
@@ -61,12 +61,12 @@ export function useVoicePreview() {
       return;
     }
 
-    // Start fresh preview for the new voice
+    // Start fresh preview for the new voice, preferring the API-provided URL
     stopPreview();
     setActivePreviewId(voiceId);
     setPreviewStatus('loading');
 
-    const audio = new Audio(`/audio/voice-previews/${voiceId}.mp3`);
+    const audio = new Audio(voiceMetadata.previewUrl || `/audio/voice-previews/${voiceId}.mp3`);
     audioRef.current = audio;
 
     audio.oncanplaythrough = () => {
