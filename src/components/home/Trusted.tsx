@@ -3,7 +3,7 @@ import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/motion';
 
 const stats = [
-  { value: '10+', label: 'Neural voices' },
+  { value: '28+', label: 'Neural voices' },
   { value: '2,000', label: 'Characters per script' },
   { value: '100MB', label: 'File uploads' },
   { value: '60min', label: 'Auto-delete retention' },

@@ -97,11 +97,11 @@ export function Footer() {
             
             {/* Contact Card */}
             <a
-              href={`mailto:hello@konthora.dev.bd`}
+              href={`mailto:support@konthora.dev.bd`}
               className="mt-8 inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:bg-card hover:text-foreground hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             >
               <Mail className="h-4 w-4 text-muted-foreground/80" aria-hidden="true" />
-              hello@konthora.dev.bd
+              support@konthora.dev.bd
             </a>
           </div>
 

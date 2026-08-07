@@ -3,7 +3,7 @@ export const siteConfig = {
   tagline: 'Natural Speech. Precise Transcripts.',
   description: 'Konthora provides browser-based tools for converting text into natural speech and transcribing audio or video with accurate timestamps.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@konthora.dev.bd',
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'support@konthora.dev.bd',
   author: 'Konthora Team',
   keywords: [
     'text to speech online',
