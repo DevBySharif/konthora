@@ -143,7 +143,7 @@ export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }
   );
 
   const renderContent = () => (
-    <div className="flex flex-col h-full bg-card sm:bg-background">
+    <div className="flex flex-col h-full min-h-0 bg-card sm:bg-background">
       {/* Header */}
       <div className="p-4 border-b border-border/50 shrink-0 space-y-3">
         <div className="flex items-center gap-2">
