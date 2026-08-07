@@ -126,3 +126,21 @@ def test_chunk_hindi_sentences():
     chunks = chunk_text(text, max_chars=30)
     assert len(chunks) >= 3
     assert chunks[0].text == "नमस्ते।"
+def test_chunker_spanish_inverted_punctuation():
+    text = "¿Qué tal? ¡Muy bien!"
+    chunks = chunk_text(text, max_chars=100)
+    assert len(chunks) == 1
+    chunks_short = chunk_text(text, max_chars=15)
+    assert len(chunks_short) == 2
+    assert chunks_short[0].text == "¿Qué tal?"
+    assert chunks_short[1].text == "¡Muy bien!"
+
+def test_chunker_latin_boundaries():
+    text = "Sentence one. Sentence two! Sentence three?"
+    chunks = chunk_text(text, max_chars=100)
+    assert len(chunks) == 1
+    chunks_short = chunk_text(text, max_chars=18)
+    assert len(chunks_short) == 3
+    assert chunks_short[0].text == "Sentence one."
+    assert chunks_short[1].text == "Sentence two!"
+    assert chunks_short[2].text == "Sentence three?"

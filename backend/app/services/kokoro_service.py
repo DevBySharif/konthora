@@ -368,6 +368,106 @@ VOICES_CATALOGUE = [
         "minimumSpeed": 0.75,
         "maximumSpeed": 1.25
     }
+,
+    {
+        "id": "ef_dora",
+        "displayName": "Dora (Female)",
+        "gender": "female",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "em_alex",
+        "displayName": "Alex (Male)",
+        "gender": "male",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "em_santa",
+        "displayName": "Santa (Male)",
+        "gender": "male",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "ff_siwis",
+        "displayName": "Siwis (Female)",
+        "gender": "female",
+        "accent": "French",
+        "language": "fr-FR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "if_sara",
+        "displayName": "Sara (Female)",
+        "gender": "female",
+        "accent": "Italian",
+        "language": "it",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "im_nicola",
+        "displayName": "Nicola (Male)",
+        "gender": "male",
+        "accent": "Italian",
+        "language": "it",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pf_dora",
+        "displayName": "Dora (Female)",
+        "gender": "female",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pm_alex",
+        "displayName": "Alex (Male)",
+        "gender": "male",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pm_santa",
+        "displayName": "Santa (Male)",
+        "gender": "male",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    }
 ]
 
 class KokoroService:
@@ -408,6 +508,14 @@ class KokoroService:
                     return "b"
                 elif lang == "hi-IN":
                     return "h"
+                elif lang == "es":
+                    return "e"
+                elif lang == "fr-FR":
+                    return "f"
+                elif lang == "it":
+                    return "i"
+                elif lang == "pt-BR":
+                    return "p"
                 
         logger.error(f"Voice language mapping failed for: {voice_id}")
         raise InvalidRequestException("VOICE_UNSUPPORTED", f"Unsupported or unknown voice ID: {voice_id}")
@@ -427,6 +535,32 @@ class KokoroService:
                 from kokoro import KPipeline
                 # Initialize pipeline (this fetches model weights from Hugging Face if not local)
                 pipeline = KPipeline(lang_code=lang_code)
+
+                # --- NARROW COMPATIBILITY WRAPPER ---
+                # Kokoro's KPipeline assumes `pipeline.g2p(text)` returns a string for non-English languages.
+                # However, newer versions of misaki's EspeakG2P return a tuple: (phoneme_string, metadata).
+                # This causes KPipeline to tokenize the tuple representation, truncating all audio.
+                # Rather than globally monkey-patching misaki, we wrap the specific pipeline instance's G2P callable.
+                if lang_code not in ('a', 'b'):
+                    original_g2p = pipeline.g2p
+                    
+                    class MisakiTupleAdapter:
+                        def __init__(self, orig):
+                            self.orig = orig
+                        def __call__(self, *args, **kwargs):
+                            res = self.orig(*args, **kwargs)
+                            # KPipeline expects a string. If we receive a tuple, return the first element.
+                            if isinstance(res, tuple) and len(res) > 0 and isinstance(res[0], str):
+                                return res[0]
+                            # If it's already a string, or misaki reverts to string returns in the future, pass it through.
+                            if isinstance(res, str):
+                                return res
+                            # Fail clearly on unexpected types instead of silently truncating audio.
+                            raise TypeError(f"Unexpected return type from G2P: {type(res)}")
+                            
+                    pipeline.g2p = MisakiTupleAdapter(original_g2p)
+                # -------------------------------
+
                 self._pipelines[lang_code] = pipeline
                 self._model_ready = True
                 self._model_status = "ready"

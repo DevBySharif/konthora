@@ -50,7 +50,7 @@ def normalize_text(text: str, language: str = "en-US") -> str:
     # Ellipses
     text = text.replace('…', '...')
 
-    if language != "hi-IN":
+    if language in ["en-US", "en-GB"]:
         # 3. Currency normalization (e.g., $12.50 -> 12 dollars and 50 cents, $12 -> 12 dollars)
         def replace_currency(match):
             dollars = match.group(1)

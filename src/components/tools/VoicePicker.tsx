@@ -6,18 +6,21 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { Search, Play, Pause, AlertCircle, Check, ChevronDown, X } from 'lucide-react';
 import { useVoicePreview } from '@/hooks/useVoicePreview';
 
+import { SupportedLanguage } from './TtsWorkspace';
+
 export interface Voice {
   id: string;
   displayName: string;
   accent: string;
   gender: string;
+  language?: string;
   recommended?: boolean;
 }
 
 interface VoicePickerProps {
   voices: Voice[];
   selectedVoiceId: string;
-  selectedLanguage?: 'en-US' | 'hi-IN';
+  selectedLanguage?: SupportedLanguage;
   onSelectVoice: (voiceId: string) => void;
   disabled?: boolean;
 }
@@ -183,7 +186,12 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
           {(['All', 'American', 'British', 'Female', 'Male'] as const).filter(filter => {
-            if (selectedLanguage === 'hi-IN' && (filter === 'American' || filter === 'British')) return false;
+            if (selectedLanguage !== 'en-US' && (filter === 'American' || filter === 'British')) return false;
+            
+            // Hide empty gender filters dynamically based on available voices in the language
+            if (filter === 'Female' && !voices.some(v => v.gender === 'female' && (v.language === selectedLanguage || (!v.language && selectedLanguage === 'en-US')))) return false;
+            if (filter === 'Male' && !voices.some(v => v.gender === 'male' && (v.language === selectedLanguage || (!v.language && selectedLanguage === 'en-US')))) return false;
+            
             return true;
           }).map((filter) => (
             <button

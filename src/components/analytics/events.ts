@@ -32,6 +32,7 @@ export const trackTtsVoiceChanged = (params: {
   voice_id: string;
   accent: string;
   gender: string;
+  language?: string;
   recommended: boolean;
 }) => {
   trackEvent('tts_voice_changed', params);
