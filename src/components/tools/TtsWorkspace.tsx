@@ -65,7 +65,16 @@ const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'bf_alice', displayName: 'Alice (Female)', gender: 'female', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
   { id: 'bf_lily', displayName: 'Lily (Female)', gender: 'female', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
   { id: 'bm_daniel', displayName: 'Daniel (Male)', gender: 'male', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
-  { id: 'bm_fable', displayName: 'Fable (Male)', gender: 'male', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 }
+  { id: 'bm_fable', displayName: 'Fable (Male)', gender: 'male', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'ef_dora', displayName: 'Dora (Female)', gender: 'female', accent: 'Spanish', language: 'es', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'em_alex', displayName: 'Alex (Male)', gender: 'male', accent: 'Spanish', language: 'es', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'em_santa', displayName: 'Santa (Male)', gender: 'male', accent: 'Spanish', language: 'es', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'ff_siwis', displayName: 'Siwis (Female)', gender: 'female', accent: 'French', language: 'fr-FR', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'if_sara', displayName: 'Sara (Female)', gender: 'female', accent: 'Italian', language: 'it', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'im_nicola', displayName: 'Nicola (Male)', gender: 'male', accent: 'Italian', language: 'it', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'pf_dora', displayName: 'Dora (Female)', gender: 'female', accent: 'Portuguese', language: 'pt-BR', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'pm_alex', displayName: 'Alex (Male)', gender: 'male', accent: 'Portuguese', language: 'pt-BR', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
+  { id: 'pm_santa', displayName: 'Santa (Male)', gender: 'male', accent: 'Portuguese', language: 'pt-BR', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 }
 ];
 
 const PROGRESS_MESSAGES: Record<string, string> = {
@@ -82,16 +91,24 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 const SAMPLE_TEXT =
   'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
 
+export type SupportedLanguage = 'en-US' | 'hi-IN' | 'es' | 'fr-FR' | 'it' | 'pt-BR';
+
 export function TtsWorkspace() {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
 
   // Core configuration states
-  const [selectedLanguage, setSelectedLanguage] = useState<'en-US' | 'hi-IN'>('en-US');
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en-US');
   const [text, setText] = useState<string>('');
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(FALLBACK_VOICES[0].id);
-  const [lastEnglishVoiceId, setLastEnglishVoiceId] = useState<string>('af_heart');
-  const [lastHindiVoiceId, setLastHindiVoiceId] = useState<string>('hf_alpha');
+  const lastVoiceByLanguage = useRef<Record<SupportedLanguage, string>>({
+    'en-US': 'af_heart',
+    'hi-IN': 'hf_alpha',
+    'es': 'ef_dora',
+    'fr-FR': 'ff_siwis',
+    'it': 'if_sara',
+    'pt-BR': 'pf_dora'
+  });
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
 
@@ -123,30 +140,23 @@ export function TtsWorkspace() {
 
     const voice = voices.find(v => v.id === voiceId);
     if (voice) {
-      if (voice.language === 'hi-IN') {
-        setLastHindiVoiceId(voiceId);
-      } else {
-        setLastEnglishVoiceId(voiceId);
-      }
+      lastVoiceByLanguage.current[voice.language as SupportedLanguage] = voiceId;
       trackTtsVoiceChanged({
         voice_id: voice.id,
         accent: voice.accent,
         gender: voice.gender,
+        language: voice.language,
         recommended: voice.recommended,
       });
     }
   };
 
-  const handleLanguageChange = (lang: 'en-US' | 'hi-IN') => {
+  const handleLanguageChange = (lang: SupportedLanguage) => {
     if (lang === selectedLanguage) return;
     setSelectedLanguage(lang);
-    if (lang === 'hi-IN') {
-      const fallback = voices.find(v => v.id === lastHindiVoiceId) ? lastHindiVoiceId : 'hf_alpha';
-      setSelectedVoiceId(fallback);
-    } else {
-      const fallback = voices.find(v => v.id === lastEnglishVoiceId) ? lastEnglishVoiceId : 'af_heart';
-      setSelectedVoiceId(fallback);
-    }
+    const lastVoice = lastVoiceByLanguage.current[lang];
+    const fallback = voices.find(v => v.id === lastVoice) ? lastVoice : lastVoiceByLanguage.current[lang];
+    setSelectedVoiceId(fallback);
   };
 
   // Fetch voices list on mount
