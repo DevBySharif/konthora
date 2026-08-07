@@ -36,6 +36,11 @@ import {
   getCharacterCountBucket
 } from '@/components/analytics/events';
 import { VoicePicker } from './VoicePicker';
+import {
+  DEFAULT_VOICE_BY_LANGUAGE,
+  SupportedLanguage,
+  SUPPORTED_LANGUAGES,
+} from '@/config/tts';
 
 const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'af_heart', displayName: 'Heart (Female)', gender: 'female', accent: 'American English', language: 'en-US', recommended: true, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
@@ -91,41 +96,6 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 const SAMPLE_TEXT =
   'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
 
-export type SupportedLanguage = 'en-US' | 'hi-IN' | 'es' | 'fr-FR' | 'it' | 'pt-BR';
-
-const SUPPORTED_LANGUAGES = [
-  {
-    value: "en-US",
-    label: "English",
-    description: "Standard English neural voices."
-  },
-  {
-    value: "hi-IN",
-    label: "Hindi",
-    description: "Native Hindi neural voices."
-  },
-  {
-    value: "es",
-    label: "Spanish",
-    description: "Native Spanish neural voices."
-  },
-  {
-    value: "fr-FR",
-    label: "French",
-    description: "Native French neural voices."
-  },
-  {
-    value: "it",
-    label: "Italian",
-    description: "Native Italian neural voices."
-  },
-  {
-    value: "pt-BR",
-    label: "Portuguese",
-    description: "Native Brazilian Portuguese neural voices."
-  }
-];
-
 export function TtsWorkspace() {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
@@ -134,14 +104,7 @@ export function TtsWorkspace() {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en-US');
   const [text, setText] = useState<string>('');
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(FALLBACK_VOICES[0].id);
-  const lastVoiceByLanguage = useRef<Record<SupportedLanguage, string>>({
-    'en-US': 'af_heart',
-    'hi-IN': 'hf_alpha',
-    'es': 'ef_dora',
-    'fr-FR': 'ff_siwis',
-    'it': 'if_sara',
-    'pt-BR': 'pf_dora'
-  });
+  const lastVoiceByLanguage = useRef<Record<SupportedLanguage, string>>({ ...DEFAULT_VOICE_BY_LANGUAGE });
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
 

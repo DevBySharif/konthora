@@ -1,5 +1,4 @@
 import os
-import uuid
 from pathlib import Path
 from loguru import logger
 from app.core.config import settings
@@ -36,39 +35,6 @@ def resolve_secure_path(filename: str) -> Path:
         curr = curr.parent
 
     return candidate
-
-def write_file_atomically(filename: str, content_bytes: bytes) -> Path:
-    """
-    Writes data atomically by creating a temporary file first,
-    verifying it, and renaming it to the target name.
-    """
-    ensure_storage_exists()
-    target_path = resolve_secure_path(filename)
-
-    # Create a temporary file in the same directory to ensure atomic move
-    temp_filename = f"{filename}.{uuid.uuid4().hex}.tmp"
-    temp_path = resolve_secure_path(temp_filename)
-
-    try:
-        # Write to temp file
-        with open(temp_path, "wb") as f:
-            f.write(content_bytes)
-
-        # Verify size matches
-        if temp_path.stat().st_size != len(content_bytes):
-            raise IOError("Temporary file write verification failed: size mismatch.")
-
-        # Atomic rename
-        os.replace(temp_path, target_path)
-        return target_path
-    except Exception as e:
-        logger.error(f"Atomic file write failed for {filename}: {e}")
-        if temp_path.exists():
-            try:
-                temp_path.unlink()
-            except OSError:
-                pass
-        raise e
 
 def delete_job_files(job_id: str):
     """Deletes all files associated with a specific Job ID inside the resolved storage root."""

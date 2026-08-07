@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List
 import re
 
 class Chunk:
@@ -8,15 +8,6 @@ class Chunk:
         self.source_start = source_start
         self.source_end = source_end
         self.end_boundary = end_boundary  # 'paragraph', 'sentence', 'clause', 'none'
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "index": self.index,
-            "text": self.text,
-            "sourceStart": self.source_start,
-            "sourceEnd": self.source_end,
-            "endBoundary": self.end_boundary,
-        }
 
 def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
     """
