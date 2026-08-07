@@ -40,17 +40,19 @@ class AudioService:
     def is_ffmpeg_available(self) -> bool:
         return self.ffmpeg_path[0]
 
-    def assemble_audio(self, chunk_waveforms: List[Tuple[np.ndarray, str]]) -> Tuple[np.ndarray, float]:
+    def assemble_audio(self, chunk_waveforms: List[Tuple[np.ndarray, str]], native_sample_rate: int = 24000) -> Tuple[np.ndarray, float]:
         """
-        Assembles multiple chunk waveforms into a unified Float32 mono waveform,
+        Assembles multiple chunk waveforms into an unified Float32 mono waveform,
         inserting boundary silence pauses, applying edge fades, removing DC offsets,
-        and executing peak normalization.
+        and executing peak normalization. Resamples to the target sample rate
+        (24000 Hz) if the chunks' native sample rate differs.
         """
         if not chunk_waveforms:
             return np.array([], dtype=np.float32), 0.0
 
         assembled_parts = []
 
+        # Calculate pauses based on TARGET sample rate (24000)
         sentence_pause_samples = int(self.sample_rate * (settings.TTS_SENTENCE_PAUSE_MS / 1000.0))
         paragraph_pause_samples = int(self.sample_rate * (settings.TTS_PARAGRAPH_PAUSE_MS / 1000.0))
         clause_pause_samples = int(self.sample_rate * (100 / 1000.0))  # 100ms clause pause
@@ -63,7 +65,28 @@ class AudioService:
             if waveform.ndim > 1:
                 waveform = np.mean(waveform, axis=1)
 
-            # 2. Apply short edge fades (5ms) to prevent boundary click pops
+            # 2. Resample if native rate differs from target rate (24000)
+            if int(native_sample_rate) not in (0, self.sample_rate):
+                try:
+                    from math import gcd
+                    import scipy.signal
+                    # Use resample_poly (polyphase, band-limited) for production quality.
+                    common = gcd(int(self.sample_rate), int(native_sample_rate))
+                    up = int(self.sample_rate) // common
+                    down = int(native_sample_rate) // common
+                    waveform = scipy.signal.resample_poly(waveform, up, down).astype(np.float32)
+                    logger.debug(
+                        f"Resampled {native_sample_rate}Hz -> {self.sample_rate}Hz "
+                        f"(ratio {up}/{down})"
+                    )
+                except ImportError:
+                    logger.warning("scipy not available — falling back to linear interpolation resampling.")
+                    x_old = np.linspace(0, 1, len(waveform))
+                    num_samples = int(round(len(waveform) * float(self.sample_rate) / native_sample_rate))
+                    x_new = np.linspace(0, 1, num_samples)
+                    waveform = np.interp(x_new, x_old, waveform).astype(np.float32)
+
+            # 3. Apply short edge fades (5ms) to prevent boundary click pops
             processed_wave = self.apply_edge_fades(waveform, fade_ms=5.0)
             assembled_parts.append(processed_wave)
 
