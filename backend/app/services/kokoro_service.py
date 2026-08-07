@@ -532,23 +532,35 @@ class KokoroService:
             self._model_status = "loading"
             logger.info(f"Initializing Kokoro KPipeline for language code: {lang_code}")
             try:
-                # --- MONKEY PATCH MISAKI G2P ---
-                # Kokoro's KPipeline assumes `self.g2p(text)` returns a string for non-English languages.
-                # However, newer versions of misaki's EspeakG2P return a tuple: (phoneme_string, metadata).
-                # This causes KPipeline to tokenize the tuple representation, truncating all audio to ~0.5s.
-                import misaki.espeak
-                if not getattr(misaki.espeak.EspeakG2P, "_patched_for_kokoro", False):
-                    original_call = misaki.espeak.EspeakG2P.__call__
-                    def patched_call(self, text, *args, **kwargs):
-                        res = original_call(self, text, *args, **kwargs)
-                        return res[0] if isinstance(res, tuple) else res
-                    misaki.espeak.EspeakG2P.__call__ = patched_call
-                    misaki.espeak.EspeakG2P._patched_for_kokoro = True
-                # -------------------------------
-
                 from kokoro import KPipeline
                 # Initialize pipeline (this fetches model weights from Hugging Face if not local)
                 pipeline = KPipeline(lang_code=lang_code)
+
+                # --- NARROW COMPATIBILITY WRAPPER ---
+                # Kokoro's KPipeline assumes `pipeline.g2p(text)` returns a string for non-English languages.
+                # However, newer versions of misaki's EspeakG2P return a tuple: (phoneme_string, metadata).
+                # This causes KPipeline to tokenize the tuple representation, truncating all audio.
+                # Rather than globally monkey-patching misaki, we wrap the specific pipeline instance's G2P callable.
+                if lang_code not in ('a', 'b'):
+                    original_g2p = pipeline.g2p
+                    
+                    class MisakiTupleAdapter:
+                        def __init__(self, orig):
+                            self.orig = orig
+                        def __call__(self, *args, **kwargs):
+                            res = self.orig(*args, **kwargs)
+                            # KPipeline expects a string. If we receive a tuple, return the first element.
+                            if isinstance(res, tuple) and len(res) > 0 and isinstance(res[0], str):
+                                return res[0]
+                            # If it's already a string, or misaki reverts to string returns in the future, pass it through.
+                            if isinstance(res, str):
+                                return res
+                            # Fail clearly on unexpected types instead of silently truncating audio.
+                            raise TypeError(f"Unexpected return type from G2P: {type(res)}")
+                            
+                    pipeline.g2p = MisakiTupleAdapter(original_g2p)
+                # -------------------------------
+
                 self._pipelines[lang_code] = pipeline
                 self._model_ready = True
                 self._model_status = "ready"
