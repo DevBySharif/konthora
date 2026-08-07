@@ -189,7 +189,12 @@ export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }
       </div>
 
       {/* Results List */}
-      <div className="flex-1 overflow-y-auto overscroll-contain p-2 min-h-[300px]" role="listbox" aria-label="Voices">
+      <div
+        className="flex-1 overflow-y-auto overscroll-contain p-2 min-h-[300px]"
+        role="listbox"
+        aria-label="Voices"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {filteredVoices.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
             <p className="text-sm">No voices match your search.</p>
