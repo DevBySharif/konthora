@@ -368,6 +368,106 @@ VOICES_CATALOGUE = [
         "minimumSpeed": 0.75,
         "maximumSpeed": 1.25
     }
+,
+    {
+        "id": "ef_dora",
+        "displayName": "Dora (Female)",
+        "gender": "female",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "em_alex",
+        "displayName": "Alex (Male)",
+        "gender": "male",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "em_santa",
+        "displayName": "Santa (Male)",
+        "gender": "male",
+        "accent": "Spanish",
+        "language": "es",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "ff_siwis",
+        "displayName": "Siwis (Female)",
+        "gender": "female",
+        "accent": "French",
+        "language": "fr-FR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "if_sara",
+        "displayName": "Sara (Female)",
+        "gender": "female",
+        "accent": "Italian",
+        "language": "it",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "im_nicola",
+        "displayName": "Nicola (Male)",
+        "gender": "male",
+        "accent": "Italian",
+        "language": "it",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pf_dora",
+        "displayName": "Dora (Female)",
+        "gender": "female",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pm_alex",
+        "displayName": "Alex (Male)",
+        "gender": "male",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "pm_santa",
+        "displayName": "Santa (Male)",
+        "gender": "male",
+        "accent": "Portuguese",
+        "language": "pt-BR",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    }
 ]
 
 class KokoroService:
@@ -408,6 +508,14 @@ class KokoroService:
                     return "b"
                 elif lang == "hi-IN":
                     return "h"
+                elif lang == "es":
+                    return "e"
+                elif lang == "fr-FR":
+                    return "f"
+                elif lang == "it":
+                    return "i"
+                elif lang == "pt-BR":
+                    return "p"
                 
         logger.error(f"Voice language mapping failed for: {voice_id}")
         raise InvalidRequestException("VOICE_UNSUPPORTED", f"Unsupported or unknown voice ID: {voice_id}")

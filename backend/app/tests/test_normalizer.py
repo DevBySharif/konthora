@@ -39,3 +39,31 @@ def test_normalize_hindi():
     # Should not expand % to percent or currency when language is hi-IN
     assert normalize_text(hindi_text, language="hi-IN") == "नमस्ते। कोन्थोरा में आपका स्वागत है। 100%?"
     assert normalize_text("₹12.50", language="hi-IN") == "₹12.50"
+def test_normalizer_multilingual_spanish():
+    # Should preserve ¿, ¡, and accents
+    text = "¿Dónde está la estación? ¡Bienvenidos a Konthora!"
+    normalized = normalize_text(text, language="es")
+    assert normalized == "¿Dónde está la estación? ¡Bienvenidos a Konthora!"
+
+def test_normalizer_multilingual_french():
+    text = "Bonjour, bienvenue à Konthora. Ça fonctionne très bien."
+    normalized = normalize_text(text, language="fr-FR")
+    assert normalized == text
+
+def test_normalizer_multilingual_italian():
+    text = "Ciao, benvenuto su Konthora. L'audio è pronto."
+    normalized = normalize_text(text, language="it")
+    assert normalized == text
+
+def test_normalizer_multilingual_portuguese():
+    text = "Olá, bem-vindo ao Konthora. A geração está pronta."
+    normalized = normalize_text(text, language="pt-BR")
+    assert normalized == text
+
+def test_normalizer_multilingual_no_english_expansion():
+    # Ensure abbreviation expansion and currency doesn't trigger
+    text = "El Sr. Smith tiene \.50."
+    normalized = normalize_text(text, language="es")
+    # In English it would be "Mister Smith tiene 12 dollars and 50 cents."
+    # In Spanish it should remain untouched except standard replacements
+    assert normalized == "El Sr. Smith tiene \.50."
