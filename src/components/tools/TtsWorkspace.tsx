@@ -160,6 +160,8 @@ export function TtsWorkspace() {
 
   // References for polling and audio elements
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pollStageRef = useRef<string>('queued');
+  const pollEpochRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
@@ -216,6 +218,9 @@ export function TtsWorkspace() {
 
   // Clean up timers, abort controllers, and URL allocations
   const clearRunningTasks = () => {
+    // Bump the epoch so any in-flight poll loop can detect it was superseded
+    // and refuses to schedule additional timers or touch state afterwards.
+    pollEpochRef.current += 1;
     if (pollTimerRef.current) {
       clearInterval(pollTimerRef.current);
       pollTimerRef.current = null;
@@ -258,10 +263,13 @@ export function TtsWorkspace() {
   // Polls status check endpoint recursively
   const startStatusPolling = (id: string, token: string) => {
     clearRunningTasks();
+    // Capture the epoch AFTER clearRunningTasks bumped it, so this loop only
+    // reacts while it is still the active poll loop.
+    const epoch = pollEpochRef.current;
     setStatus('polling');
     setProgressStage('queued');
 
-    const poll = async () => {
+    const poll = async (): Promise<boolean> => {
       // Abort controller for current request loop
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -284,7 +292,6 @@ export function TtsWorkspace() {
           });
 
           setStatus('completed');
-          clearRunningTasks();
 
           const voice = voices.find(v => v.id === selectedVoiceId);
           if (voice && jobStartTimeRef.current) {
@@ -301,22 +308,23 @@ export function TtsWorkspace() {
             });
             jobStartTimeRef.current = null;
           }
+          // Terminal state — signal that polling must stop.
+          return false;
         } else if (data.status === 'failed') {
           setProgressStage('failed');
           setStatus('failed');
           setErrorMsg(data.errorMessage || 'Generation failed on worker.');
-          clearRunningTasks();
 
           trackTtsGenerationFailed({
             stage: 'poll',
             voice_id: selectedVoiceId,
             format: outputFormat
           });
+          return false;
         } else if (data.status === 'expired') {
           setProgressStage('expired');
           setStatus('failed');
           setErrorMsg('This audio file cache has expired. Please run synthesis again.');
-          clearRunningTasks();
 
           trackTtsGenerationFailed({
             stage: 'poll',
@@ -324,20 +332,47 @@ export function TtsWorkspace() {
             voice_id: selectedVoiceId,
             format: outputFormat
           });
+          return false;
         } else {
           // Update status stage
-          setProgressStage(data.progressStage);
+          const newStage = data.progressStage ?? 'queued';
+          pollStageRef.current = newStage;
+          setProgressStage(newStage);
+          return true;
         }
       } catch (err) {
         const error = err as Error;
-        if (error.name === 'AbortError') return;
+        if (error.name === 'AbortError') return false;
         console.error('Job status polling error:', error);
-        // Do not fail immediately on minor network drops, let interval retry
+        // Do not fail on minor network drops; retry on next tick.
+        return true;
+      } finally {
+        // If this controller is still the current one, clear it so the next
+        // poll creates a fresh controller.
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
       }
     };
 
-    poll();
-    pollTimerRef.current = setInterval(poll, 1500);
+    const scheduleNextPoll = (continuePolling: boolean) => {
+      // Guard: stop if the poll loop was superseded or cleaned up.
+      if (!continuePolling || epoch !== pollEpochRef.current) return;
+
+      const activeStages = ['processing', 'generating_speech', 'processing_audio', 'finalizing_file'];
+      const stage = pollStageRef.current;
+      const intervalMs = activeStages.includes(stage) ? 600 : 1750;
+      pollTimerRef.current = setTimeout(() => loop(epoch), intervalMs);
+    };
+
+    const loop = async (myEpoch: number) => {
+      if (myEpoch !== pollEpochRef.current) return;
+      const continuePolling = await poll();
+      scheduleNextPoll(continuePolling);
+    };
+
+    // Initial immediate poll, then self-scheduling recursion
+    loop(epoch);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
