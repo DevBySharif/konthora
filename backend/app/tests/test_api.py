@@ -33,7 +33,7 @@ def test_create_job_invalid_inputs(client):
     response = client.post("/api/v1/tts/jobs", json={
         "text": "   ",
         "voiceId": "af_heart",
-        "accent": "american",
+        "accent": "American English",
         "speed": 1.0,
         "outputFormat": "mp3"
     })
@@ -116,7 +116,7 @@ def test_path_traversal_protection(client):
     # Setup mock job in database with traversal file path
     job_service = JobService()
     from datetime import datetime, timedelta, timezone
-    job = job_service.create_job("text", "af_heart", "american", 1.0, "mp3")
+    job = job_service.create_job("text", "af_heart", "American English", 1.0, "mp3")
     job.status = "completed"
     job.expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
     job.file_path = "../../etc/passwd" # Traversal attempt simulation
@@ -152,7 +152,7 @@ def test_ffmpeg_encoder_unavailability_error(client):
         # We manually process a job through the worker queue using mock
         # When audio_service is mocked, if FFmpeg is not found, MP3 request falls back to WAV
         job_service = JobService()
-        job = job_service.create_job("Convert text", "af_heart", "american", 1.0, "mp3")
+        job = job_service.create_job("Convert text", "af_heart", "American English", 1.0, "mp3")
 
         # Test download endpoint throws 400 when file doesn't exist
         response = client.get(

@@ -1,10 +1,13 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
+from app.services.kokoro_service import VOICES_CATALOGUE
+
+VALID_ACCENTS = {v["accent"].lower() for v in VOICES_CATALOGUE}
 
 class TtsJobCreate(BaseModel):
     text: str = Field(..., min_length=1, max_length=2000, description="The script text to synthesize.")
     voiceId: str = Field(..., description="The unique identifier of the selected voice model.")
-    accent: str = Field("american", description="The English voice accent ('american' or 'british').")
+    accent: str = Field("American English", description="The voice accent.")
     speed: float = Field(1.0, ge=0.75, le=1.25, description="Playback speech rate factor.")
     outputFormat: str = Field("mp3", description="Audio output file format ('mp3' or 'wav').")
 
@@ -20,8 +23,8 @@ class TtsJobCreate(BaseModel):
     @classmethod
     def validate_accent(cls, value: str) -> str:
         acc = value.lower()
-        if acc not in ["american", "british"]:
-            raise ValueError("Supported accents are 'american' and 'british' only.")
+        if acc not in VALID_ACCENTS:
+            raise ValueError(f"Supported accents are: {', '.join(sorted(VALID_ACCENTS))}")
         return acc
 
     @field_validator("text")
