@@ -323,6 +323,50 @@ VOICES_CATALOGUE = [
         "defaultSpeed": 1.0,
         "minimumSpeed": 0.75,
         "maximumSpeed": 1.25
+    },
+    {
+        "id": "hf_alpha",
+        "displayName": "Alpha (Female)",
+        "gender": "female",
+        "accent": "Hindi",
+        "language": "hi-IN",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "hf_beta",
+        "displayName": "Beta (Female)",
+        "gender": "female",
+        "accent": "Hindi",
+        "language": "hi-IN",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "hm_omega",
+        "displayName": "Omega (Male)",
+        "gender": "male",
+        "accent": "Hindi",
+        "language": "hi-IN",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
+    },
+    {
+        "id": "hm_psi",
+        "displayName": "Psi (Male)",
+        "gender": "male",
+        "accent": "Hindi",
+        "language": "hi-IN",
+        "recommended": False,
+        "defaultSpeed": 1.0,
+        "minimumSpeed": 0.75,
+        "maximumSpeed": 1.25
     }
 ]
 
@@ -355,15 +399,18 @@ class KokoroService:
         return VOICES_CATALOGUE
 
     def get_lang_code_for_voice(self, voice_id: str) -> str:
-        # American English voice mappings
-        if voice_id.startswith(("af_", "am_")):
-            return "a"
-        # British English voice mappings
-        elif voice_id.startswith(("bf_", "bm_")):
-            return "b"
-        else:
-            logger.error(f"Voice prefix mapping failed for: {voice_id}")
-            raise InvalidRequestException("VOICE_UNSUPPORTED", f"Unsupported voice prefix for voice: {voice_id}")
+        for voice in VOICES_CATALOGUE:
+            if voice["id"] == voice_id:
+                lang = voice.get("language")
+                if lang == "en-US":
+                    return "a"
+                elif lang == "en-GB":
+                    return "b"
+                elif lang == "hi-IN":
+                    return "h"
+                
+        logger.error(f"Voice language mapping failed for: {voice_id}")
+        raise InvalidRequestException("VOICE_UNSUPPORTED", f"Unsupported or unknown voice ID: {voice_id}")
 
     def load_pipeline(self, lang_code: str):
         """Loads and caches KPipeline for the given lang_code safely inside a thread lock."""

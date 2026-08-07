@@ -135,8 +135,15 @@ class TtsQueueManager:
             if not original_text:
                 raise TtsException("TEXT_EMPTY", "Job text is empty.")
 
+            # Determine language for text normalizer
+            language = "en-US"
+            for v in self.kokoro_service.get_voices():
+                if v["id"] == job.voice_id:
+                    language = v.get("language", "en-US")
+                    break
+
             # 1. Normalize text (synchronous, fast)
-            normalized_text = normalize_text(original_text)
+            normalized_text = normalize_text(original_text, language=language)
 
             # 2. Chunk text (synchronous, fast)
             chunks = chunk_text(normalized_text)

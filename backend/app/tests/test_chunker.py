@@ -119,3 +119,10 @@ def test_chunk_question_exclamation():
     assert len(chunks) == 2
     assert chunks[0].text == "Is this correct?"
     assert chunks[1].text == "Yes, it is!"
+
+def test_chunk_hindi_sentences():
+    # 10. Hindi danda and double danda
+    text = "नमस्ते। आज हम कोन्थोरा की हिंदी आवाज़ का परीक्षण कर रहे हैं॥ क्या आवाज़ साफ़ है?"
+    chunks = chunk_text(text, max_chars=30)
+    assert len(chunks) >= 3
+    assert chunks[0].text == "नमस्ते।"

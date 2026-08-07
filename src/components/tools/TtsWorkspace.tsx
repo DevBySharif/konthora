@@ -87,8 +87,11 @@ export function TtsWorkspace() {
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
 
   // Core configuration states
+  const [selectedLanguage, setSelectedLanguage] = useState<'en-US' | 'hi-IN'>('en-US');
   const [text, setText] = useState<string>('');
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(FALLBACK_VOICES[0].id);
+  const [lastEnglishVoiceId, setLastEnglishVoiceId] = useState<string>('af_heart');
+  const [lastHindiVoiceId, setLastHindiVoiceId] = useState<string>('hf_alpha');
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
 
@@ -120,12 +123,29 @@ export function TtsWorkspace() {
 
     const voice = voices.find(v => v.id === voiceId);
     if (voice) {
+      if (voice.language === 'hi-IN') {
+        setLastHindiVoiceId(voiceId);
+      } else {
+        setLastEnglishVoiceId(voiceId);
+      }
       trackTtsVoiceChanged({
         voice_id: voice.id,
         accent: voice.accent,
         gender: voice.gender,
         recommended: voice.recommended,
       });
+    }
+  };
+
+  const handleLanguageChange = (lang: 'en-US' | 'hi-IN') => {
+    if (lang === selectedLanguage) return;
+    setSelectedLanguage(lang);
+    if (lang === 'hi-IN') {
+      const fallback = voices.find(v => v.id === lastHindiVoiceId) ? lastHindiVoiceId : 'hf_alpha';
+      setSelectedVoiceId(fallback);
+    } else {
+      const fallback = voices.find(v => v.id === lastEnglishVoiceId) ? lastEnglishVoiceId : 'af_heart';
+      setSelectedVoiceId(fallback);
     }
   };
 
@@ -476,11 +496,50 @@ export function TtsWorkspace() {
         )}
 
         {/* Controls Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
+          {/* Language Selector */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Language
+            </label>
+            <div className="grid grid-cols-2 gap-2 h-10">
+              <button
+                type="button"
+                onClick={() => handleLanguageChange('en-US')}
+                disabled={status === 'submitting' || status === 'polling'}
+                className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                  selectedLanguage === 'en-US'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                }`}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange('hi-IN')}
+                disabled={status === 'submitting' || status === 'polling'}
+                className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                  selectedLanguage === 'hi-IN'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                }`}
+              >
+                Hindi
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+              {selectedLanguage === 'en-US'
+                ? 'Standard English neural voices.'
+                : 'Native Hindi neural voices.'}
+            </p>
+          </div>
+
           {/* Voice Picker V2 */}
           <VoicePicker
-            voices={voices}
+            voices={voices.filter(v => v.language === selectedLanguage || (!v.language && selectedLanguage === 'en-US'))}
             selectedVoiceId={selectedVoiceId}
+            selectedLanguage={selectedLanguage}
             onSelectVoice={handleVoiceSelect}
             disabled={status === 'submitting' || status === 'polling' || loadingVoices}
           />

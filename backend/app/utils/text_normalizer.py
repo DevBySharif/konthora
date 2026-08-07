@@ -28,7 +28,7 @@ ABBREVIATIONS = {
     r'\bvs\.\b': 'versus',
 }
 
-def normalize_text(text: str) -> str:
+def normalize_text(text: str, language: str = "en-US") -> str:
     """
     Normalizes input text for Kokoro speech synthesis.
     Maintains a conservative strategy to avoid altering names, URLs, IPs, etc.
@@ -50,26 +50,27 @@ def normalize_text(text: str) -> str:
     # Ellipses
     text = text.replace('…', '...')
 
-    # 3. Currency normalization (e.g., $12.50 -> 12 dollars and 50 cents, $12 -> 12 dollars)
-    def replace_currency(match):
-        dollars = match.group(1)
-        cents = match.group(2)
-        if cents:
-            # Handle decimals like .50
-            cents_val = int(cents)
-            if cents_val == 0:
-                return f"{dollars} dollars"
-            return f"{dollars} dollars and {cents} cents"
-        return f"{dollars} dollars"
+    if language != "hi-IN":
+        # 3. Currency normalization (e.g., $12.50 -> 12 dollars and 50 cents, $12 -> 12 dollars)
+        def replace_currency(match):
+            dollars = match.group(1)
+            cents = match.group(2)
+            if cents:
+                # Handle decimals like .50
+                cents_val = int(cents)
+                if cents_val == 0:
+                    return f"{dollars} dollars"
+                return f"{dollars} dollars and {cents} cents"
+            return f"{dollars} dollars"
 
-    text = CURRENCY_PATTERN.sub(replace_currency, text)
+        text = CURRENCY_PATTERN.sub(replace_currency, text)
 
-    # 4. Percentages (e.g., 25% -> 25 percent)
-    text = PERCENT_PATTERN.sub(r'\1 percent', text)
+        # 4. Percentages (e.g., 25% -> 25 percent)
+        text = PERCENT_PATTERN.sub(r'\1 percent', text)
 
-    # 5. Expand abbreviations contextually
-    for pattern, replacement in ABBREVIATIONS.items():
-        text = re.sub(pattern, replacement, text)
+        # 5. Expand abbreviations contextually
+        for pattern, replacement in ABBREVIATIONS.items():
+            text = re.sub(pattern, replacement, text)
 
     # 6. Collapse extra whitespaces while preserving paragraph boundaries (\n\n)
     lines = []

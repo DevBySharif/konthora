@@ -33,3 +33,9 @@ def test_normalize_conservative_invariance():
     assert normalize_text("user@example.com") == "user@example.com"
     assert normalize_text("10:30 AM") == "10:30 AM"
     assert normalize_text("2026-08-04") == "2026-08-04"
+
+def test_normalize_hindi():
+    hindi_text = "नमस्ते। कोन्थोरा में आपका स्वागत है। 100%?"
+    # Should not expand % to percent or currency when language is hi-IN
+    assert normalize_text(hindi_text, language="hi-IN") == "नमस्ते। कोन्थोरा में आपका स्वागत है। 100%?"
+    assert normalize_text("₹12.50", language="hi-IN") == "₹12.50"

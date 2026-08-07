@@ -17,17 +17,23 @@ export interface Voice {
 interface VoicePickerProps {
   voices: Voice[];
   selectedVoiceId: string;
+  selectedLanguage?: 'en-US' | 'hi-IN';
   onSelectVoice: (voiceId: string) => void;
   disabled?: boolean;
 }
 
-export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }: VoicePickerProps) {
+export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US', onSelectVoice, disabled }: VoicePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'All' | 'American' | 'British' | 'Female' | 'Male'>('All');
   const [isMobile, setIsMobile] = useState(false);
 
   const { activePreviewId, previewStatus, playPreview, stopPreview } = useVoicePreview();
+
+  // Stop preview when language changes
+  useEffect(() => {
+    stopPreview();
+  }, [selectedLanguage, stopPreview]);
 
   // Handle responsive behavior manually via matchMedia to prevent hydration mismatch
   useEffect(() => {
@@ -39,6 +45,10 @@ export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }
   }, []);
 
   const selectedVoice = useMemo(() => voices.find(v => v.id === selectedVoiceId), [voices, selectedVoiceId]);
+
+  const effectiveFilter = (selectedLanguage === 'hi-IN' && (activeFilter === 'American' || activeFilter === 'British'))
+    ? 'All'
+    : activeFilter;
 
   const filteredVoices = useMemo(() => {
     return voices.filter((voice) => {
@@ -53,15 +63,15 @@ export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }
       if (!matchesSearch) return false;
 
       // 2. Filter Logic
-      if (activeFilter === 'All') return true;
-      if (activeFilter === 'American') return voice.accent.toLowerCase().includes('american');
-      if (activeFilter === 'British') return voice.accent.toLowerCase().includes('british');
-      if (activeFilter === 'Female') return voice.gender.toLowerCase() === 'female';
-      if (activeFilter === 'Male') return voice.gender.toLowerCase() === 'male';
+      if (effectiveFilter === 'All') return true;
+      if (effectiveFilter === 'American') return voice.accent.toLowerCase().includes('american');
+      if (effectiveFilter === 'British') return voice.accent.toLowerCase().includes('british');
+      if (effectiveFilter === 'Female') return voice.gender.toLowerCase() === 'female';
+      if (effectiveFilter === 'Male') return voice.gender.toLowerCase() === 'male';
 
       return true;
     });
-  }, [voices, searchQuery, activeFilter]);
+  }, [voices, searchQuery, effectiveFilter]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -172,12 +182,15 @@ export function VoicePicker({ voices, selectedVoiceId, onSelectVoice, disabled }
         
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-          {(['All', 'American', 'British', 'Female', 'Male'] as const).map((filter) => (
+          {(['All', 'American', 'British', 'Female', 'Male'] as const).filter(filter => {
+            if (selectedLanguage === 'hi-IN' && (filter === 'American' || filter === 'British')) return false;
+            return true;
+          }).map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                activeFilter === filter 
+                effectiveFilter === filter 
                   ? 'bg-primary text-primary-foreground border-primary' 
                   : 'bg-background hover:bg-secondary border-border text-muted-foreground hover:text-foreground'
               }`}

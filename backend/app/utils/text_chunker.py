@@ -150,7 +150,7 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
 def split_into_sentences(text: str, offset: int) -> List[tuple[str, int, int, str]]:
     """Splits a string into sentences and returns (text, start_offset, end_offset, boundary_type)"""
     import re
-    pattern = re.compile(r'([.!?])(\s+)')
+    pattern = re.compile(r'([.!?।॥])(\s+)')
 
     boundaries = []
     for match in pattern.finditer(text):
