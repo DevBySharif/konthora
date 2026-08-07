@@ -32,10 +32,10 @@ import {
   trackTtsGenerationCompleted,
   trackTtsGenerationFailed,
   trackTtsPreviewPlayed,
-  trackTtsVoicePreviewPlayed,
   trackTtsAudioDownloaded,
   getCharacterCountBucket
 } from '@/components/analytics/events';
+import { VoicePicker } from './VoicePicker';
 
 const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'af_heart', displayName: 'Heart (Female)', gender: 'female', accent: 'American English', language: 'en-US', recommended: true, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
@@ -68,11 +68,6 @@ const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'bm_fable', displayName: 'Fable (Male)', gender: 'male', accent: 'British English', language: 'en-GB', recommended: false, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 }
 ];
 
-const ACCENTS = [
-  { id: 'american', name: 'American English' },
-  { id: 'british', name: 'British English' }
-];
-
 const PROGRESS_MESSAGES: Record<string, string> = {
   queued: 'Job placed in queue... waiting for worker.',
   preparing_text: 'Analyzing script text and expanding abbreviations...',
@@ -91,10 +86,9 @@ export function TtsWorkspace() {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
 
-  // Selection and form states
+  // Core configuration states
   const [text, setText] = useState<string>('');
-  const [selectedAccent, setSelectedAccent] = useState<string>(ACCENTS[0].id);
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('af_heart');
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(FALLBACK_VOICES[0].id);
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
 
@@ -109,11 +103,6 @@ export function TtsWorkspace() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
 
-  // Voice preview states
-  const [previewStatus, setPreviewStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'error'>('idle');
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  const previewTrackedRef = useRef<boolean>(false);
-
   const charLimit = 2000;
 
   // References for polling and audio elements
@@ -125,76 +114,19 @@ export function TtsWorkspace() {
   const jobStartTimeRef = useRef<number | null>(null);
   const hasTrackedPlayRef = useRef<boolean>(false);
 
-  // Stop preview on unmount
-  useEffect(() => {
-    return () => {
-      if (previewAudioRef.current) {
-        previewAudioRef.current.oncanplaythrough = null;
-        previewAudioRef.current.onerror = null;
-        previewAudioRef.current.onended = null;
-        previewAudioRef.current.pause();
-        previewAudioRef.current.src = '';
-      }
-    };
-  }, []);
+  const handleVoiceSelect = (voiceId: string) => {
+    if (voiceId === selectedVoiceId) return;
+    setSelectedVoiceId(voiceId);
 
-  const togglePreview = () => {
-    if (previewStatus === 'playing') {
-      previewAudioRef.current?.pause();
-      setPreviewStatus('paused');
-      return;
-    }
-
-    if (previewStatus === 'paused') {
-      previewAudioRef.current?.play();
-      setPreviewStatus('playing');
-      return;
-    }
-
-    // Start fresh preview for the current voice
-    setPreviewStatus('loading');
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-    }
-
-    const audio = new Audio(`/audio/voice-previews/${selectedVoiceId}.mp3`);
-    previewAudioRef.current = audio;
-
-    audio.oncanplaythrough = () => {
-      if (previewAudioRef.current !== audio) return;
-      audio.play().then(() => {
-        if (previewAudioRef.current !== audio) return;
-        setPreviewStatus('playing');
-        if (!previewTrackedRef.current) {
-          previewTrackedRef.current = true;
-          const currentVoice = voices.find((v) => v.id === selectedVoiceId);
-          if (currentVoice) {
-            trackTtsVoicePreviewPlayed({
-              voice_id: currentVoice.id,
-              accent: currentVoice.accent,
-              gender: currentVoice.gender,
-              recommended: currentVoice.recommended
-            });
-          }
-        }
-      }).catch((err) => {
-        if (previewAudioRef.current !== audio) return;
-        console.error('Preview play failed', err);
-        setPreviewStatus('error');
+    const voice = voices.find(v => v.id === voiceId);
+    if (voice) {
+      trackTtsVoiceChanged({
+        voice_id: voice.id,
+        accent: voice.accent,
+        gender: voice.gender,
+        recommended: voice.recommended,
       });
-    };
-
-    audio.onended = () => {
-      if (previewAudioRef.current !== audio) return;
-      setPreviewStatus('idle');
-    };
-
-    audio.onerror = () => {
-      if (previewAudioRef.current !== audio) return;
-      setPreviewStatus('error');
-    };
-
-    audio.load();
+    }
   };
 
   // Fetch voices list on mount
@@ -218,23 +150,6 @@ export function TtsWorkspace() {
     }
     loadVoices();
   }, []);
-
-  // Filter voices dynamically based on selected accent
-  const filteredVoices = voices.filter(
-    (v) => v.accent.toLowerCase() === (selectedAccent === 'american' ? 'american english' : 'british english')
-  );
-
-  // Auto-switch voice choice when changing accent
-  useEffect(() => {
-    if (filteredVoices.length > 0) {
-      // Keep voice if it exists in filtered list, else reset to first in list
-      const exists = filteredVoices.some(v => v.id === selectedVoiceId);
-      if (!exists) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedVoiceId(filteredVoices[0].id);
-      }
-    }
-  }, [selectedAccent, filteredVoices, selectedVoiceId]);
 
   // Clean up timers, abort controllers, and URL allocations
   const clearRunningTasks = () => {
@@ -401,7 +316,7 @@ export function TtsWorkspace() {
       const jobData = await createTtsJob(
         text,
         selectedVoiceId,
-        selectedAccent,
+        voices.find(v => v.id === selectedVoiceId)?.accent || 'american',
         speed,
         outputFormat
       );
@@ -561,132 +476,14 @@ export function TtsWorkspace() {
         )}
 
         {/* Controls Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
-          {/* Accent Options */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="accent-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Voice Accent
-            </label>
-            <select
-              id="accent-select"
-              value={selectedAccent}
-              onChange={(e) => setSelectedAccent(e.target.value)}
-              disabled={status === 'submitting' || status === 'polling'}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
-            >
-              {ACCENTS.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Voice Model */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="voice-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Voice Model
-            </label>
-            <div className="flex flex-row gap-2">
-              <select
-                id="voice-select"
-                value={selectedVoiceId}
-                onChange={(e) => {
-                  const newVoiceId = e.target.value;
-                  setSelectedVoiceId(newVoiceId);
-
-                  // Reset preview state for new voice
-                  setPreviewStatus('idle');
-                  if (previewAudioRef.current) {
-                    previewAudioRef.current.oncanplaythrough = null;
-                    previewAudioRef.current.onerror = null;
-                    previewAudioRef.current.onended = null;
-                    previewAudioRef.current.pause();
-                    previewAudioRef.current.src = '';
-                    previewAudioRef.current = null;
-                  }
-                  previewTrackedRef.current = false;
-
-                  const voice = voices.find(v => v.id === newVoiceId);
-                  if (voice) {
-                    trackTtsVoiceChanged({
-                      voice_id: voice.id,
-                      accent: voice.accent,
-                      gender: voice.gender,
-                      recommended: voice.recommended,
-                    });
-                  }
-                }}
-                disabled={status === 'submitting' || status === 'polling' || loadingVoices}
-                className="w-full flex-1 h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
-              >
-                {loadingVoices ? (
-                  <option>Loading voices...</option>
-                ) : (
-                  filteredVoices.map((v) => (
-                    <option key={v.id} value={v.id} className="py-1">
-                      {v.displayName} {v.recommended ? '★' : ''}
-                    </option>
-                  ))
-                )}
-              </select>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={togglePreview}
-                className="w-full sm:w-[110px] h-10 px-4 shrink-0 text-sm"
-                aria-pressed={previewStatus === 'playing'}
-                disabled={previewStatus === 'loading'}
-                aria-label={
-                  previewStatus === 'loading' ? `Loading preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                  previewStatus === 'playing' ? `Pause preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                  previewStatus === 'paused' ? `Resume preview for ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                  previewStatus === 'idle' ? `Preview ${voices.find(v => v.id === selectedVoiceId)?.displayName}` :
-                  `Preview unavailable for ${voices.find(v => v.id === selectedVoiceId)?.displayName}`
-                }
-              >
-                {previewStatus === 'loading' && 'Loading...'}
-                {previewStatus === 'playing' && (
-                  <>
-                    <Pause className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Pause
-                  </>
-                )}
-                {previewStatus === 'paused' && (
-                  <>
-                    <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Listen
-                  </>
-                )}
-                {previewStatus === 'idle' && (
-                  <>
-                    <Play className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Listen
-                  </>
-                )}
-                {previewStatus === 'error' && (
-                  <>
-                    <AlertCircle className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                    Listen
-                  </>
-                )}
-              </Button>
-            </div>
-            <div className="text-xs text-muted-foreground mt-0.5 flex items-center">
-              {previewStatus === 'error' ? (
-                <span className="text-destructive/90">Preview unavailable. You can still generate speech.</span>
-              ) : (
-                <span>
-                  {(() => {
-                    const v = voices.find(v => v.id === selectedVoiceId);
-                    if (!v) return null;
-                    return `${v.accent} • ${v.gender.charAt(0).toUpperCase() + v.gender.slice(1)}`;
-                  })()}
-                </span>
-              )}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
+          {/* Voice Picker V2 */}
+          <VoicePicker
+            voices={voices}
+            selectedVoiceId={selectedVoiceId}
+            onSelectVoice={handleVoiceSelect}
+            disabled={status === 'submitting' || status === 'polling' || loadingVoices}
+          />
 
           {/* Speed Slider */}
           <div className="flex flex-col gap-2">
