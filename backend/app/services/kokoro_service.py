@@ -532,6 +532,20 @@ class KokoroService:
             self._model_status = "loading"
             logger.info(f"Initializing Kokoro KPipeline for language code: {lang_code}")
             try:
+                # --- MONKEY PATCH MISAKI G2P ---
+                # Kokoro's KPipeline assumes `self.g2p(text)` returns a string for non-English languages.
+                # However, newer versions of misaki's EspeakG2P return a tuple: (phoneme_string, metadata).
+                # This causes KPipeline to tokenize the tuple representation, truncating all audio to ~0.5s.
+                import misaki.espeak
+                if not getattr(misaki.espeak.EspeakG2P, "_patched_for_kokoro", False):
+                    original_call = misaki.espeak.EspeakG2P.__call__
+                    def patched_call(self, text, *args, **kwargs):
+                        res = original_call(self, text, *args, **kwargs)
+                        return res[0] if isinstance(res, tuple) else res
+                    misaki.espeak.EspeakG2P.__call__ = patched_call
+                    misaki.espeak.EspeakG2P._patched_for_kokoro = True
+                # -------------------------------
+
                 from kokoro import KPipeline
                 # Initialize pipeline (this fetches model weights from Hugging Face if not local)
                 pipeline = KPipeline(lang_code=lang_code)
