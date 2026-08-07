@@ -93,6 +93,39 @@ const SAMPLE_TEXT =
 
 export type SupportedLanguage = 'en-US' | 'hi-IN' | 'es' | 'fr-FR' | 'it' | 'pt-BR';
 
+const SUPPORTED_LANGUAGES = [
+  {
+    value: "en-US",
+    label: "English",
+    description: "Standard English neural voices."
+  },
+  {
+    value: "hi-IN",
+    label: "Hindi",
+    description: "Native Hindi neural voices."
+  },
+  {
+    value: "es",
+    label: "Spanish",
+    description: "Native Spanish neural voices."
+  },
+  {
+    value: "fr-FR",
+    label: "French",
+    description: "Native French neural voices."
+  },
+  {
+    value: "it",
+    label: "Italian",
+    description: "Native Italian neural voices."
+  },
+  {
+    value: "pt-BR",
+    label: "Portuguese",
+    description: "Native Brazilian Portuguese neural voices."
+  }
+];
+
 export function TtsWorkspace() {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
@@ -512,36 +545,25 @@ export function TtsWorkspace() {
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Language
             </label>
-            <div className="grid grid-cols-2 gap-2 h-10">
-              <button
-                type="button"
-                onClick={() => handleLanguageChange('en-US')}
-                disabled={status === 'submitting' || status === 'polling'}
-                className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                  selectedLanguage === 'en-US'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
-                }`}
-              >
-                English
-              </button>
-              <button
-                type="button"
-                onClick={() => handleLanguageChange('hi-IN')}
-                disabled={status === 'submitting' || status === 'polling'}
-                className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                  selectedLanguage === 'hi-IN'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
-                }`}
-              >
-                Hindi
-              </button>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 min-h-10">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <button
+                  key={lang.value}
+                  type="button"
+                  onClick={() => handleLanguageChange(lang.value as SupportedLanguage)}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer py-1.5 px-2 ${
+                    selectedLanguage === lang.value
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-              {selectedLanguage === 'en-US'
-                ? 'Standard English neural voices.'
-                : 'Native Hindi neural voices.'}
+              {SUPPORTED_LANGUAGES.find(l => l.value === selectedLanguage)?.description || ''}
             </p>
           </div>
 
