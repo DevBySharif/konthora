@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Sparkles } from 'lucide-react';
-import { footerNavLinks } from '@/config/navigation';
+import { Mail } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { Container } from '../ui/Container';
 import { KonthoraBrand } from '../brand/KonthoraBrand';
@@ -29,10 +28,36 @@ const socials = [
   },
 ];
 
-const columns = [
-  { title: 'Product', links: footerNavLinks.tools },
-  { title: 'Resources', links: footerNavLinks.info },
-  { title: 'Legal', links: footerNavLinks.legal },
+const footerColumns = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Text to Speech', href: siteConfig.links.textToSpeech },
+      { label: 'Audio to Text', href: siteConfig.links.audioToText },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Voice Library', href: '/voices' },
+      { label: 'Blog (Coming Soon)', href: '#' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: siteConfig.links.about },
+      { label: 'Contact', href: siteConfig.links.contact },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy Policy', href: siteConfig.links.privacy },
+      { label: 'Terms of Service', href: siteConfig.links.terms },
+      { label: 'Copyright Removal', href: siteConfig.links.copyright },
+    ],
+  },
 ];
 
 export function Footer() {
@@ -41,17 +66,17 @@ export function Footer() {
   return (
     <footer className="border-t border-border/70 bg-card/40 text-foreground transition-colors duration-200" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">Footer</h2>
-      <Container className="py-14 md:py-20">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-2 lg:grid-cols-12">
+      <Container className="pt-16 pb-8 md:pt-20 md:pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-12">
           {/* Brand section */}
-          <div className="col-span-2 md:col-span-1 lg:col-span-4 flex flex-col items-start">
+          <div className="flex flex-col items-start lg:col-span-2">
             <KonthoraBrand variant="footer" />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground line-clamp-2">
               {siteConfig.description}
             </p>
 
             {/* Social icons */}
-            <ul className="mt-6 flex items-center gap-3" aria-label="Social links">
+            <ul className="mt-6 flex items-center gap-4" aria-label="Social links">
               {socials.map((s) => (
                 <li key={s.label}>
                   <a
@@ -59,60 +84,55 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={s.label}
-                    className="inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:text-primary hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    className="inline-block text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
                   >
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]" aria-hidden="true">
                       <path d={s.path} />
                     </svg>
                   </a>
                 </li>
               ))}
             </ul>
+            
+            {/* Contact Card */}
+            <a
+              href={`mailto:contact@konthora.dev.bd`}
+              className="mt-8 inline-flex items-center gap-2 rounded-lg border border-border/50 bg-background/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              contact@konthora.dev.bd
+            </a>
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 gap-12 col-span-2 sm:grid-cols-none sm:grid-cols-3 md:col-span-1 lg:col-span-8">
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-foreground">
-                  {col.title}
-                </h3>
-                <ul className="mt-6 space-y-4">
-                  {col.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Contact strip */}
-        <div className="mt-12 mb-0 rounded-2xl border border-border/70 bg-card/60 p-5">
-          <a
-            href={`mailto:${siteConfig.contactEmail}`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
-          >
-            <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
-            {siteConfig.contactEmail}
-          </a>
+          {footerColumns.map((col) => (
+            <div key={col.title}>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                {col.title}
+              </h3>
+              <ul className="mt-5 space-y-3.5">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 pt-6 border-t border-border/70 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
-          <p className="text-[13px] font-medium text-muted-foreground">
-            &copy; {currentYear} {siteConfig.name}. All rights reserved.
+        <div className="mt-16 pt-6 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            &copy; {currentYear} Konthora. All rights reserved.
           </p>
-          <p className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            Built with modern AI audio tools
+          <p className="text-sm text-muted-foreground">
+            Built with open-source AI
           </p>
         </div>
       </Container>
