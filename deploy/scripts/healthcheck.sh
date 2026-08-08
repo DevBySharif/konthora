@@ -35,8 +35,11 @@ for UNIT in "$SERVICE_NAME" "$WEB_SERVICE_NAME"; do
 done
 
 # 2. local upstreams
-LOCAL_API=$(curl -sf --max-time 5 http://127.0.0.1:8000/api/v1/health || true)
-LOCAL_WEB=$(curl -sf --max-time 5 -o /dev/null http://127.0.0.1:3000/ || true)
+# Send the trusted API Host header: TrustedHostMiddleware on uvicorn rejects
+# requests whose Host is not allowlisted (see TRUSTED_HOSTS in konthora.env),
+# which would otherwise 400 the local probe even when the backend is healthy.
+LOCAL_API=$(curl -sf --max-time 5 -H "Host: $CERT_DOMAIN" http://127.0.0.1:8000/api/v1/health || true)
+LOCAL_WEB=$(curl -sf --max-time 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/ || true)
 if [ -n "$LOCAL_API" ]; then
   printf 'local API:    OK\n'
 else
@@ -57,7 +60,7 @@ fi
 
 # 3. public endpoints through Nginx + TLS
 PUBLIC_API=$(curl -sf --max-time 10 "$API_BASE_URL" || true)
-PUBLIC_WEB=$(curl -sf --max-time 10 -o /dev/null "$WEB_BASE_URL" || true)
+PUBLIC_WEB=$(curl -sf --max-time 10 -o /dev/null -w '%{http_code}' "$WEB_BASE_URL" || true)
 if [ -n "$PUBLIC_API" ]; then
   printf 'public API:   OK (%s)\n' "$API_BASE_URL"
 else
