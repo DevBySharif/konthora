@@ -17,7 +17,7 @@ import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: 'Spanish Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert Spanish text to natural speech online for free. Generate Latin-American and Castilian-friendly AI voiceover in 3 Spanish voices, then download as MP3 or WAV.',
+    'Convert Spanish text to natural speech online for free. Generate Spanish AI voiceover in 3 native voices, then download as MP3 or WAV.',
   path: '/text-to-speech/spanish',
 });
 
@@ -87,7 +87,7 @@ export default function SpanishTtsPage() {
     {
       icon: Mic2,
       title: '3 Spanish voices',
-      desc: 'Dora, Alex, and Santa — female and male characters tuned for Latin American and Iberian pronunciation.',
+      desc: 'Dora, Alex, and Santa — female and male characters for natural Spanish narration.',
     },
     {
       icon: Volume2,

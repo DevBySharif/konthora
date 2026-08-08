@@ -54,7 +54,7 @@ export default function PortugueseTtsPage() {
     {
       question: 'Which Portuguese voices are available?',
       answer:
-        'There are 3 Brazilian Portuguese voices: Dora (female), Alex (male), and Santa (female). Select Portuguese in the workspace to browse them.',
+        'There are 3 Brazilian Portuguese voices: Dora (female), Alex (male), and Santa (male). Select Portuguese in the workspace to browse them.',
     },
     {
       question: 'Can I download Portuguese voiceovers as MP3 or WAV?',
