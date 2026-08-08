@@ -287,6 +287,54 @@ export default function TextToSpeechPage() {
         </Container>
       </Section>
 
+      {/* ── Explore languages & formats ── */}
+      <Section aria-labelledby="explore-lang-formats-heading">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl" id="explore-lang-formats-heading">
+              Explore Languages & Formats
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Make voiceovers in other languages, or convert any script straight into an MP3 file.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              { href: '/text-to-speech/spanish', label: 'Spanish Text to Speech', description: 'Generate natural Spanish voiceovers with native voices.' },
+              { href: '/text-to-speech/hindi', label: 'Hindi Text to Speech', description: 'Create natural Hindi narration for Indian audiences.' },
+              { href: '/text-to-speech/french', label: 'French Text to Speech', description: 'A natural French voice for tutorials and ads.' },
+              { href: '/text-to-speech/italian', label: 'Italian Text to Speech', description: 'Italian female and male voices for video and podcast.' },
+              { href: '/text-to-speech/portuguese', label: 'Portuguese Text to Speech', description: 'Brazilian Portuguese voices for narration and lessons.' },
+              { href: '/text-to-mp3', label: 'Text to MP3 Converter', description: 'Turn any script into a compact, downloadable MP3 file.' },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+              >
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {l.label}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.description}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Read guide
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
+                  </svg>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </Section>
+
       {/* Tool FAQ Section */}
       <Section className="bg-secondary/10">
         <Container>

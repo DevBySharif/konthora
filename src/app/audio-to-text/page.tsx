@@ -293,10 +293,20 @@ export default function AudioToTextPage() {
                   label: 'Video Transcription',
                   description: 'Extract and transcribe dialogue from MP4, WebM, and MOV files.',
                 },
-                {
+{
                   href: '/transcribe-voice-memo',
                   label: 'Voice Memo Transcription',
                   description: 'Turn personal voice notes and quick ideas into written text.',
+                },
+                {
+                  href: '/mp3-to-text',
+                  label: 'MP3 to Text Converter',
+                  description: 'Convert MP3 audio files into timestamped transcripts quickly.',
+                },
+                {
+                  href: '/video-to-text',
+                  label: 'Video to Text Converter',
+                  description: 'Transcribe the audio track from MP4, WebM, and MOV videos.',
                 },
                 {
                   href: '/transcribe-webinar',
