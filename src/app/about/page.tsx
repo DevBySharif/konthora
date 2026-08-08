@@ -4,6 +4,7 @@ import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { Volume2, FileAudio, Users, Target } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function AboutPage() {
 
       <Section>
         <Container className="max-w-4xl">
+          <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'About' }]} />
           <PageHeader
             title={`About ${siteConfig.name}`}
             description="Our mission is to build clean, fast, and professional AI audio utilities for content creators, transcribers, and developers."

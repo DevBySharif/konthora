@@ -57,12 +57,32 @@ const homeFaqs: FAQItem[] = [
 ];
 
 export default function HomePage() {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/icon.png`,
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: siteConfig.contactEmail,
+      contactType: 'customer support',
+      availableLanguage: 'English',
+    },
+  };
+
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.name,
+      url: siteConfig.url,
+      logo: `${siteConfig.url}/icon.png`,
+    },
   };
 
   const webAppSchema = {
@@ -90,6 +110,7 @@ export default function HomePage() {
 
   return (
     <>
+      <JsonLd schema={organizationSchema} />
       <JsonLd schema={websiteSchema} />
       <JsonLd schema={webAppSchema} />
       <JsonLd schema={faqSchema} />

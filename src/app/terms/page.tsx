@@ -6,6 +6,7 @@ import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 
@@ -34,6 +35,7 @@ export default function Page() {
       <Section className="pb-24">
         <Container className="max-w-4xl">
           <div className="mb-10">
+            <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Terms of Service' }]} />
             <PageHeader
               title="Terms of Service"
               description="Read the terms and rules governing the use of our speech synthesis and transcription services."

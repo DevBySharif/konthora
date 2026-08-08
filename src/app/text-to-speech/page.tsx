@@ -5,6 +5,7 @@ import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { AdPlaceholder } from '@/components/ui/AdPlaceholder';
 import { TtsWorkspace } from '@/components/tools/TtsWorkspace';
@@ -149,6 +150,7 @@ export default function TextToSpeechPage() {
 
       <Section className="pb-6">
         <Container>
+          <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Text to Speech' }]} />
           <PageHeader
             title="Free AI Text to Speech Online"
             description="Convert your written scripts into natural-sounding English speech with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."

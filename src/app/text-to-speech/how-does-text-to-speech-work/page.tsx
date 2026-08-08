@@ -183,7 +183,11 @@ export default function HowTtsWorksPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  <strong className="text-foreground">Text-to-speech (TTS)</strong> is an assistive technology that reads digital text aloud. It takes written words on a computer or mobile device and converts them into spoken audio.
+                  <strong className="text-foreground">Text-to-speech (TTS)</strong> is an assistive technology that reads digital text aloud. It takes written words on a computer or mobile device and converts them into spoken audio. TTS complements rather than replaces dedicated tools —{' '}
+                  <Link href="/accessibility/tts-vs-screen-reader" className="text-primary hover:underline">
+                    see how TTS compares to screen readers
+                  </Link>
+                  .
                 </p>
                 <p>
                   While early text-to-speech systems sounded robotic and disjointed, modern systems use advanced artificial intelligence to produce voices that closely mimic natural human speech rhythms, intonation, and pronunciation.
@@ -256,7 +260,11 @@ export default function HowTtsWorksPage() {
                         Step 3: Voice Generation
                       </h3>
                       <p className="text-sm">
-                        A neural network or acoustic model takes the linguistic data and converts it into a continuous acoustic waveform. This is where the specific characteristics of the chosen voice—like tone, accent, and timbre—are applied to the sound.
+                        A neural network or acoustic model takes the linguistic data and converts it into a continuous acoustic waveform. This is where the specific characteristics of the chosen voice—like tone, accent, and timbre—are applied to the sound. Konthora uses an open-weight neural engine called{' '}
+                        <Link href="/entity/kokoro" className="text-primary hover:underline">
+                          Kokoro
+                        </Link>
+                        , an 82-million-parameter model that synthesizes voices efficiently.
                       </p>
                     </div>
                   </div>
