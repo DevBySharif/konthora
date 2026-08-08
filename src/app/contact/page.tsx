@@ -4,6 +4,7 @@ import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { Mail, HelpCircle } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function ContactPage() {
 
       <Section>
         <Container className="max-w-3xl">
+          <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Contact' }]} />
           <PageHeader
             title="Contact Us"
             description="Have questions, suggestions, or need help? Get in touch with our team directly."

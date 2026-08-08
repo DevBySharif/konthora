@@ -5,6 +5,7 @@ import { constructMetadata } from '@/lib/metadata';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { AdPlaceholder } from '@/components/ui/AdPlaceholder';
 import { TranscriptionWorkspace } from '@/components/tools/TranscriptionWorkspace';
@@ -154,6 +155,7 @@ export default function AudioToTextPage() {
 
       <Section className="pb-6">
         <Container>
+          <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Audio to Text' }]} />
           <PageHeader
             title="Audio to Text with Timestamps"
             description="Upload an audio or video file and get an accurate, timestamped transcript. Choose sentence, paragraph, or word-level grouping and export as TXT, SRT, VTT, or JSON."
@@ -291,10 +293,20 @@ export default function AudioToTextPage() {
                   label: 'Video Transcription',
                   description: 'Extract and transcribe dialogue from MP4, WebM, and MOV files.',
                 },
-                {
+{
                   href: '/transcribe-voice-memo',
                   label: 'Voice Memo Transcription',
                   description: 'Turn personal voice notes and quick ideas into written text.',
+                },
+                {
+                  href: '/mp3-to-text',
+                  label: 'MP3 to Text Converter',
+                  description: 'Convert MP3 audio files into timestamped transcripts quickly.',
+                },
+                {
+                  href: '/video-to-text',
+                  label: 'Video to Text Converter',
+                  description: 'Transcribe the audio track from MP4, WebM, and MOV videos.',
                 },
                 {
                   href: '/transcribe-webinar',

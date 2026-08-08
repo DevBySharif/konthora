@@ -199,7 +199,12 @@ export default function SpeechToTextPage() {
             Speech-to-text converts spoken audio into written text using{' '}
             <span className="font-medium text-foreground">automatic speech recognition</span>{' '}
             (ASR) software. Modern free tools powered by neural models like{' '}
-            <span className="font-medium text-foreground">Whisper</span>{' '}
+            <Link
+              href="/entity/whisper"
+              className="font-medium text-foreground hover:underline underline-offset-4 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              Whisper
+            </Link>{' '}
             can transcribe audio files, videos, and voice recordings directly in a
             browser — with no software to install and no account required.
           </p>
@@ -271,7 +276,12 @@ export default function SpeechToTextPage() {
                 </p>
                 <p>
                   Konthora uses the{' '}
-                  <span className="font-medium text-foreground">Whisper</span>{' '}
+                  <Link
+                    href="/entity/whisper"
+                    className="font-medium text-foreground hover:underline underline-offset-4 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  >
+                    Whisper
+                  </Link>{' '}
                   speech recognition model — an open-source neural network developed by
                   OpenAI and trained on 680,000 hours of multilingual audio. Konthora
                   specifically uses the{' '}
