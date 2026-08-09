@@ -17,18 +17,19 @@ interface InfoSectionProps {
   description: string;
   cards: InfoCard[];
   twoCol?: boolean;
+  compact?: boolean;
 }
 
-export function InfoSection({ id, eyebrow, title, description, cards, twoCol = false }: InfoSectionProps) {
+export function InfoSection({ id, eyebrow, title, description, cards, twoCol = false, compact = false }: InfoSectionProps) {
   return (
-    <SectionBase id={id}>
+    <SectionBase id={id} compact={compact}>
       <div className="max-w-3xl">
         <SectionHeading align="left" eyebrow={eyebrow} title={title} description={description} />
       </div>
-      <Stagger className={`mt-12 grid gap-4 ${twoCol ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`} stagger={0.06}>
+      <Stagger className={`${compact ? 'mt-7 gap-3' : 'mt-12 gap-4'} grid ${twoCol ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`} stagger={0.06}>
         {cards.map((c) => (
           <StaggerItem key={c.title}>
-            <div className="h-full rounded-2xl border border-border/70 bg-card p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover">
+            <div className={`h-full border border-border/70 bg-card shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-card-hover ${compact ? 'rounded-xl p-4' : 'rounded-2xl p-5'}`}>
               <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-from/15 to-brand-to/15 text-primary">
                 <c.icon className="h-5 w-5" aria-hidden="true" />
               </div>
@@ -48,18 +49,19 @@ interface StepsProps {
   title: string;
   description: string;
   steps: { title: string; desc: string }[];
+  compact?: boolean;
 }
 
-export function StepsSection({ id, eyebrow, title, description, steps }: StepsProps) {
+export function StepsSection({ id, eyebrow, title, description, steps, compact = false }: StepsProps) {
   return (
-    <SectionBase id={id} alt>
+    <SectionBase id={id} alt compact={compact}>
       <div className="max-w-3xl">
         <SectionHeading align="left" eyebrow={eyebrow} title={title} description={description} />
       </div>
-      <Stagger className="mt-12 grid gap-4 md:grid-cols-3" stagger={0.08}>
+      <Stagger className={`${compact ? 'mt-7 gap-3' : 'mt-12 gap-4'} grid md:grid-cols-3`} stagger={0.08}>
         {steps.map((s, i) => (
           <StaggerItem key={s.title}>
-            <div className="relative h-full rounded-2xl border border-border/70 bg-card p-6 shadow-card">
+            <div className={`relative h-full border border-border/70 bg-card shadow-card ${compact ? 'rounded-xl p-4' : 'rounded-2xl p-6'}`}>
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-from to-brand-to text-sm font-bold text-white">
                 {i + 1}
               </span>
@@ -77,20 +79,21 @@ interface CrossLinksProps {
   title: string;
   description: string;
   links: { href: string; label: string; description: string; primary?: boolean }[];
+  compact?: boolean;
 }
 
-export function CrossLinks({ title, description, links }: CrossLinksProps) {
+export function CrossLinks({ title, description, links, compact = false }: CrossLinksProps) {
   return (
-    <SectionBase id="related-tools" alt>
+    <SectionBase id="related-tools" alt compact={compact}>
       <div className="mx-auto max-w-3xl text-center">
         <SectionHeading align="center" eyebrow="Related tools" title={title} description={description} />
       </div>
-      <div className="mt-12 grid gap-4 md:grid-cols-2">
+      <div className={`${compact ? 'mt-7 gap-3' : 'mt-12 gap-4'} grid md:grid-cols-2`}>
         {links.map((l) => (
           <Link
             key={l.href}
             href={l.href}
-            className={`group rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-1 ${
+            className={`group border transition-all duration-200 hover:-translate-y-1 ${compact ? 'rounded-xl p-4' : 'rounded-2xl p-6'} ${
               l.primary
                 ? 'border-primary/40 bg-primary/5 shadow-card hover:border-primary/60'
                 : 'border-border/70 bg-card shadow-card hover:border-primary/25'
@@ -111,12 +114,12 @@ export function CrossLinks({ title, description, links }: CrossLinksProps) {
   );
 }
 
-function SectionBase({ id, alt, children }: { id: string; alt?: boolean; children: React.ReactNode }) {
+function SectionBase({ id, alt, compact = false, children }: { id: string; alt?: boolean; compact?: boolean; children: React.ReactNode }) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className={`py-16 md:py-20 ${alt ? 'bg-secondary/10' : ''}`}
+      className={`${compact ? 'py-10 md:py-12' : 'py-16 md:py-20'} ${alt ? 'bg-secondary/10' : ''}`}
     >
       <Container>{children}</Container>
     </section>

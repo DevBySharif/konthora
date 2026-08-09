@@ -98,7 +98,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
       type="button"
       disabled={disabled}
       onClick={() => !disabled && setIsOpen(true)}
-      className="w-full relative flex items-center justify-between gap-4 p-3 rounded-lg border border-border bg-background hover:bg-secondary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+      className="w-full min-w-0 relative flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-background hover:bg-secondary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
     >
       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
         <div className="flex items-center gap-2">
@@ -115,38 +115,6 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
           {selectedVoice ? `${selectedVoice.accent} • ${selectedVoice.gender.charAt(0).toUpperCase() + selectedVoice.gender.slice(1)}` : 'Choose a voice model'}
         </span>
       </div>
-      
-      {/* Collapsed Preview Control */}
-      <div 
-        className="shrink-0 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-border/60 bg-secondary/30 hover:bg-secondary/80 hover:border-border text-xs font-medium text-foreground transition-colors"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!selectedVoice) return;
-          playPreview(selectedVoice.id, selectedVoice); // toggle
-        }}
-        role="button"
-        aria-label={`Listen to ${selectedVoice?.displayName || 'voice'}`}
-      >
-        {activePreviewId === selectedVoice?.id && previewStatus === 'loading' ? (
-           <span className="text-xs">Loading...</span>
-        ) : activePreviewId === selectedVoice?.id && previewStatus === 'playing' ? (
-           <>
-             <Pause className="w-3.5 h-3.5" />
-             <span>Pause</span>
-           </>
-        ) : activePreviewId === selectedVoice?.id && previewStatus === 'error' ? (
-           <>
-             <AlertCircle className="w-3.5 h-3.5 text-destructive" />
-             <span className="text-destructive">Error</span>
-           </>
-        ) : (
-           <>
-             <Play className="w-3.5 h-3.5" />
-             <span>Listen</span>
-           </>
-        )}
-      </div>
-
       <ChevronDown className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 shrink-0 transition-opacity" />
     </button>
   );
@@ -311,6 +279,8 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
         Voice
       </label>
       
+      <div className="flex items-stretch gap-2">
+      <div className="min-w-0 flex-1">
       {isMobile ? (
         <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
           <Dialog.Trigger asChild>
@@ -342,6 +312,25 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
           </Popover.Portal>
         </Popover.Root>
       )}
+      </div>
+      <button
+        type="button"
+        disabled={disabled || !selectedVoice}
+        onClick={() => selectedVoice && playPreview(selectedVoice.id, selectedVoice)}
+        className="shrink-0 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary/30 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label={`${activePreviewId === selectedVoice?.id && previewStatus === 'playing' ? 'Pause' : 'Listen to'} ${selectedVoice?.displayName || 'voice'}`}
+      >
+        {activePreviewId === selectedVoice?.id && previewStatus === 'loading' ? (
+          <span>Loading</span>
+        ) : activePreviewId === selectedVoice?.id && previewStatus === 'playing' ? (
+          <><Pause className="h-3.5 w-3.5" /><span>Pause</span></>
+        ) : activePreviewId === selectedVoice?.id && previewStatus === 'error' ? (
+          <><AlertCircle className="h-3.5 w-3.5 text-destructive" /><span className="text-destructive">Error</span></>
+        ) : (
+          <><Play className="h-3.5 w-3.5" /><span>Listen</span></>
+        )}
+      </button>
+      </div>
     </div>
   );
 }
