@@ -27,11 +27,12 @@ export default function SpanishTtsPage() {
 
   const webAppSchema = {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     name: 'Konthora Spanish Text to Speech',
     url: pageUrl,
     applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'All',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    operatingSystem: 'Web',
     inLanguage: 'es',
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };

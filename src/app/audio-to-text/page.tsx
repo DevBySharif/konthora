@@ -26,11 +26,12 @@ export default function AudioToTextPage() {
 
   const webAppSchema = {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     name: 'Konthora Audio to Text with Timestamps',
     url: pageUrl,
     applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'All',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    operatingSystem: 'Web',
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };
 

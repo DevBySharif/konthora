@@ -25,11 +25,12 @@ export default function TextToMp3Page() {
 
   const webAppSchema = {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     name: 'Konthora Text to MP3 Converter',
     url: pageUrl,
     applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'All',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    operatingSystem: 'Web',
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };
 

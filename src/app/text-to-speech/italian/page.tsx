@@ -27,11 +27,12 @@ export default function ItalianTtsPage() {
 
   const webAppSchema = {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+    '@type': 'SoftwareApplication',
     name: 'Konthora Italian Text to Speech',
     url: pageUrl,
     applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'All',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    operatingSystem: 'Web',
     inLanguage: 'it-IT',
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };

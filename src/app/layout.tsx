@@ -19,8 +19,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  title: `${siteConfig.name} | ${siteConfig.tagline}`,
   description: siteConfig.description,
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION && {
+      other: {
+        'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION,
+      },
+    }),
+  },
 };
 
 const themeInitScript = `
