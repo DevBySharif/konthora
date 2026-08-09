@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
+import { constructSoftwareAppSchema } from '@/lib/schema';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -25,17 +26,10 @@ export const metadata: Metadata = constructMetadata({
 export default function SpanishTtsPage() {
   const pageUrl = `${siteConfig.url}/text-to-speech/spanish`;
 
-  const webAppSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
+  const webAppSchema = constructSoftwareAppSchema({
     name: 'Konthora Spanish Text to Speech',
     url: pageUrl,
-    applicationCategory: 'MultimediaApplication',
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    operatingSystem: 'Web',
-    inLanguage: 'es',
-    browserRequirements: 'Requires a modern web browser with HTML5 support.',
-  };
+  });
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',

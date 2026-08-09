@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { constructMetadata } from '@/lib/metadata';
+import { constructSoftwareAppSchema } from '@/lib/schema';
 import { Container } from '@/components/ui/Container';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
@@ -85,16 +86,10 @@ export default function HomePage() {
     },
   };
 
-  const webAppSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
+  const webAppSchema = constructSoftwareAppSchema({
     name: `${siteConfig.name} AI Audio Tools`,
     url: siteConfig.url,
-    applicationCategory: 'MultimediaApplication',
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    operatingSystem: 'Web',
-    browserRequirements: 'Requires a modern web browser with HTML5 support.',
-  };
+  });
 
   const faqSchema = {
     '@context': 'https://schema.org',

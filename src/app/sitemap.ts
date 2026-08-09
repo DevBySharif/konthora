@@ -2,6 +2,10 @@ import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { getAllVoices, getVoiceUrl } from '@/config/voices';
 
+// Represents the date of the last major content update across the site,
+// specifically the completion of the voice catalogue and tool descriptions.
+const CONTENT_LAST_MODIFIED = new Date('2026-08-01');
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const voiceRoutes = getAllVoices().map((voice) => getVoiceUrl(voice.slug));
 
@@ -61,7 +65,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return routes.map((route) => ({
     url: `${siteConfig.url}${route}`,
-    lastModified: new Date('2026-08-01'),
+    lastModified: CONTENT_LAST_MODIFIED,
     changeFrequency: route === '' ? 'weekly' : 'monthly',
     priority: route === '' ? 1.0 : route.includes('to-') ? 0.9 : 0.5,
   }));
