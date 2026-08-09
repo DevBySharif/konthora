@@ -2,6 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
+import { constructSoftwareAppSchema } from '@/lib/schema';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -24,15 +25,10 @@ export const metadata: Metadata = constructMetadata({
 export default function TextToSpeechPage() {
   const pageUrl = `${siteConfig.url}/text-to-speech`;
 
-  const webAppSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebApplication',
+  const webAppSchema = constructSoftwareAppSchema({
     name: 'Konthora Free AI Text to Speech Online',
     url: pageUrl,
-    applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'All',
-    browserRequirements: 'Requires a modern web browser with HTML5 support.',
-  };
+  });
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
