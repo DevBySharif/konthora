@@ -274,7 +274,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="min-w-0 flex flex-col gap-2">
       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
         Voice
       </label>
