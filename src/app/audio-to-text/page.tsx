@@ -149,7 +149,7 @@ export default function AudioToTextPage() {
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 
-      <Section className="pb-6">
+      <Section className="pb-4">
         <Container>
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Audio to Text' }]} />
           <PageHeader
@@ -168,6 +168,7 @@ export default function AudioToTextPage() {
         title="Everything the transcription workspace supports"
         description="Konthora turns English speech into accurate, timestamped text ready to edit and export. Here is exactly what is supported."
         cards={capabilityCards}
+        compact
       />
 
       <StepsSection
@@ -176,6 +177,7 @@ export default function AudioToTextPage() {
         title="Transcribe audio in three steps"
         description="Upload a file and get an accurate, timestamped transcript in seconds."
         steps={steps}
+        compact
       />
 
       <InfoSection
@@ -185,6 +187,7 @@ export default function AudioToTextPage() {
         description="Timestamped transcripts for talking, research, and content production."
         cards={useCaseCards}
         twoCol
+        compact
       />
 
       <CrossLinks
@@ -204,10 +207,11 @@ export default function AudioToTextPage() {
             description: 'Return to the home page and browse every browser-based audio tool we offer.',
           },
         ]}
+        compact
       />
 
       {/* ── Explore Guides ── */}
-      <Section aria-labelledby="explore-guides-heading">
+      <Section aria-labelledby="explore-guides-heading" className="py-10 md:py-12">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-2xl font-bold text-foreground sm:text-3xl" id="explore-guides-heading">
@@ -215,7 +219,7 @@ export default function AudioToTextPage() {
             </h2>
           </div>
           
-          <div className="mt-12">
+          <div className="mt-8">
             <h3 className="text-lg font-semibold text-foreground mb-4">Learn the workflow</h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[
@@ -243,7 +247,7 @@ export default function AudioToTextPage() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                  className="group rounded-xl border border-border/70 bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
                 >
                   <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                     {l.label}
@@ -260,7 +264,7 @@ export default function AudioToTextPage() {
             </div>
           </div>
 
-          <div className="mt-12">
+          <div className="mt-8">
             <h3 className="text-lg font-semibold text-foreground mb-4">Explore practical use cases</h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {[
@@ -313,7 +317,7 @@ export default function AudioToTextPage() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                  className="group rounded-xl border border-border/70 bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
                 >
                   <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                     {l.label}
@@ -333,9 +337,9 @@ export default function AudioToTextPage() {
       </Section>
 
       {/* Tool FAQ Section */}
-      <Section className="bg-secondary/10">
+      <Section className="bg-secondary/10 py-10 md:py-12">
         <Container>
-          <div className="text-center mb-12" id="a2t-faq-heading">
+          <div className="text-center mb-8" id="a2t-faq-heading">
             <h2 className="text-2xl font-bold text-foreground">Transcription FAQs</h2>
             <p className="mt-2 text-muted-foreground">Common questions about Konthora&apos;s audio transcription tool.</p>
           </div>
