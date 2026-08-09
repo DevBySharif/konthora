@@ -80,23 +80,23 @@ export default function TextToSpeechPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '10 natural voices',
-      desc: 'Six American and four British English neural voices, male and female, ready to pick in one click.',
+      title: '41 AI voices',
+      desc: 'A growing voice catalogue with clear preview controls and language-specific selections.',
     },
     {
       icon: Volume2,
-      title: 'MP3 or WAV output',
-      desc: 'Grab a compact MP3 for sharing or a high-quality WAV for professional editing.',
+      title: '6 languages',
+      desc: 'Create speech in English, Hindi, Spanish, French, Italian, and Portuguese.',
     },
     {
       icon: Gauge,
-      title: 'Adjustable speed',
+      title: 'MP3 or WAV',
       desc: 'Fine-tune pace anywhere between 0.75× and 1.25× to match your script and audience.',
     },
     {
       icon: FileAudio,
-      title: 'Up to 2,000 characters',
-      desc: 'Generate natural speech for scripts up to 2,000 characters per request.',
+      title: 'Free in your browser',
+      desc: 'Generate natural speech for scripts up to 2,000 characters per request, with no install.',
     },
   ];
 
@@ -144,7 +144,7 @@ export default function TextToSpeechPage() {
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 
-      <Section className="pb-6">
+      <Section className="pb-4">
         <Container>
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Text to Speech' }]} />
           <PageHeader
@@ -163,6 +163,7 @@ export default function TextToSpeechPage() {
         title="Everything the speech workspace supports"
         description="Konthora serves tens of thousands of free, browser-based text-to-speech, powered by the open Kokoro voice model. Here is exactly what is supported."
         cards={capabilityCards}
+        compact
       />
 
       <StepsSection
@@ -171,6 +172,7 @@ export default function TextToSpeechPage() {
         title="Generate a voiceover in three steps"
         description="Generate natural speech from text in seconds, with no account and no install needed."
         steps={steps}
+        compact
       />
 
       <InfoSection
@@ -180,6 +182,7 @@ export default function TextToSpeechPage() {
         description="Free AI voiceovers for creative projects and everyday content creation."
         cards={useCaseCards}
         twoCol
+        compact
       />
 
       <CrossLinks
@@ -199,6 +202,7 @@ export default function TextToSpeechPage() {
             description: 'Return to the home page and browse every browser-based audio tool we offer.',
           },
         ]}
+        compact
       />
 
       {/* ── Explore Guides ── */}
@@ -212,7 +216,7 @@ export default function TextToSpeechPage() {
               Learn more about how the technology works, explore voice options, and discover practical use cases.
             </p>
           </div>
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 href: '/text-to-speech/how-does-text-to-speech-work',
@@ -258,7 +262,7 @@ export default function TextToSpeechPage() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                className="group rounded-xl border border-border/70 bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
               >
                 <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {l.label}
@@ -294,7 +298,7 @@ export default function TextToSpeechPage() {
               Make voiceovers in other languages, or convert any script straight into an MP3 file.
             </p>
           </div>
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { href: '/text-to-speech/spanish', label: 'Spanish Text to Speech', description: 'Generate natural Spanish voiceovers with native voices.' },
               { href: '/text-to-speech/hindi', label: 'Hindi Text to Speech', description: 'Create natural Hindi narration for Indian audiences.' },
@@ -306,7 +310,7 @@ export default function TextToSpeechPage() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="group rounded-2xl border border-border/70 bg-card p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
+                className="group rounded-xl border border-border/70 bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/25"
               >
                 <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {l.label}

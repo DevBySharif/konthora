@@ -431,7 +431,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Editor Wrapper */}
         <div className="border border-border bg-card rounded-2xl shadow-xs overflow-hidden">
@@ -513,20 +513,20 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         )}
 
         {/* Controls Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6 border border-border bg-card rounded-2xl shadow-xs">
+        <div className="space-y-6 p-5 sm:p-6 lg:p-7 border border-border bg-card rounded-2xl shadow-xs">
           {/* Language Selector */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Language
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 min-h-10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <button
                   key={lang.value}
                   type="button"
                   onClick={() => handleLanguageChange(lang.value as SupportedLanguage)}
                   disabled={status === 'submitting' || status === 'polling'}
-                  className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer py-1.5 px-2 ${
+                  className={`min-h-11 rounded-lg border text-sm font-semibold tracking-wide transition-colors cursor-pointer py-2 px-3 ${
                     selectedLanguage === lang.value
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
@@ -541,6 +541,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </p>
           </div>
 
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(15rem,0.75fr)] lg:items-start">
           {/* Voice Picker V2 */}
           <VoicePicker
             voices={voices.filter(v => v.language === selectedLanguage || (!v.language && selectedLanguage === 'en-US'))}
@@ -551,7 +552,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           />
 
           {/* Speed Slider */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 lg:order-2 lg:col-span-2 border-t border-border/70 pt-5">
             <div className="flex justify-between items-center">
               <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Speech Speed
@@ -578,11 +579,11 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </div>
 
           {/* Format Selector */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 lg:order-1">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Output Format
             </label>
-            <div className="grid grid-cols-2 gap-2 h-10">
+            <div className="grid grid-cols-2 gap-2 min-h-11">
               {(['mp3', 'wav'] as const).map((fmt) => (
                 <button
                   key={fmt}
@@ -609,11 +610,12 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 : 'WAV: Uncompressed audio, suitable for editing and workflows that need maximum source quality.'}
             </p>
           </div>
+          </div>
         </div>
 
         {/* Generate Button and Duration Block */}
         <div className="space-y-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-secondary/15 border border-border/80 rounded-2xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 bg-secondary/15 border border-border/80 rounded-2xl">
             <div className="text-left w-full sm:w-auto">
               <span className="text-xs font-semibold text-muted-foreground uppercase block">
                 Estimated Audio Duration
@@ -626,7 +628,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             <Button
               type="submit"
               size="lg"
-              className="w-full sm:w-auto cursor-pointer"
+              className="w-full sm:w-auto sm:min-w-64 cursor-pointer"
               disabled={status === 'submitting' || status === 'polling'}
               aria-describedby="tts-submit-status"
             >
@@ -639,12 +641,18 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground px-4 text-center">
+          <div className="flex flex-col gap-2 px-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold uppercase tracking-wide">Estimated audio</span>
+              <span className="font-mono font-bold text-foreground">{formatEstimatedDuration()}</span>
+            </div>
+            <div className="flex items-center gap-1.5 sm:text-right">
             <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>
               Your text is processed securely and automatically deleted after 60 minutes.{' '}
               <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">Privacy</a>
             </span>
+            </div>
           </div>
         </div>
 
@@ -660,13 +668,16 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
       </form>
 
       {/* Output Results Area */}
-      <div className="mt-12 pt-8 border-t border-border/60">
-        <h3 className="text-lg font-bold text-foreground mb-4">Generated Audio Output</h3>
+      <div className="mt-8 pt-7 border-t border-border/60">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
+          <h3 className="text-lg font-bold text-foreground">Generated Audio</h3>
+          {status === 'completed' && <span className="text-xs font-semibold text-primary">Ready to play or download</span>}
+        </div>
 
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs">
+        <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
           {status !== 'completed' && (
-            <div className="flex flex-col items-center justify-center text-center p-8 md:p-12 border-2 border-dashed border-border rounded-2xl bg-card/30">
-              <div className="mb-4 text-muted-foreground">
+            <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
+              <div className="mb-3 text-muted-foreground">
                 {status === 'failed' ? (
                   <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
                 ) : (
@@ -682,7 +693,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                   : 'Enter your script and click Generate Speech to create natural-sounding voiceovers. Output controls will appear here.'}
               </p>
               {status !== 'failed' && (
-                <div className="mt-6">
+                <div className="mt-4">
                   <Button
                     type="button"
                     variant="outline"
