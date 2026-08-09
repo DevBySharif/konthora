@@ -7,6 +7,7 @@ import { Section } from '@/components/ui/Section';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { getAllVoices, getVoiceUrl } from '@/config/voices';
 import {
   Globe2,
   AudioLines,
@@ -19,7 +20,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'American English AI Voices Available in Konthora | Konthora',
   description:
-    'Explore the 6 American English AI voices available in Konthora. Learn when to choose an American accent and how to preview and generate natural speech.',
+    'Explore the 20 American English AI voices available in Konthora. Learn when to choose an American accent and how to preview and generate natural speech.',
   path: '/voices/american-english-voices',
 });
 
@@ -41,14 +42,13 @@ export default function AmericanEnglishVoicesPage() {
   };
 
   /* ── Voice Data ── */
-  const americanVoices = [
-    { name: 'Heart', gender: 'Female' },
-    { name: 'Bella', gender: 'Female' },
-    { name: 'Nicole', gender: 'Female' },
-    { name: 'Nova', gender: 'Female' },
-    { name: 'Adam', gender: 'Male' },
-    { name: 'Michael', gender: 'Male' },
-  ];
+  const americanVoices = getAllVoices()
+    .filter((v) => v.language === 'en-US')
+    .map((v) => ({
+      name: v.shortName,
+      gender: v.gender === 'female' ? 'Female' : 'Male',
+      href: getVoiceUrl(v.slug),
+    }));
 
   /* ── Schema: FAQPage ── */
   const faqs: FAQItem[] = [
@@ -181,17 +181,24 @@ export default function AmericanEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  Konthora currently offers 6 distinct American English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available directly in your browser without creating an account.
+                  Konthora currently offers 20 American English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available directly in your browser without creating an account.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Each voice has a dedicated page with a preview, voice specifications, and a link to generate speech.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {americanVoices.map((voice) => (
-                  <div key={voice.name} className="flex flex-col items-center justify-center p-6 rounded-xl bg-card border border-border/70 text-center hover:border-primary/50 transition-colors">
+                  <Link
+                    key={voice.name}
+                    href={voice.href}
+                    className="group flex flex-col items-center justify-center p-6 rounded-xl bg-card border border-border/70 text-center hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5"
+                  >
                     <User className="h-6 w-6 text-primary mb-3" />
-                    <strong className="text-foreground text-base font-semibold">{voice.name}</strong>
+                    <strong className="text-foreground text-base font-semibold group-hover:text-primary transition-colors">{voice.name}</strong>
                     <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{voice.gender}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>

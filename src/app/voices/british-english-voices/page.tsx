@@ -7,6 +7,7 @@ import { Section } from '@/components/ui/Section';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { getAllVoices, getVoiceUrl } from '@/config/voices';
 import {
   Globe2,
   AudioLines,
@@ -19,7 +20,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'British English AI Voices Available in Konthora | Konthora',
   description:
-    'Explore the 4 British English AI voices available in Konthora. Learn when to choose a British accent and how to preview and generate natural speech.',
+    'Explore the 8 British English AI voices available in Konthora. Learn when to choose a British accent and how to preview and generate natural speech.',
   path: '/voices/british-english-voices',
 });
 
@@ -41,18 +42,19 @@ export default function BritishEnglishVoicesPage() {
   };
 
   /* ── Voice Data ── */
-  const britishVoices = [
-    { name: 'Emma', gender: 'Female' },
-    { name: 'Isabella', gender: 'Female' },
-    { name: 'George', gender: 'Male' },
-    { name: 'Lewis', gender: 'Male' },
-  ];
+  const britishVoices = getAllVoices()
+    .filter((v) => v.language === 'en-GB')
+    .map((v) => ({
+      name: v.shortName,
+      gender: v.gender === 'female' ? 'Female' : 'Male',
+      href: getVoiceUrl(v.slug),
+    }));
 
   /* ── Schema: FAQPage ── */
   const faqs: FAQItem[] = [
     {
       question: "How many British English voices does Konthora have?",
-      answer: "Konthora provides 4 British English voices: Emma, Isabella, George, and Lewis.",
+      answer: "Konthora provides 8 British English voices.",
     },
     {
       question: "Can I adjust the speed of the British voices?",
@@ -139,7 +141,7 @@ export default function BritishEnglishVoicesPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Explore the 4 British English AI voices available on the platform. Discover when to use a British accent and how to generate natural-sounding speech for your projects.
+            Explore the 8 British English AI voices available on the platform. Discover when to use a British accent and how to generate natural-sounding speech for your projects.
           </p>
         </Container>
       </section>
@@ -179,17 +181,24 @@ export default function BritishEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  Konthora currently offers 4 distinct British English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available immediately within the browser workspace.
+                  Konthora currently offers 8 distinct British English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available immediately within the browser workspace.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Each voice has a dedicated page with a preview, voice specifications, and a link to generate speech.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {britishVoices.map((voice) => (
-                  <div key={voice.name} className="flex flex-col items-center justify-center p-6 rounded-xl bg-card border border-border/70 text-center hover:border-primary/50 transition-colors">
+                  <Link
+                    key={voice.name}
+                    href={voice.href}
+                    className="group flex flex-col items-center justify-center p-6 rounded-xl bg-card border border-border/70 text-center hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5"
+                  >
                     <User className="h-6 w-6 text-primary mb-3" />
-                    <strong className="text-foreground text-base font-semibold">{voice.name}</strong>
+                    <strong className="text-foreground text-base font-semibold group-hover:text-primary transition-colors">{voice.name}</strong>
                     <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{voice.gender}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -239,7 +248,7 @@ export default function BritishEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Among the 4 British options, you will find variations in cadence and pitch. We recommend previewing a few different voices using a sample sentence from your actual script to see which one delivers the best result for your content.
+                  Among the 8 British options, you will find variations in cadence and pitch. We recommend previewing a few different voices using a sample sentence from your actual script to see which one delivers the best result for your content.
                 </p>
                 <p>
                   You can also fine-tune the delivery by adjusting the playback speed between 0.75× and 1.25×, allowing you to match the exact pace required for your project.
@@ -259,7 +268,7 @@ export default function BritishEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  You can preview all 4 British English voices directly in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. Simply enter up to 2,000 characters of text, select your preferred voice, and generate your audio.
+                  You can preview all 8 British English voices directly in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. Simply enter up to 2,000 characters of text, select your preferred voice, and generate your audio.
                 </p>
                 <p>
                   Because the platform uses a temporary, session-based approach, you must download your generated voiceover during your active session as an <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 or WAV</Link> file.
