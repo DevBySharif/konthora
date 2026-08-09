@@ -40,42 +40,24 @@ export default function VoicesPage() {
     ],
   };
 
-  /* ── Voice Data ── */
+/* ── Voice Data ── */
   const allVoices = getAllVoices();
 
-  const americanVoices = [
-    { name: 'Heart', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'af_heart')!.slug) },
-    { name: 'Bella', gender: 'Female' },
-    { name: 'Nicole', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'af_nicole')!.slug) },
-    { name: 'Nova', gender: 'Female' },
-    { name: 'Adam', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'am_adam')!.slug) },
-    { name: 'Michael', gender: 'Male' },
-    { name: 'Alloy', gender: 'Female' },
-    { name: 'Aoede', gender: 'Female' },
-    { name: 'Jessica', gender: 'Female' },
-    { name: 'Kore', gender: 'Female' },
-    { name: 'River', gender: 'Female' },
-    { name: 'Sarah', gender: 'Female' },
-    { name: 'Sky', gender: 'Female' },
-    { name: 'Echo', gender: 'Male' },
-    { name: 'Eric', gender: 'Male' },
-    { name: 'Fenrir', gender: 'Male' },
-    { name: 'Liam', gender: 'Male' },
-    { name: 'Onyx', gender: 'Male' },
-    { name: 'Puck', gender: 'Male' },
-    { name: 'Santa', gender: 'Male' },
-  ];
+  const americanVoices = allVoices
+    .filter((v) => v.language === 'en-US')
+    .map((v) => ({
+      name: v.shortName,
+      gender: v.gender === 'female' ? 'Female' : 'Male',
+      href: getVoiceUrl(v.slug),
+    }));
 
-  const britishVoices = [
-    { name: 'Emma', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'bf_emma')!.slug) },
-    { name: 'Isabella', gender: 'Female' },
-    { name: 'George', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'bm_george')!.slug) },
-    { name: 'Lewis', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'bm_lewis')!.slug) },
-    { name: 'Alice', gender: 'Female' },
-    { name: 'Lily', gender: 'Female' },
-    { name: 'Daniel', gender: 'Male' },
-    { name: 'Fable', gender: 'Male' },
-  ];
+  const britishVoices = allVoices
+    .filter((v) => v.language === 'en-GB')
+    .map((v) => ({
+      name: v.shortName,
+      gender: v.gender === 'female' ? 'Female' : 'Male',
+      href: getVoiceUrl(v.slug),
+    }));
 
   const multilingualVoices = allVoices.filter(v => !['en-US', 'en-GB'].includes(v.language));
 
