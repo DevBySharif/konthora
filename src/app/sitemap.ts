@@ -1,7 +1,10 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
+import { getAllVoices, getVoiceUrl } from '@/config/voices';
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const voiceRoutes = getAllVoices().map((voice) => getVoiceUrl(voice.slug));
+
   const routes = [
     '',
     '/text-to-speech',
@@ -53,6 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/voices',
     '/voices/american-english-voices',
     '/voices/british-english-voices',
+    ...voiceRoutes,
   ];
 
   return routes.map((route) => ({

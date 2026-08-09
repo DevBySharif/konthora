@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { AdPlaceholder } from '@/components/ui/AdPlaceholder';
-import { TtsWorkspace } from '@/components/tools/TtsWorkspace';
+import { TtsWorkspaceWithPreset } from '@/components/tools/TtsWorkspaceWithPreset';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
@@ -156,7 +156,7 @@ export default function TextToSpeechPage() {
             description="Convert your written scripts into natural-sounding English speech with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."
             badge="Speech Workbench"
           />
-          <TtsWorkspace />
+          <TtsWorkspaceWithPreset />
           <AdPlaceholder />
         </Container>
       </Section>

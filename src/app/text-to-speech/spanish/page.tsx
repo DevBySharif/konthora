@@ -8,7 +8,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { AdPlaceholder } from '@/components/ui/AdPlaceholder';
-import { TtsWorkspace } from '@/components/tools/TtsWorkspace';
+import { TtsWorkspaceWithPreset } from '@/components/tools/TtsWorkspaceWithPreset';
+import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
@@ -158,7 +159,7 @@ export default function SpanishTtsPage() {
             description="Type Spanish text and turn it into natural AI speech instantly, free, in your browser — with 3 native voices, adjustable speed, and a one-click MP3 or WAV download."
             badge="Speech Workbench · Español"
           />
-          <TtsWorkspace />
+          <TtsWorkspaceWithPreset />
           <AdPlaceholder />
         </Container>
       </Section>
@@ -238,6 +239,8 @@ export default function SpanishTtsPage() {
           </div>
         </Container>
       </Section>
+
+      <LanguageVoiceLinks language="es" />
 
       {/* Tool FAQ Section */}
       <Section className="bg-secondary/10">

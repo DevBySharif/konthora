@@ -96,7 +96,7 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 const SAMPLE_TEXT =
   'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
 
-export function TtsWorkspace() {
+export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | null }) {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
 
@@ -163,9 +163,19 @@ export function TtsWorkspace() {
         const data = await fetchVoices();
         if (data && data.length > 0) {
           setVoices(data);
-          // Set default voice based on first US voice in returned data
-          const defaultUs = data.find(v => v.id === 'af_heart') || data[0];
-          setSelectedVoiceId(defaultUs.id);
+          // Preselect a requested voice from the URL (?voice=...) when valid
+          const preset = initialVoiceId
+            ? data.find(v => v.id === initialVoiceId) || FALLBACK_VOICES.find(v => v.id === initialVoiceId)
+            : undefined;
+          if (preset) {
+            setSelectedVoiceId(preset.id);
+            setSelectedLanguage(preset.language as SupportedLanguage);
+            lastVoiceByLanguage.current[preset.language as SupportedLanguage] = preset.id;
+          } else {
+            // Set default voice based on first US voice in returned data
+            const defaultUs = data.find(v => v.id === 'af_heart') || data[0];
+            setSelectedVoiceId(defaultUs.id);
+          }
         }
       } catch (err) {
         console.error('Failed to load dynamic voices catalog. Falling back to local values.', err);
@@ -175,6 +185,7 @@ export function TtsWorkspace() {
       }
     }
     loadVoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Clean up timers, abort controllers, and URL allocations

@@ -7,6 +7,7 @@ import { Section } from '@/components/ui/Section';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { getAllVoices, getVoiceUrl } from '@/config/voices';
 import {
   Globe2,
   Gauge,
@@ -40,12 +41,14 @@ export default function VoicesPage() {
   };
 
   /* ── Voice Data ── */
+  const allVoices = getAllVoices();
+
   const americanVoices = [
-    { name: 'Heart', gender: 'Female' },
+    { name: 'Heart', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'af_heart')!.slug) },
     { name: 'Bella', gender: 'Female' },
-    { name: 'Nicole', gender: 'Female' },
+    { name: 'Nicole', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'af_nicole')!.slug) },
     { name: 'Nova', gender: 'Female' },
-    { name: 'Adam', gender: 'Male' },
+    { name: 'Adam', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'am_adam')!.slug) },
     { name: 'Michael', gender: 'Male' },
     { name: 'Alloy', gender: 'Female' },
     { name: 'Aoede', gender: 'Female' },
@@ -64,15 +67,17 @@ export default function VoicesPage() {
   ];
 
   const britishVoices = [
-    { name: 'Emma', gender: 'Female' },
+    { name: 'Emma', gender: 'Female', href: getVoiceUrl(allVoices.find(v => v.id === 'bf_emma')!.slug) },
     { name: 'Isabella', gender: 'Female' },
-    { name: 'George', gender: 'Male' },
-    { name: 'Lewis', gender: 'Male' },
+    { name: 'George', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'bm_george')!.slug) },
+    { name: 'Lewis', gender: 'Male', href: getVoiceUrl(allVoices.find(v => v.id === 'bm_lewis')!.slug) },
     { name: 'Alice', gender: 'Female' },
     { name: 'Lily', gender: 'Female' },
     { name: 'Daniel', gender: 'Male' },
     { name: 'Fable', gender: 'Male' },
   ];
+
+  const multilingualVoices = allVoices.filter(v => !['en-US', 'en-GB'].includes(v.language));
 
   /* ── Schema: FAQPage ── */
   const faqs: FAQItem[] = [
@@ -157,8 +162,8 @@ export default function VoicesPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Konthora provides a curated catalogue of 28 English voices for generating natural speech. 
-            Learn about the available American and British accents, and how to choose the right voice for your content.
+            Konthora provides a curated catalogue of 28 English voices for generating natural speech, plus native voices for Hindi, Spanish, French, Italian, and Brazilian Portuguese.
+            Learn about the available accents, preview the voices, and discover how to choose the right one for your content.
           </p>
 
         </Container>
@@ -218,12 +223,23 @@ export default function VoicesPage() {
                   There are 20 American English voices available, providing a standard North American pronunciation style.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {americanVoices.map((voice) => (
-                    <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
-                      <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
-                      <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
-                    </div>
-                  ))}
+                  {americanVoices.map((voice) => {
+                    const cardInner = (
+                      <>
+                        <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
+                        <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
+                      </>
+                    );
+                    return voice.href ? (
+                      <Link key={voice.name} href={voice.href} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/40 transition-colors">
+                        {cardInner}
+                      </Link>
+                    ) : (
+                      <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
+                        {cardInner}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -239,13 +255,55 @@ export default function VoicesPage() {
                   There are 8 British English voices available, offering a traditional UK pronunciation style.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {britishVoices.map((voice) => (
-                    <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
-                      <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
-                      <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
-                    </div>
-                  ))}
+                  {britishVoices.map((voice) => {
+                    const cardInner = (
+                      <>
+                        <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
+                        <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
+                      </>
+                    );
+                    return voice.href ? (
+                      <Link key={voice.name} href={voice.href} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors">
+                        {cardInner}
+                      </Link>
+                    ) : (
+                      <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
+                        {cardInner}
+                      </div>
+                    );
+                  })}
                 </div>
+              </div>
+            </section>
+
+            <hr className="border-border/40" />
+
+            {/* ── H2: Multilingual Voices ── */}
+            <section aria-labelledby="multilingual-voices">
+              <h2
+                id="multilingual-voices"
+                className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
+              >
+                Multilingual Voices
+              </h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
+                <p>
+                  Beyond English, Konthora ships native voices for Hindi, Spanish, French, Italian, and Brazilian Portuguese in the same workspace. Each has a dedicated page with a preview, voice specifications, and a link to generate speech.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {multilingualVoices.map((voice) => (
+                  <Link
+                    key={voice.id}
+                    href={getVoiceUrl(voice.slug)}
+                    className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors"
+                  >
+                    <strong className="text-foreground text-sm font-semibold">{voice.shortName}</strong>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      {voice.gender === 'female' ? 'Female' : 'Male'} · {voice.language}
+                    </span>
+                  </Link>
+                ))}
               </div>
             </section>
 
