@@ -626,11 +626,11 @@ export function TranscriptionWorkspace() {
                   </p>
                 ) : (
                   job.transcript.segments.map((seg) => (
-                    <div key={seg.id} className="flex gap-3 group">
-                      <span className="text-[11px] text-primary/70 font-semibold tabular-nums pt-0.5 shrink-0 w-28">
+                    <div key={seg.id} className="flex flex-col gap-1 group sm:flex-row sm:gap-3">
+                      <span className="text-[11px] text-primary/70 font-semibold tabular-nums shrink-0 sm:w-28 sm:pt-0.5">
                         {seg.startFormatted} → {seg.endFormatted}
                       </span>
-                      <span className="text-foreground leading-relaxed">
+                      <span className="min-w-0 max-w-full break-words whitespace-normal text-foreground leading-relaxed">
                         {seg.text.trim()}
                       </span>
                     </div>
