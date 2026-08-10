@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Optional
 from fastapi import APIRouter, Request, File, Form, UploadFile, Depends
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import Response, JSONResponse
 from loguru import logger
 
 from app.core.config import settings
@@ -19,6 +19,7 @@ from app.services.rate_limit_service import RateLimitService
 from app.services.transcription_job_service import TranscriptionJobService
 from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.media_service import MediaService
+from app.services.transcript_formatter import TranscriptFormatter
 from app.utils.file_validation import validate_uploaded_file, SUPPORTED_EXTENSIONS
 from app.utils.storage import resolve_secure_path
 from app.schemas.transcription import (
@@ -248,8 +249,8 @@ def get_job_transcript(jobId: str, request: Request):
         raise InvalidRequestException("RESULT_CORRUPTED", "Failed to parse stored transcription result.")
 
 @router.get("/transcription/jobs/{jobId}/result")
-def get_job_result(jobId: str, request: Request):
-    """Downloads the formatted export document from disk. Requires Bearer authorization."""
+def get_job_result(jobId: str, request: Request, format: Optional[str] = None):
+    """Renders and downloads the requested transcript format from the stored result."""
     token = get_bearer_token(request)
     job_service = TranscriptionJobService()
     job = job_service.verify_job_access(jobId, token)
@@ -257,33 +258,53 @@ def get_job_result(jobId: str, request: Request):
     if job.status != "completed":
         raise InvalidRequestException("RESULT_NOT_READY", "The transcription result is not ready.")
 
-    if not job.export_result_path:
-        raise JobNotFoundException("Export result file is missing.")
+    export_format = format or job.export_format
+    if export_format not in {"txt", "srt", "vtt", "json"}:
+        raise InvalidRequestException("EXPORT_FORMAT_INVALID", f"Export format '{export_format}' is invalid.")
 
-    result_path = Path(job.export_result_path)
-    if not result_path.exists():
-        logger.error(f"Export result file missing on disk for completed job: {jobId}")
-        raise JobNotFoundException("Export result file not found.")
+    if not job.structured_json_path:
+        raise JobNotFoundException("Structured transcript file is missing.")
+
+    json_path = Path(job.structured_json_path)
+    if not json_path.exists():
+        logger.error(f"Structured transcript file missing on disk for completed job: {jobId}")
+        raise JobNotFoundException("Structured transcript result file not found.")
+
+    try:
+        with open(json_path, "r", encoding="utf-8") as result_file:
+            structured_result = json.load(result_file)
+    except (OSError, json.JSONDecodeError) as error:
+        logger.error(f"Failed to read structured transcript for job {jobId}: {error}")
+        raise InvalidRequestException("RESULT_CORRUPTED", "Failed to parse stored transcription result.")
+
+    segments = structured_result.get("segments", [])
+    if export_format == "txt":
+        content = TranscriptFormatter().export_txt(segments)
+    elif export_format == "srt":
+        content = TranscriptFormatter().export_srt(segments)
+    elif export_format == "vtt":
+        content = TranscriptFormatter().export_vtt(segments)
+    else:
+        content = json.dumps(structured_result, indent=2)
 
     # Content type determination
     content_types = {
         "txt": "text/plain; charset=utf-8",
-        "srt": "text/plain; charset=utf-8",
+        "srt": "application/x-subrip; charset=utf-8",
         "vtt": "text/vtt; charset=utf-8",
         "json": "application/json; charset=utf-8"
     }
-    content_type = content_types.get(job.export_format, "application/octet-stream")
+    content_type = content_types[export_format]
 
     # Sanitize and compile export filename (original basename + export extension)
     safe_name = Path(job.original_filename).stem
     # Replace unsafe characters
     safe_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', safe_name)
-    export_filename = f"{safe_name}.{job.export_format}"
+    export_filename = f"{safe_name}.{export_format}"
 
-    return FileResponse(
-        path=result_path,
+    return Response(
+        content=content,
         media_type=content_type,
-        filename=export_filename,
         headers={
             "Content-Disposition": f"attachment; filename=\"{export_filename}\"",
             "Cache-Control": "private, no-store"

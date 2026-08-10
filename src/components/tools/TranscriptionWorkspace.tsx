@@ -295,8 +295,8 @@ export function TranscriptionWorkspace() {
   const handleDownload = async () => {
     if (!job) return;
     try {
-      const blob = await fetchTranscriptBlob(job.jobId, job.token);
       const ext = form.exportFormat;
+      const blob = await fetchTranscriptBlob(job.jobId, job.token, ext);
       const fileName = `${form.file?.name.replace(/\.[^.]+$/, '') || 'transcript'}.${ext}`;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
