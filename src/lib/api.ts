@@ -266,8 +266,12 @@ export async function fetchStructuredTranscript(
   return handleResponse<ApiStructuredTranscript>(response);
 }
 
-export async function fetchTranscriptBlob(jobId: string, token: string): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/transcription/jobs/${jobId}/result`, {
+export async function fetchTranscriptBlob(
+  jobId: string,
+  token: string,
+  exportFormat: 'txt' | 'srt' | 'vtt' | 'json'
+): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/transcription/jobs/${jobId}/result?format=${exportFormat}`, {
     method: 'GET',
     headers: { 'Authorization': `Bearer ${token}` },
   });
