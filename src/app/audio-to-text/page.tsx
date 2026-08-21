@@ -18,7 +18,7 @@ import { FileAudio, Upload, Clock, Languages, FileDown, ShieldCheck } from 'luci
 export const metadata: Metadata = constructMetadata({
   title: 'Audio to Text with Timestamps | Konthora',
   description:
-    'Transcribe audio or video into accurate English text with sentence, paragraph, or word timestamps. Export transcripts as TXT, SRT, VTT, or JSON.',
+    'Upload audio or video for English audio transcription. Choose sentence, paragraph, or word timestamps, then export your transcript as TXT, SRT, VTT, or JSON.',
   path: '/audio-to-text',
 });
 
@@ -138,8 +138,8 @@ export default function AudioToTextPage() {
       desc: 'Pick sentence-, paragraph-, or word-level detail for your transcript.',
     },
     {
-      title: 'Transcribe and export',
-      desc: 'Review the text, edit as needed, and download as TXT, SRT, VTT, or JSON.',
+      title: 'Transcribe, review, and export',
+      desc: 'Review the timestamped transcript, then download it as TXT, SRT, VTT, or JSON.',
     },
   ];
 
@@ -154,7 +154,7 @@ export default function AudioToTextPage() {
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Audio to Text' }]} />
           <PageHeader
             title="Audio to Text with Timestamps"
-            description="Upload an audio or video file and get an accurate, timestamped transcript. Choose sentence, paragraph, or word-level grouping and export as TXT, SRT, VTT, or JSON."
+            description="Upload audio or media, choose sentence, paragraph, or word-level timestamps, then transcribe, review, and export as TXT, SRT, VTT, or JSON."
             badge="Transcription"
           />
           <TranscriptionWorkspace />
@@ -202,9 +202,9 @@ export default function AudioToTextPage() {
             primary: true,
           },
           {
-            href: siteConfig.links.home,
-            label: 'All Konthora tools',
-            description: 'Return to the home page and browse every browser-based audio tool we offer.',
+            href: '/speech-to-text/timestamps',
+            label: 'Transcription Timestamps Guide',
+            description: 'Compare sentence, paragraph, and word-level grouping before you transcribe.',
           },
         ]}
         compact

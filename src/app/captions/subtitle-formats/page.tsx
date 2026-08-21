@@ -147,6 +147,9 @@ export default function SubtitleFormatsPage() {
                 <p>
                   Some formats (like SRT and VTT) contain embedded <Link href="/speech-to-text/timestamps" className="text-primary hover:underline">timestamps</Link>, making them ideal for displaying timed <Link href="/captions/closed-captions-vs-subtitles" className="text-primary hover:underline">closed captions</Link> alongside a video. Other formats (like TXT) are simply readable text, while formats like JSON are designed to be parsed by software applications.
                 </p>
+                <p>
+                  For an MP4, WebM, or MOV file, use the <Link href="/video-to-text" className="text-primary hover:underline">video-to-text converter</Link> to create a transcript, then export SRT or VTT when you need timed caption cues.
+                </p>
               </div>
             </section>
 

@@ -15,9 +15,9 @@ import { siteConfig } from '@/config/site';
 import { FileVideo, Clock, Languages, FileDown, Scissors } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Video to Text Converter Online Free | Konthora Transcriber',
+  title: 'Video to Text Converter — Transcribe MP4, WebM & MOV | Konthora',
   description:
-    'Convert video to text online for free. Upload MP4, WebM, or MOV and get an accurate, timestamped transcript ready to export as TXT, SRT, VTT, or JSON.',
+    'Convert video to text in your browser. Upload MP4, WebM, or MOV, choose timestamp grouping, and export your transcript as TXT, SRT, VTT, or JSON.',
   path: '/video-to-text',
 });
 
@@ -102,8 +102,8 @@ export default function VideoToTextPage() {
   const useCaseCards: InfoCard[] = [
     {
       icon: FileVideo,
-      title: 'YouTube and social',
-      desc: 'Turn a video into descriptions, captions, and easy-to-search blog posts.',
+      title: 'Creator video files',
+      desc: 'Turn uploaded clips into descriptions, captions, and searchable text.',
     },
     {
       icon: FileDown,
@@ -124,16 +124,16 @@ export default function VideoToTextPage() {
 
   const steps = [
     {
-      title: 'Upload your video',
-      desc: 'Drop in an MP4, WebM, or MOV file, up to 100 MB.',
+      title: 'Upload your video file',
+      desc: 'Upload an MP4, WebM, or MOV file in your browser, up to 100 MB.',
     },
     {
       title: 'Choose timestamp grouping',
       desc: 'Pick sentence, paragraph, or word-level timestamps for your transcript.',
     },
     {
-      title: 'Transcribe and export',
-      desc: 'Review the text and download it as TXT, SRT, VTT, or JSON.',
+      title: 'Transcribe, review, and export',
+      desc: 'Review the timestamped transcript, then download TXT, SRT, VTT, or JSON.',
     },
   ];
 
@@ -147,8 +147,8 @@ export default function VideoToTextPage() {
         <Container>
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Video to Text' }]} />
           <PageHeader
-            title="Video to Text Converter Online"
-            description="Upload an MP4, WebM, or MOV video and get an accurate, timestamped transcript. Export it as TXT, SRT, VTT, or JSON."
+            title="Convert Video to Text Online"
+            description="Upload an MP4, WebM, or MOV video in your browser, choose a timestamp mode, and export the transcript as TXT, SRT, VTT, or JSON."
             badge="Transcription"
           />
           <TranscriptionWorkspace />
@@ -182,19 +182,19 @@ export default function VideoToTextPage() {
       />
 
       <CrossLinks
-        title="Related tools"
-        description="Combine video transcription with storytelling and speech generation."
+        title="Related video transcription resources"
+        description="Learn how timestamp grouping and subtitle exports fit into a video-to-text workflow."
         links={[
           {
-            href: '/text-to-speech',
-            label: 'Text to Speech',
-            description: 'Turn your transcript straight into a natural voiceover to accompany the clip.',
+            href: '/transcribe-video',
+            label: 'Video Transcription Guide',
+            description: 'Learn how video upload, timestamp grouping, and transcript exports work together.',
             primary: true,
           },
           {
-            href: '/mp3-to-text',
-            label: 'MP3 to Text',
-            description: 'Does the same extraction for audio-only recordings.',
+            href: '/captions/subtitle-formats',
+            label: 'Subtitle File Formats',
+            description: 'Choose SRT or VTT when the transcript will become timed captions.',
           },
         ]}
       />

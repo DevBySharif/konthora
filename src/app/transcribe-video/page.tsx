@@ -182,7 +182,7 @@ export default function TranscribeVideoPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Creators and editors use <Link href="/speech-to-text" className="text-primary hover:underline">speech-to-text</Link> to convert the dialogue inside their video recordings into written documents. Once you convert the <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link>, you can review the content without constantly scrubbing through a video player timeline.
+                  Creators and editors use <Link href="/speech-to-text" className="text-primary hover:underline">speech-to-text</Link> to convert the dialogue inside their video recordings into written documents. When you are ready to upload an MP4, WebM, or MOV file, the <Link href="/video-to-text" className="text-primary hover:underline">video-to-text converter</Link> turns its spoken content into a transcript you can review without constantly scrubbing through a video player timeline.
                 </p>
                 <p>
                   Additionally, transcribing a video is the first required step if you plan to create <Link href="/captions" className="text-primary hover:underline">captions</Link> or subtitles to improve the accessibility of your content.

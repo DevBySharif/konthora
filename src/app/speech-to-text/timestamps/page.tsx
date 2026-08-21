@@ -23,7 +23,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'Transcription Timestamps Explained | Konthora',
   description:
-    'Learn how sentence-level, paragraph-level, and word-level audio transcription timestamps work, when to use each mode, and how to export timestamped transcripts.',
+    'Understand transcription timestamps: sentence, paragraph, and word-level timing, when each helps, and how to export timestamped transcripts as TXT, SRT, VTT, or JSON.',
   path: '/speech-to-text/timestamps',
 });
 
@@ -209,6 +209,11 @@ export default function TranscriptionTimestampsPage() {
                   Transcription timestamps are timecode markers linked to specific text segments
                   in an audio or video transcript. They indicate when a spoken line begins and
                   ends relative to the start of the recording.
+                </p>
+                <p>
+                  In Konthora, you choose the timestamp grouping before transcription. Sentence
+                  and paragraph modes create larger, readable transcript blocks; word-level timing
+                  keeps an individual start and end time for every spoken word.
                 </p>
                 <p>
                   If you are learning{' '}
@@ -433,7 +438,9 @@ export default function TranscriptionTimestampsPage() {
               <div className="space-y-8">
                 {/* H3: SRT Format */}
                 <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-foreground">SRT Format</h3>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    <Link href="/formats/srt" className="hover:text-primary transition-colors">SRT Format</Link>
+                  </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     SubRip files use sequential line numbers followed by start and end timestamps in
                     <code className="mx-1 rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-foreground">
@@ -454,7 +461,9 @@ Choose sentence or word timestamps for your file.`}
 
                 {/* H3: VTT Format */}
                 <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-foreground">VTT Format</h3>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    <Link href="/formats/vtt" className="hover:text-primary transition-colors">VTT Format</Link>
+                  </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     WebVTT headers begin with <code className="font-mono text-xs">WEBVTT</code> and use period delimiters for milliseconds:
                   </p>
@@ -471,7 +480,9 @@ Choose sentence or word timestamps for your file.`}
 
                 {/* H3: TXT Format */}
                 <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-foreground">TXT Format</h3>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    <Link href="/formats/txt" className="hover:text-primary transition-colors">TXT Format</Link>
+                  </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     Plain text exports strip all timecode headers, providing clean prose for reading documents.
                   </p>
@@ -483,7 +494,9 @@ Choose sentence or word timestamps for your file.`}
 
                 {/* H3: JSON Format */}
                 <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-foreground">JSON Format</h3>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    <Link href="/formats/json" className="hover:text-primary transition-colors">JSON Format</Link>
+                  </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     Structured JSON provides segment objects containing raw floating-point second offsets and individual word objects.
                   </p>
