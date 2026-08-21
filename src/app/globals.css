@@ -63,6 +63,18 @@
   --shadow-glow: 0 0 0 1px rgba(16, 185, 129, 0.2), 0 28px 72px -28px rgba(16, 185, 129, 0.25);
 }
 
+.konthora-logo--dark {
+  display: none;
+}
+
+.dark .konthora-logo--light {
+  display: none;
+}
+
+.dark .konthora-logo--dark {
+  display: block;
+}
+
 @theme {
   --color-background: var(--background);
   --color-background-secondary: var(--background-secondary);

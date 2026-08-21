@@ -1,11 +1,25 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { siteConfig } from '@/config/site';
+
+interface OgImageProps {
+  logoSrc: string;
+}
+
+export async function getOgLogoDataUri() {
+  const logo = await readFile(
+    join(process.cwd(), 'public', 'brand', 'konthora-logo-dark-512.png'),
+  );
+
+  return `data:image/png;base64,${logo.toString('base64')}`;
+}
 
 /**
  * Shared visual for Open Graph and Twitter social cards.
  * Rendered by src/app/opengraph-image.tsx and src/app/twitter-image.tsx.
  * Uses only inline styles (emotion-compatible) for `next/og` ImageResponse.
  */
-export function OgImage() {
+export function OgImage({ logoSrc }: OgImageProps) {
   return (
     <div
       style={{
@@ -28,21 +42,15 @@ export function OgImage() {
           marginBottom: '40px',
         }}
       >
-        <div
-          style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '16px',
-            backgroundColor: '#4f46e5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '34px',
-            fontWeight: 800,
-          }}
-        >
-          K
-        </div>
+        {/* ImageResponse renders native image elements rather than next/image. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={logoSrc}
+          alt=""
+          width={88}
+          height={88}
+          style={{ objectFit: 'contain' }}
+        />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.02em' }}>
             {siteConfig.name}
