@@ -53,7 +53,7 @@ export default function TTSForElearningPage() {
         '@type': 'HowToStep',
         position: 2,
         name: 'Select an English voice',
-        text: 'Choose from 10 different English voices, including both American and British options.',
+        text: 'Choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese.',
       },
       {
         '@type': 'HowToStep',
@@ -205,10 +205,10 @@ export default function TTSForElearningPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Konthora provides 10 distinct English <Link href="/voices" className="text-primary hover:underline">voices</Link>. Selecting a voice that sounds clear and professional is an important part of instructional design.
+                  Konthora provides 41 AI <Link href="/voices" className="text-primary hover:underline">voices</Link> across six languages. Selecting a voice that sounds clear and professional is an important part of instructional design.
                 </p>
                 <p>
-                  You can choose from 6 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices and 4 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices. Maintaining a consistent voice across an entire course helps learners focus on the material rather than the presentation.
+                  You can choose from 20 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices and 8 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices. Maintaining a consistent voice across an entire course helps learners focus on the material rather than the presentation.
                 </p>
               </div>
             </section>
@@ -297,7 +297,7 @@ export default function TTSForElearningPage() {
                   {
                     n: 2,
                     title: 'Select an English voice',
-                    body: 'Choose from 10 different English voices, including both American and British options.',
+                    body: 'Choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese.',
                   },
                   {
                     n: 3,

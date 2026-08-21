@@ -12,7 +12,6 @@ import {
   Cpu,
   Globe,
   Users,
-  CheckCircle2,
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
@@ -73,7 +72,7 @@ export default function KokoroEntityPage() {
     },
     {
       question: "How many voices does Kokoro support on Konthora?",
-      answer: "Konthora currently exposes 10 English voices from the Kokoro model (6 American English and 4 British English). The broader open-source ecosystem may include additional experimental or community-trained voices.",
+      answer: 'Konthora currently exposes 41 verified Kokoro voices across English, Hindi, Spanish, French, Italian, and Portuguese. The English catalogue includes 20 American and 8 British English voices.',
     },
     {
       question: "What license does Kokoro use?",
@@ -261,38 +260,26 @@ export default function KokoroEntityPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  While the underlying Kokoro ecosystem may support a variety of experimental 
-                  weights, Konthora exposes a specific, verified catalogue of English voices for 
-                  its browser-based tool. 
+                  While the underlying Kokoro ecosystem may support a variety of experimental
+                  weights, Konthora exposes a specific, verified 41-voice catalogue across six
+                  languages for its browser-based tool.
                 </p>
                 <p>
-                  Currently, Konthora provides exactly 10 integrated English voices powered by the Kokoro model:
+                  Currently, Konthora provides 41 integrated voices powered by the Kokoro model. The catalogue includes English, Hindi, Spanish, French, Italian, and Portuguese.
                 </p>
                 
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <div className="rounded-xl border border-border/70 bg-card p-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                      <Globe className="h-4 w-4 text-primary" /> American English
+                      <Globe className="h-4 w-4 text-primary" /> American English — 20 voices
                     </h3>
-                    <ul className="space-y-2">
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <li key={`us-${i}`} className="flex gap-2 items-center text-sm">
-                          <CheckCircle2 className="h-3 w-3 text-primary" /> US Voice {i}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-muted-foreground">20 verified voices are available in the Konthora workspace.</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-card p-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                      <Globe className="h-4 w-4 text-primary" /> British English
+                      <Globe className="h-4 w-4 text-primary" /> British English — 8 voices
                     </h3>
-                    <ul className="space-y-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <li key={`uk-${i}`} className="flex gap-2 items-center text-sm">
-                          <CheckCircle2 className="h-3 w-3 text-primary" /> UK Voice {i}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-muted-foreground">8 verified voices are available in the Konthora workspace.</p>
                   </div>
                 </div>
               </div>
@@ -340,8 +327,8 @@ export default function KokoroEntityPage() {
                   model through a free, browser-based application. 
                 </p>
                 <p>
-                  Users can type or paste text into the Konthora interface, select from the 10 available 
-                  voices, and generate MP3 or WAV audio without needing to configure the underlying 
+                  Users can type or paste text into the Konthora interface, select from 41 available
+                  voices across six languages, and generate MP3 or WAV audio without needing to configure the underlying
                   machine learning environment.
                 </p>
               </div>

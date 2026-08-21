@@ -328,7 +328,7 @@ export default function HowTtsWorksPage() {
                   Konthora provides a simple, browser-based workflow for generating high-quality speech. You do not need to create an account, and everything runs directly from your browser.
                 </p>
                 <p>
-                  You can choose from 10 distinct English voices (6 American English and 4 British English). Each request allows you to process up to 2,000 characters of text. Before generating, you can adjust the playback speed of the voice. Once processing is complete, you can download your final voiceover as either an <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 or WAV</Link> file.
+                  You can choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese. English includes 20 American and 8 British English voices. Each request allows you to process up to 2,000 characters of text. Before generating, you can adjust the playback speed of the voice. Once processing is complete, you can download your final voiceover as either an <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 or WAV</Link> file.
                 </p>
                 <p className="text-sm border-l-4 border-primary/40 pl-4 italic">
                   Note: Because Konthora operates a no-account workflow, generated audio is only stored temporarily. You must download your audio files during your active session.

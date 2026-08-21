@@ -198,7 +198,7 @@ export default function AudioToTextPage() {
             href: siteConfig.links.textToSpeech,
             label: 'Free AI Text to Speech',
             description:
-              'Turn text into natural speech with 10 US and British English voices, and download as MP3 or WAV.',
+              'Turn text into natural speech with 41 AI voices across six languages, and download as MP3 or WAV.',
             primary: true,
           },
           {

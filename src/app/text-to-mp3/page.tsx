@@ -84,7 +84,7 @@ export default function TextToMp3Page() {
     },
     {
       icon: Volume2,
-      title: '6 languages, 40+ voices',
+      title: '6 languages, 41 voices',
       desc: 'Pick from English, Spanish, French, Italian, Portuguese, and Hindi AI voices.',
     },
     {

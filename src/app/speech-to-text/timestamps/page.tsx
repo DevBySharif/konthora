@@ -21,7 +21,7 @@ import {
    Metadata — canonical, unique title & description
 ───────────────────────────────────────────── */
 export const metadata: Metadata = constructMetadata({
-  title: 'Transcription Timestamps: Sentence, Paragraph, and Word-Level Explained | Konthora',
+  title: 'Transcription Timestamps Explained | Konthora',
   description:
     'Learn how sentence-level, paragraph-level, and word-level audio transcription timestamps work, when to use each mode, and how to export timestamped transcripts.',
   path: '/speech-to-text/timestamps',

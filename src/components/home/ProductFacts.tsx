@@ -9,8 +9,8 @@ import { Mic2, AudioLines, Languages, FileDown } from 'lucide-react';
 const facts = [
   {
     icon: Mic2,
-    title: 'US & British English voices',
-    desc: 'Generate speech with 10 neural voices across American and British English accents.',
+    title: '41 AI voices across 6 languages',
+    desc: 'Generate speech in English, Hindi, Spanish, French, Italian, and Portuguese.',
   },
   {
     icon: AudioLines,

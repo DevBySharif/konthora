@@ -18,7 +18,7 @@ import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: 'Free AI Text to Speech Online | Konthora',
   description:
-    'Convert text into natural AI speech free in your browser with 10 US and British English voices. Download voiceovers as MP3 or WAV and control speed between 0.75× and 1.25×.',
+    'Convert text into natural AI speech free in your browser with 41 voices across six languages. Download voiceovers as MP3 or WAV and control speed between 0.75× and 1.25×.',
   path: '/text-to-speech',
 });
 
@@ -48,7 +48,7 @@ export default function TextToSpeechPage() {
     {
       question: 'Which voices and accents are supported?',
       answer:
-        'Konthora provides 10 neural voices built on the Kokoro model: 6 American English voices and 4 British English voices, with both female and male selections.',
+        'Konthora provides 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese, with American and British English options among the catalogue.',
     },
     {
       question: 'Which audio formats can I download?',
@@ -130,7 +130,7 @@ export default function TextToSpeechPage() {
     },
     {
       title: 'Choose voice, language and speed',
-      desc: 'Pick an English voice and set the pace that fits your content.',
+      desc: 'Pick a language and voice, then set the pace that fits your content.',
     },
     {
       title: 'Generate and download',
@@ -149,7 +149,7 @@ export default function TextToSpeechPage() {
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Text to Speech' }]} />
           <PageHeader
             title="Free AI Text to Speech Online"
-            description="Convert your written scripts into natural-sounding English speech with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."
+            description="Convert written scripts into natural-sounding speech in six languages, with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."
             badge="Speech Workbench"
           />
           <TtsWorkspaceWithPreset />

@@ -83,7 +83,7 @@ export default function PortugueseTtsPage() {
     {
       icon: Mic2,
       title: '3 Portuguese voices',
-      desc: 'Dora (female), Alex (male), and Santa (female) — Brazilian voices for natural narration.',
+      desc: 'Dora (female), Alex (male), and Santa (male) — Brazilian voices for natural narration.',
     },
     {
       icon: Volume2,

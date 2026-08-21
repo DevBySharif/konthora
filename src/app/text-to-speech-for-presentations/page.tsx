@@ -53,7 +53,7 @@ export default function TTSForPresentationsPage() {
         '@type': 'HowToStep',
         position: 2,
         name: 'Select a voice',
-        text: 'Choose from 10 different English voices, including both American and British options.',
+        text: 'Choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese.',
       },
       {
         '@type': 'HowToStep',
@@ -205,7 +205,7 @@ export default function TTSForPresentationsPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Konthora provides 10 distinct English <Link href="/voices" className="text-primary hover:underline">voices</Link>. Selecting a voice that matches the professional tone of your presentation is an important consideration.
+                  Konthora provides 41 AI <Link href="/voices" className="text-primary hover:underline">voices</Link> across six languages. Selecting a voice that matches the professional tone of your presentation is an important consideration.
                 </p>
                 <p>
                   Depending on your audience, you can choose from <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices or <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices to ensure the cadence and presentation style best fits your educational or corporate materials.
@@ -280,7 +280,7 @@ export default function TTSForPresentationsPage() {
                   {
                     n: 2,
                     title: 'Select a voice',
-                    body: 'Choose from 10 different English voices, including both American and British options.',
+                    body: 'Choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese.',
                   },
                   {
                     n: 3,

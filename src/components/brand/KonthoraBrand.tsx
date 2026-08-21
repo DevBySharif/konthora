@@ -30,6 +30,15 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
           alt=""
           fill
           sizes={imageSize}
+          unoptimized
+          style={{
+            width: '120%',
+            height: '120%',
+            top: '-10%',
+            right: 'auto',
+            bottom: 'auto',
+            left: '-10%',
+          }}
           className="konthora-logo konthora-logo--light object-contain"
         />
         <Image
@@ -37,6 +46,15 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
           alt=""
           fill
           sizes={imageSize}
+          unoptimized
+          style={{
+            width: '120%',
+            height: '120%',
+            top: '-10%',
+            right: 'auto',
+            bottom: 'auto',
+            left: '-10%',
+          }}
           className="konthora-logo konthora-logo--dark object-contain"
         />
       </span>

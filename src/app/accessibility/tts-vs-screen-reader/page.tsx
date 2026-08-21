@@ -259,7 +259,7 @@ export default function TtsVsScreenReaderPage() {
                 <h3 className="text-lg font-semibold text-foreground mt-6 mb-2">Konthora can:</h3>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Convert entered English text into spoken audio, up to a 2,000-character limit per generation.</li>
-                  <li>Let users choose from 10 verified <Link href="/voices" className="text-primary hover:underline">voices</Link> (6 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English voices</Link> and 4 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English voices</Link>).</li>
+                  <li>Let users choose from 41 verified <Link href="/voices" className="text-primary hover:underline">AI voices</Link> across six languages, including 20 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English voices</Link> and 8 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English voices</Link>.</li>
                   <li>Adjust playback speed from 0.75× to 1.25×.</li>
                   <li>Export generated audio in MP3 or WAV <Link href="/formats" className="text-primary hover:underline">format</Link>.</li>
                   <li>Provide a workflow where no account is required (see our <Link href="/privacy-policy" className="text-primary hover:underline">privacy policy</Link> for data handling).</li>

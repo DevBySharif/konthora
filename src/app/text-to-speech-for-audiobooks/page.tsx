@@ -59,7 +59,7 @@ export default function TTSForAudiobooksPage() {
         '@type': 'HowToStep',
         position: 3,
         name: 'Select an English voice and playback speed',
-        text: 'Choose from 10 different English voices and adjust the speaking speed from 0.75× to 1.25×.',
+        text: 'Choose from 41 AI voices across six languages and adjust the speaking speed from 0.75× to 1.25×.',
       },
       {
         '@type': 'HowToStep',
@@ -87,8 +87,8 @@ export default function TTSForAudiobooksPage() {
       answer: "No. The entire text-to-speech workflow runs in your browser without requiring you to install any software or create an account.",
     },
     {
-      question: "Do you offer non-English voices?",
-      answer: "No. The tool currently provides 10 English voices (American and British).",
+      question: 'Which languages and voices are available?',
+      answer: 'Konthora provides 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese.',
     },
   ];
 
@@ -202,10 +202,10 @@ export default function TTSForAudiobooksPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Konthora provides 10 distinct English <Link href="/voices" className="text-primary hover:underline">voices</Link>. Selecting a voice that suits the genre and tone of your material is critical for long-form listening.
+                  Konthora provides 41 AI <Link href="/voices" className="text-primary hover:underline">voices</Link> across six languages. Selecting a voice that suits the genre and tone of your material is critical for long-form listening.
                 </p>
                 <p>
-                  You can choose from 6 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices and 4 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices. Test different voices with a small sample of your text to find one that remains clear and engaging over extended periods of listening.
+                  You can choose from 20 <Link href="/voices/american-english-voices" className="text-primary hover:underline">American English</Link> voices and 8 <Link href="/voices/british-english-voices" className="text-primary hover:underline">British English</Link> voices. Test different voices with a small sample of your text to find one that remains clear and engaging over extended periods of listening.
                 </p>
               </div>
             </section>
@@ -319,7 +319,7 @@ export default function TTSForAudiobooksPage() {
                   {
                     n: 3,
                     title: 'Select an English voice and playback speed',
-                    body: 'Choose from 10 different English voices and adjust the speaking speed from 0.75× to 1.25×.',
+                    body: 'Choose from 41 AI voices across six languages and adjust the speaking speed from 0.75× to 1.25×.',
                   },
                   {
                     n: 4,

@@ -84,7 +84,8 @@ export function buildVoice(
   const genderWord = config.gender === 'female' ? 'Female' : 'Male';
   const heading = content.heading || `${name} ${genderWord} ${languageLabel} AI Voice`;
   const title = `${name} — ${languageLabel} ${genderWord} Text-to-Speech Voice | Konthora`;
-  const description = `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with a ${config.accent} accent in Konthora. Listen to the preview, generate ${languageLabel} speech at ${config.minimumSpeed}×–${config.maximumSpeed}× speed, and export audio as MP3 or WAV.`;
+  const accentArticle = /^[aeiou]/i.test(config.accent) ? 'an' : 'a';
+  const description = `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with ${accentArticle} ${config.accent} accent in Konthora. Listen to the preview, generate ${languageLabel} speech at ${config.minimumSpeed}×–${config.maximumSpeed}× speed, and export audio as MP3 or WAV.`;
 
   return {
     ...config,
