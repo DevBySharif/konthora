@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/home/SectionHeading';
 import { Stagger, StaggerItem } from '@/components/ui/motion';
+import { TOTAL_TTS_VOICES, TTS_LANGUAGE_COUNT, TTS_LANGUAGE_NAMES } from '@/config/productFacts';
 
 const voices = [
   { id: 'af_heart', label: 'American Female', code: 'en-US' },
@@ -29,11 +30,11 @@ export function SupportedLanguages() {
               eyebrow="Language & Voices"
               title={
                 <>
-                  English, spoken{' '}
-                  <span className="text-gradient">your way</span>
+                  AI voices in{' '}
+                  <span className="text-gradient">six languages</span>
                 </>
               }
-              description="Konthora focuses on polished English synthesis and transcription, with multiple voices across American and British accents — and more languages on the roadmap."
+              description={`Konthora provides ${TOTAL_TTS_VOICES} AI voices across ${TTS_LANGUAGE_COUNT} text-to-speech languages: ${TTS_LANGUAGE_NAMES}. English includes American and British voice options.`}
             />
             <ul className="mt-8 space-y-3">
               {extras.map((c, i) => (

@@ -69,7 +69,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-lg font-bold text-foreground mb-2">Natural Speech Output</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                By focusing on high-quality neural voice synthesis models, our future speech engine aims to create conversational, human-like voice outputs that avoid standard robotic inflections.
+                Konthora uses neural voice synthesis models to create conversational, human-like voice outputs that avoid standard robotic inflections.
               </p>
             </div>
 

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Container } from '@/components/ui/Container';
 import { Reveal } from '@/components/ui/motion';
+import { TOTAL_TTS_VOICES } from '@/config/productFacts';
 
 const stats = [
-  { value: '28+', label: 'Neural voices' },
+  { value: String(TOTAL_TTS_VOICES), label: 'AI voices' },
   { value: '2,000', label: 'Characters per script' },
   { value: '100MB', label: 'File uploads' },
   { value: '60min', label: 'Auto-delete retention' },

@@ -348,7 +348,7 @@ export default function VoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  All 28 voices are available to test in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. 
+                  All 28 English voices are available to test in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace.
                   The platform uses a browser-based workflow, meaning you can generate audio immediately without creating an account.
                 </p>
                 <p>

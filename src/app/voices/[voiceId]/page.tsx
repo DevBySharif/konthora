@@ -308,7 +308,7 @@ export default async function VoicePage({ params }: VoicePageProps) {
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
                     <Languages className="inline h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                    Works across all six languages in the workspace — or explore
+                    Konthora supports six languages in the workspace — or explore
                     all <Link href="/voices" className="text-primary hover:underline">voices in Konthora</Link>.
                   </p>
                 </div>

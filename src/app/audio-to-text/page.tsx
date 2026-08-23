@@ -53,7 +53,7 @@ export default function AudioToTextPage() {
     {
       question: 'Which languages are supported?',
       answer:
-        'Konthora currently transcribes English-language audio. Selecting "Auto Detect" also processes the audio as English. Additional languages are planned for a future release.',
+        'Konthora currently transcribes English-language audio. Selecting "Auto Detect" also processes the audio as English.',
     },
     {
       question: 'How accurate are the timestamps?',

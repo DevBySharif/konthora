@@ -3,14 +3,15 @@ import Link from 'next/link';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/home/SectionHeading';
 import { siteConfig } from '@/config/site';
+import { TOTAL_TTS_VOICES, TTS_LANGUAGE_COUNT, TTS_LANGUAGE_NAMES } from '@/config/productFacts';
 import { Stagger, StaggerItem } from '@/components/ui/motion';
 import { Mic2, AudioLines, Languages, FileDown } from 'lucide-react';
 
 const facts = [
   {
     icon: Mic2,
-    title: '41 AI voices across 6 languages',
-    desc: 'Generate speech in English, Hindi, Spanish, French, Italian, and Portuguese.',
+    title: `${TOTAL_TTS_VOICES} AI voices across ${TTS_LANGUAGE_COUNT} languages`,
+    desc: `Generate speech in ${TTS_LANGUAGE_NAMES}.`,
   },
   {
     icon: AudioLines,

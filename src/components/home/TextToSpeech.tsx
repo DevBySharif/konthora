@@ -5,12 +5,13 @@ import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/home/SectionHeading';
 import { Reveal, Stagger, StaggerItem } from '@/components/ui/motion';
 import { siteConfig } from '@/config/site';
+import { TOTAL_TTS_VOICES, TTS_LANGUAGE_NAMES } from '@/config/productFacts';
 
 const features = [
   {
     icon: Volume2,
     title: 'Lifelike voices',
-    desc: 'Neural AI voices in American and British English, male and female, tuned for natural narration.',
+    desc: `Choose from ${TOTAL_TTS_VOICES} AI voices across ${TTS_LANGUAGE_NAMES}.`,
   },
   {
     icon: Gauge,
