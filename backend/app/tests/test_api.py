@@ -68,6 +68,55 @@ def test_create_job_invalid_inputs(client):
     })
     assert response.status_code == 400
 
+    # Pause controls stay inside their bounded API ranges
+    response = client.post("/api/v1/tts/jobs", json={
+        "text": "Hello World",
+        "voiceId": "af_heart",
+        "sentencePauseMs": 1001,
+        "paragraphPauseMs": 2001,
+    })
+    assert response.status_code == 400
+
+def test_create_job_advanced_controls(client):
+    exact_response = client.post("/api/v1/tts/jobs", json={
+        "text": "Exact production pause values.",
+        "voiceId": "af_heart",
+        "sentencePauseMs": 220,
+        "paragraphPauseMs": 500,
+    })
+    assert exact_response.status_code == 200
+    exact_job = JobService().get_job(exact_response.json()["jobId"])
+    assert exact_job.sentence_pause_ms == 220
+    assert exact_job.paragraph_pause_ms == 500
+
+    custom_response = client.post("/api/v1/tts/jobs", json={
+        "text": "Dr. Smith has 25%.",
+        "voiceId": "af_heart",
+        "sentencePauseMs": 350,
+        "paragraphPauseMs": 900,
+        "normalizeText": False,
+    })
+    assert custom_response.status_code == 200
+    custom_job = JobService().get_job(custom_response.json()["jobId"])
+    assert custom_job.sentence_pause_ms == 350
+    assert custom_job.paragraph_pause_ms == 900
+    assert custom_job.normalize_text is False
+
+
+def test_create_job_advanced_control_defaults_remain_backwards_compatible(client):
+    default_response = client.post("/api/v1/tts/jobs", json={
+        "text": "Existing clients omit advanced controls.",
+        "voiceId": "af_heart",
+    })
+    assert default_response.status_code == 200
+    default_job = JobService().get_job(default_response.json()["jobId"])
+
+    from app.core.config import settings
+    assert default_job.sentence_pause_ms == settings.TTS_SENTENCE_PAUSE_MS
+    assert default_job.paragraph_pause_ms == settings.TTS_PARAGRAPH_PAUSE_MS
+    assert default_job.normalize_text is True
+
+
 def test_job_access_security(client):
     # Create a job
     response = client.post("/api/v1/tts/jobs", json={

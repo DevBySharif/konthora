@@ -27,6 +27,27 @@ def test_chunk_by_sentences_in_large_paragraph():
     assert chunks[1].text == "Sentence three."
     assert chunks[1].end_boundary == "paragraph" # ends paragraph
 
+def test_custom_pause_mode_preserves_sentence_boundaries_without_changing_default():
+    text = "Sentence one. Sentence two. Sentence three."
+    default_chunks = chunk_text(text, max_chars=100)
+    pause_chunks = chunk_text(
+        text,
+        max_chars=100,
+        preserve_sentence_boundaries=True,
+    )
+
+    assert len(default_chunks) == 1
+    assert [chunk.text for chunk in pause_chunks] == [
+        "Sentence one.",
+        "Sentence two.",
+        "Sentence three.",
+    ]
+    assert [chunk.end_boundary for chunk in pause_chunks] == [
+        "sentence",
+        "sentence",
+        "paragraph",
+    ]
+
 def test_chunk_giant_sentence_fallback():
     # A giant sentence with clauses
     text = "This is a very long sentence, which contains clause punctuation; it will split on clause limits."

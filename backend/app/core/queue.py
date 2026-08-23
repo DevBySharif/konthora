@@ -143,10 +143,19 @@ class TtsQueueManager:
                     break
 
             # 1. Normalize text (synchronous, fast)
-            normalized_text = normalize_text(original_text, language=language)
+            normalized_text = (
+                normalize_text(original_text, language=language)
+                if job.normalize_text
+                else original_text.strip()
+            )
 
             # 2. Chunk text (synchronous, fast)
-            chunks = chunk_text(normalized_text)
+            chunks = chunk_text(
+                normalized_text,
+                preserve_sentence_boundaries=(
+                    job.sentence_pause_ms != settings.TTS_SENTENCE_PAUSE_MS
+                ),
+            )
             if not chunks:
                 raise TtsException("TEXT_EMPTY", "No speakable content remaining after normalization.")
 
@@ -172,7 +181,10 @@ class TtsQueueManager:
             master_waveform, duration = await loop.run_in_executor(
                 self._executor,
                 self.audio_service.assemble_audio,
-                waveforms_and_boundaries
+                waveforms_and_boundaries,
+                24000,
+                job.sentence_pause_ms,
+                job.paragraph_pause_ms,
             )
 
             # 5. Finalize output file structure

@@ -40,7 +40,13 @@ class AudioService:
     def is_ffmpeg_available(self) -> bool:
         return self.ffmpeg_path[0]
 
-    def assemble_audio(self, chunk_waveforms: List[Tuple[np.ndarray, str]], native_sample_rate: int = 24000) -> Tuple[np.ndarray, float]:
+    def assemble_audio(
+        self,
+        chunk_waveforms: List[Tuple[np.ndarray, str]],
+        native_sample_rate: int = 24000,
+        sentence_pause_ms: int | None = None,
+        paragraph_pause_ms: int | None = None,
+    ) -> Tuple[np.ndarray, float]:
         """
         Assembles multiple chunk waveforms into an unified Float32 mono waveform,
         inserting boundary silence pauses, applying edge fades, removing DC offsets,
@@ -53,8 +59,18 @@ class AudioService:
         assembled_parts = []
 
         # Calculate pauses based on TARGET sample rate (24000)
-        sentence_pause_samples = int(self.sample_rate * (settings.TTS_SENTENCE_PAUSE_MS / 1000.0))
-        paragraph_pause_samples = int(self.sample_rate * (settings.TTS_PARAGRAPH_PAUSE_MS / 1000.0))
+        effective_sentence_pause_ms = (
+            settings.TTS_SENTENCE_PAUSE_MS
+            if sentence_pause_ms is None
+            else sentence_pause_ms
+        )
+        effective_paragraph_pause_ms = (
+            settings.TTS_PARAGRAPH_PAUSE_MS
+            if paragraph_pause_ms is None
+            else paragraph_pause_ms
+        )
+        sentence_pause_samples = int(self.sample_rate * (effective_sentence_pause_ms / 1000.0))
+        paragraph_pause_samples = int(self.sample_rate * (effective_paragraph_pause_ms / 1000.0))
         clause_pause_samples = int(self.sample_rate * (100 / 1000.0))  # 100ms clause pause
 
         for i, (waveform, boundary) in enumerate(chunk_waveforms):

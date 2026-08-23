@@ -85,7 +85,7 @@ export interface ApiTranscriptWord {
   word: string;
   start: number;
   end: number;
-  probability: number;
+  probability?: number | null;
 }
 
 export interface ApiTranscriptSegment {
@@ -93,23 +93,21 @@ export interface ApiTranscriptSegment {
   text: string;
   start: number;
   end: number;
-  startFormatted: string;
-  endFormatted: string;
-  noSpeechProbability: number;
-  words: ApiTranscriptWord[];
+  startFormatted?: string;
+  endFormatted?: string;
+  noSpeechProbability?: number | null;
+  words?: ApiTranscriptWord[];
 }
 
 export interface ApiStructuredTranscript {
+  schemaVersion: string;
   jobId: string;
-  detectedLanguage: string;
-  languageProbability: number;
+  detectedLanguage: string | null;
+  languageProbability: number | null;
   durationSeconds: number;
-  wordCount: number;
-  segmentCount: number;
-  exportFormat: string;
-  timestampMode: string;
   fullText: string;
   segments: ApiTranscriptSegment[];
+  words?: ApiTranscriptWord[];
 }
 
 // ── Shared ────────────────────────────────────────────────────────────────────
@@ -156,7 +154,12 @@ export async function createTtsJob(
   voiceId: string,
   accent: string,
   speed: number,
-  outputFormat: 'mp3' | 'wav'
+  outputFormat: 'mp3' | 'wav',
+  options?: {
+    sentencePauseMs: number;
+    paragraphPauseMs: number;
+    normalizeText: boolean;
+  }
 ): Promise<ApiJobResponse> {
   const response = await fetch(`${API_BASE_URL}/tts/jobs`, {
     method: 'POST',
@@ -170,6 +173,7 @@ export async function createTtsJob(
       accent,
       speed,
       outputFormat,
+      ...(options ?? {}),
     }),
   });
   return handleResponse<ApiJobResponse>(response);

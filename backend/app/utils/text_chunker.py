@@ -9,7 +9,11 @@ class Chunk:
         self.source_end = source_end
         self.end_boundary = end_boundary  # 'paragraph', 'sentence', 'clause', 'none'
 
-def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
+def chunk_text(
+    text: str,
+    max_chars: int = 400,
+    preserve_sentence_boundaries: bool = False,
+) -> List[Chunk]:
     """
     Splits normalized text into synthesis-friendly chunks based on grammatical boundaries.
     Source offsets refer to the character index in the normalized text.
@@ -37,8 +41,9 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
         if not p_text_stripped:
             continue
 
-        # If paragraph fits in max_chars, emit it as a single chunk
-        if len(p_text_stripped) <= max_chars:
+        # Existing clients keep the original paragraph-first behavior. Custom
+        # sentence pauses can opt into sentence boundary chunks explicitly.
+        if len(p_text_stripped) <= max_chars and not preserve_sentence_boundaries:
             chunks.append(
                 Chunk(
                     index=chunk_index,
@@ -58,6 +63,7 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
         current_chunk_start = -1
         current_chunk_end = -1
         last_boundary = "sentence"
+        paragraph_chunk_start = len(chunks)
 
         for s_text, s_start, s_end, s_boundary in sentences:
             if not s_text.strip():
@@ -96,6 +102,19 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
                     chunk_index += 1
                 continue
 
+            if preserve_sentence_boundaries:
+                chunks.append(
+                    Chunk(
+                        index=chunk_index,
+                        text=s_text.strip(),
+                        source_start=s_start,
+                        source_end=s_end,
+                        end_boundary=s_boundary,
+                    )
+                )
+                chunk_index += 1
+                continue
+
             # If adding sentence exceeds max_chars, emit current chunk first
             if current_chunk_text and len(current_chunk_text) + len(s_text) + 1 > max_chars:
                 chunks.append(
@@ -131,6 +150,9 @@ def chunk_text(text: str, max_chars: int = 400) -> List[Chunk]:
                 )
             )
             chunk_index += 1
+
+        if len(chunks) > paragraph_chunk_start:
+            chunks[-1].end_boundary = "paragraph"
 
     # Fix the final chunk's boundary (must end with paragraph/none if it's the absolute end)
     if chunks:

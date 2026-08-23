@@ -10,6 +10,22 @@ class TtsJobCreate(BaseModel):
     accent: str = Field("American English", description="The voice accent.")
     speed: float = Field(1.0, ge=0.75, le=1.25, description="Playback speech rate factor.")
     outputFormat: str = Field("mp3", description="Audio output file format ('mp3' or 'wav').")
+    sentencePauseMs: Optional[int] = Field(
+        None,
+        ge=0,
+        le=1000,
+        description="Optional silence inserted at sentence chunk boundaries in milliseconds.",
+    )
+    paragraphPauseMs: Optional[int] = Field(
+        None,
+        ge=0,
+        le=2000,
+        description="Optional silence inserted at paragraph chunk boundaries in milliseconds.",
+    )
+    normalizeText: bool = Field(
+        True,
+        description="Apply the existing conservative text normalization pass before synthesis.",
+    )
 
     @field_validator("outputFormat")
     @classmethod

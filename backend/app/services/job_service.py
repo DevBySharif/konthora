@@ -23,7 +23,10 @@ class JobService:
         voice_id: str,
         accent: str,
         speed: float,
-        output_format: str
+        output_format: str,
+        sentence_pause_ms: Optional[int] = None,
+        paragraph_pause_ms: Optional[int] = None,
+        normalize_text: bool = True,
     ) -> TtsJob:
         """Creates a new job in-memory, allocates a UUID, and configures default state."""
         job_id = str(uuid.uuid4())
@@ -34,7 +37,18 @@ class JobService:
             accent=accent,
             speed=speed,
             output_format=output_format,
-            retention_minutes=settings.TTS_JOB_RETENTION_MINUTES
+            retention_minutes=settings.TTS_JOB_RETENTION_MINUTES,
+            sentence_pause_ms=(
+                settings.TTS_SENTENCE_PAUSE_MS
+                if sentence_pause_ms is None
+                else sentence_pause_ms
+            ),
+            paragraph_pause_ms=(
+                settings.TTS_PARAGRAPH_PAUSE_MS
+                if paragraph_pause_ms is None
+                else paragraph_pause_ms
+            ),
+            normalize_text=normalize_text,
         )
         self._jobs[job_id] = job
         logger.info(f"Created Job: {job_id} | Character count: {len(text)} | Voice: {voice_id}")

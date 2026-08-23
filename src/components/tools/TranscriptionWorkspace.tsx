@@ -5,40 +5,23 @@ import { Button } from '@/components/ui/Button';
 import { StatusMessage } from '@/components/ui/StatusMessage';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
-  Upload, X, FileText, Download, Copy, FileAudio, FileVideo,
-  Loader2, CheckCircle2, Clock, Lock
+  Upload, X, FileText, FileAudio, FileVideo,
+  Loader2, Lock
 } from 'lucide-react';
 import {
   createTranscriptionJob,
   getTranscriptionJobStatus,
   fetchStructuredTranscript,
-  fetchTranscriptBlob,
   fetchTranscriptionCapabilities,
   ApiStructuredTranscript,
   ApiTranscriptionStatusResponse,
   ApiTranscriptionCapabilities,
-  ApiTranscriptSegment,
   ApiError,
 } from '@/lib/api';
+import { TranscriptionResultPanel } from './TranscriptionResultPanel';
+import { requiresTranscriptDiscardConfirmation } from '@/lib/transcriptWorkspace';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-function formatTimestamp(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `[${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}]`;
-  return `[${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}]`;
-}
-
-function enrichSegments(segments: ApiTranscriptSegment[]): ApiTranscriptSegment[] {
-  return segments.map((seg) => ({
-    ...seg,
-    startFormatted: formatTimestamp(seg.start),
-    endFormatted: formatTimestamp(seg.end),
-  }));
-}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -102,8 +85,8 @@ export function TranscriptionWorkspace() {
   const [phase, setPhase] = useState<WorkspacePhase>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [job, setJob] = useState<JobState | null>(null);
-  const [copyDone, setCopyDone] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [resultDirty, setResultDirty] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -162,8 +145,17 @@ export function TranscriptionWorkspace() {
     return true;
   };
 
+  const confirmDiscardEdits = () => {
+    return !requiresTranscriptDiscardConfirmation(resultDirty) || window.confirm('Discard your transcript edits and start a new transcription?');
+  };
+
   const selectFile = (file: File) => {
-    if (validateFile(file)) setForm((prev) => ({ ...prev, file }));
+    if (!validateFile(file) || !confirmDiscardEdits()) return;
+    setForm((prev) => ({ ...prev, file }));
+    setErrorMsg(null);
+    setPhase('idle');
+    setJob(null);
+    setResultDirty(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,6 +176,7 @@ export function TranscriptionWorkspace() {
   };
 
   const handleRemoveFile = () => {
+    if (!confirmDiscardEdits()) return;
     setForm((prev) => ({ ...prev, file: null }));
     setErrorMsg(null);
     setPhase('idle');
@@ -191,6 +184,7 @@ export function TranscriptionWorkspace() {
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     abortRef.current?.abort();
+    setResultDirty(false);
   };
 
   const openFileBrowser = () => fileInputRef.current?.click();
@@ -217,7 +211,6 @@ export function TranscriptionWorkspace() {
         if (status.status === 'completed') {
           setPhase('completed');
           const transcript = await fetchStructuredTranscript(jobId, token);
-          transcript.segments = enrichSegments(transcript.segments);
           setJob((prev) => prev ? { ...prev, transcript } : prev);
         } else if (status.status === 'failed' || status.status === 'expired') {
           setPhase('failed');
@@ -291,37 +284,6 @@ export function TranscriptionWorkspace() {
     }
   };
 
-  // ── Download ────────────────────────────────────────────────────────────────
-  const handleDownload = async () => {
-    if (!job) return;
-    try {
-      const ext = form.exportFormat;
-      const blob = await fetchTranscriptBlob(job.jobId, job.token, ext);
-      const fileName = `${form.file?.name.replace(/\.[^.]+$/, '') || 'transcript'}.${ext}`;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      setErrorMsg('Failed to download transcript. Please try again.');
-    }
-  };
-
-  // ── Copy ────────────────────────────────────────────────────────────────────
-  const handleCopy = async () => {
-    const text = job?.transcript?.fullText;
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyDone(true);
-      setTimeout(() => setCopyDone(false), 2000);
-    } catch {
-      setErrorMsg('Could not copy to clipboard. Please select and copy manually.');
-    }
-  };
-
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const isVideo =
     form.file?.type.startsWith('video/') ||
@@ -339,6 +301,10 @@ export function TranscriptionWorkspace() {
   const resetWorkspace = () => {
     handleRemoveFile();
   };
+
+  const handleResultDirtyChange = useCallback((dirty: boolean) => {
+    setResultDirty(dirty);
+  }, []);
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -595,88 +561,17 @@ export function TranscriptionWorkspace() {
               />
             </div>
           ) : (
-            <>
-              {/* ── Metadata Bar ── */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-4 border-b border-border/60 bg-secondary/10">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                  <span>Transcription complete</span>
-                </div>
-                {job.transcript.durationSeconds > 0 && (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{job.transcript.durationSeconds.toFixed(1)}s media</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>{job.transcript.wordCount} words · {job.transcript.segmentCount} segments</span>
-                </div>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  Language: <strong className="text-foreground">{job.transcript.detectedLanguage.toUpperCase()}</strong>
-                  {' '}({Math.round(job.transcript.languageProbability * 100)}% confidence)
-                </span>
-              </div>
-
-              {/* ── Segment Preview ── */}
-              <div className="p-6 max-h-[420px] overflow-y-auto space-y-3 font-mono text-sm">
-                {job.transcript.segments.length === 0 ? (
-                  <p className="text-muted-foreground italic text-sm">
-                    No speech was detected in the provided media file.
-                  </p>
-                ) : (
-                  job.transcript.segments.map((seg) => (
-                    <div key={seg.id} className="flex flex-col gap-1 group sm:flex-row sm:gap-3">
-                      <span className="text-[11px] text-primary/70 font-semibold tabular-nums shrink-0 sm:w-28 sm:pt-0.5">
-                        {seg.startFormatted} → {seg.endFormatted}
-                      </span>
-                      <span className="min-w-0 max-w-full break-words whitespace-normal text-foreground leading-relaxed">
-                        {seg.text.trim()}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* ── Action Bar ── */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 px-6 py-4 border-t border-border/60 bg-secondary/10">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={resetWorkspace}
-                  className="order-2 sm:order-1"
-                >
-                  New file
-                </Button>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 order-1 sm:order-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopy}
-                    disabled={!job.transcript.fullText}
-                    aria-label="Copy full transcript text to clipboard"
-                  >
-                    {copyDone ? (
-                      <><CheckCircle2 className="w-4 h-4 text-green-500" /> Copied!</>
-                    ) : (
-                      <><Copy className="w-4 h-4" /> Copy Text</>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownload}
-                    aria-label={`Download transcript as ${form.exportFormat.toUpperCase()} file`}
-                  >
-                    <Download className="w-4 h-4" />
-                    Download .{form.exportFormat.toUpperCase()}
-                  </Button>
-                </div>
-              </div>
-            </>
+            form.file && job.statusResponse ? (
+              <TranscriptionResultPanel
+                key={job.jobId}
+                transcript={job.transcript}
+                status={job.statusResponse}
+                file={form.file}
+                initialExportFormat={form.exportFormat}
+                onDirtyChange={handleResultDirtyChange}
+                onNewFile={resetWorkspace}
+              />
+            ) : null
           )}
         </div>
       </div>

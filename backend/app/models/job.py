@@ -12,7 +12,10 @@ class TtsJob:
         accent: str,
         speed: float,
         output_format: str,
-        retention_minutes: int
+        retention_minutes: int,
+        sentence_pause_ms: int,
+        paragraph_pause_ms: int,
+        normalize_text: bool,
     ):
         self.job_id = job_id
         # Original text stored in memory for processing
@@ -21,6 +24,9 @@ class TtsJob:
         self.accent = accent
         self.speed = speed
         self.output_format = output_format
+        self.sentence_pause_ms = sentence_pause_ms
+        self.paragraph_pause_ms = paragraph_pause_ms
+        self.normalize_text = normalize_text
         self.character_count = len(text)
 
         self.status = "queued"

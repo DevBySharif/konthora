@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { trackTtsVoicePreviewPlayed } from '@/components/analytics/events';
+import { getVoicePreviewSource } from '@/lib/voicePreview';
 
 export type PreviewStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
@@ -66,7 +67,7 @@ export function useVoicePreview() {
     setActivePreviewId(voiceId);
     setPreviewStatus('loading');
 
-    const audio = new Audio(voiceMetadata.previewUrl || `/audio/voice-previews/${voiceId}.mp3`);
+    const audio = new Audio(getVoicePreviewSource(voiceId, voiceMetadata.previewUrl));
     audioRef.current = audio;
 
     audio.oncanplaythrough = () => {

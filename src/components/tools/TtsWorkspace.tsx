@@ -14,7 +14,9 @@ import {
   RefreshCw,
   AlertCircle,
   Sparkles,
-  Lock
+  Lock,
+  Settings2,
+  RotateCcw,
 } from 'lucide-react';
 import {
   fetchVoices,
@@ -41,6 +43,17 @@ import {
   SupportedLanguage,
   SUPPORTED_LANGUAGES,
 } from '@/config/tts';
+import {
+  DEFAULT_TTS_PREFERENCES,
+  TTS_PARAGRAPH_PAUSE_CONTROL,
+  TTS_SENTENCE_PAUSE_CONTROL,
+  TTS_SPEED_PRESETS,
+  TTS_PREFERENCES_STORAGE_KEY,
+  TTS_PREFERENCES_VERSION,
+  estimateTtsDurationSeconds,
+  formatEstimatedDuration as formatTtsEstimatedDuration,
+  parseTtsPreferences,
+} from '@/lib/ttsPreferences';
 
 const FALLBACK_VOICES: ApiVoice[] = [
   { id: 'af_heart', displayName: 'Heart (Female)', gender: 'female', accent: 'American English', language: 'en-US', recommended: true, defaultSpeed: 1.0, minimumSpeed: 0.75, maximumSpeed: 1.25 },
@@ -107,6 +120,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   const lastVoiceByLanguage = useRef<Record<SupportedLanguage, string>>({ ...DEFAULT_VOICE_BY_LANGUAGE });
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
+  const [sentencePauseMs, setSentencePauseMs] = useState<number>(DEFAULT_TTS_PREFERENCES.sentencePauseMs);
+  const [paragraphPauseMs, setParagraphPauseMs] = useState<number>(DEFAULT_TTS_PREFERENCES.paragraphPauseMs);
+  const [normalizeText, setNormalizeText] = useState<boolean>(true);
+  const preferencesLoadedRef = useRef(false);
 
   // Job execution states
   const [status, setStatus] = useState<'idle' | 'submitting' | 'polling' | 'completed' | 'failed'>('idle');
@@ -151,35 +168,70 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     if (lang === selectedLanguage) return;
     setSelectedLanguage(lang);
     const lastVoice = lastVoiceByLanguage.current[lang];
-    const fallback = voices.find(v => v.id === lastVoice) ? lastVoice : lastVoiceByLanguage.current[lang];
+    const fallback = voices.find(v => v.id === lastVoice)
+      ? lastVoice
+      : DEFAULT_VOICE_BY_LANGUAGE[lang];
     setSelectedVoiceId(fallback);
   };
 
   // Fetch voices list on mount
   useEffect(() => {
+    const applyInitialPreferences = (catalogue: ApiVoice[]) => {
+      let storedValue: string | null = null;
+      try {
+        storedValue = typeof window === 'undefined'
+          ? null
+          : window.localStorage.getItem(TTS_PREFERENCES_STORAGE_KEY);
+      } catch {
+        // Browser storage can be unavailable in restricted privacy contexts.
+      }
+      const stored = parseTtsPreferences(storedValue);
+
+      if (stored) {
+        const storedVoice = catalogue.find((voice) => voice.id === stored.voiceId);
+        const language = storedVoice
+          ? (storedVoice.language as SupportedLanguage)
+          : (stored.language as SupportedLanguage);
+        const voiceId = storedVoice?.id ?? DEFAULT_VOICE_BY_LANGUAGE[language];
+
+        setSelectedLanguage(language);
+        setSelectedVoiceId(voiceId);
+        setSpeed(stored.speed);
+        setOutputFormat(stored.outputFormat);
+        setSentencePauseMs(stored.sentencePauseMs);
+        setParagraphPauseMs(stored.paragraphPauseMs);
+        setNormalizeText(stored.normalizeText);
+        lastVoiceByLanguage.current[language] = voiceId;
+      }
+
+      const preset = initialVoiceId
+        ? catalogue.find((voice) => voice.id === initialVoiceId)
+        : undefined;
+      if (preset) {
+        const language = preset.language as SupportedLanguage;
+        setSelectedVoiceId(preset.id);
+        setSelectedLanguage(language);
+        lastVoiceByLanguage.current[language] = preset.id;
+      } else if (!stored) {
+        const defaultVoice = catalogue.find((voice) => voice.id === 'af_heart') ?? catalogue[0];
+        if (defaultVoice) setSelectedVoiceId(defaultVoice.id);
+      }
+
+      preferencesLoadedRef.current = true;
+    };
+
     async function loadVoices() {
       try {
         setLoadingVoices(true);
         const data = await fetchVoices();
         if (data && data.length > 0) {
           setVoices(data);
-          // Preselect a requested voice from the URL (?voice=...) when valid
-          const preset = initialVoiceId
-            ? data.find(v => v.id === initialVoiceId) || FALLBACK_VOICES.find(v => v.id === initialVoiceId)
-            : undefined;
-          if (preset) {
-            setSelectedVoiceId(preset.id);
-            setSelectedLanguage(preset.language as SupportedLanguage);
-            lastVoiceByLanguage.current[preset.language as SupportedLanguage] = preset.id;
-          } else {
-            // Set default voice based on first US voice in returned data
-            const defaultUs = data.find(v => v.id === 'af_heart') || data[0];
-            setSelectedVoiceId(defaultUs.id);
-          }
+          applyInitialPreferences(data);
         }
       } catch (err) {
         console.error('Failed to load dynamic voices catalog. Falling back to local values.', err);
         setVoices(FALLBACK_VOICES);
+        applyInitialPreferences(FALLBACK_VOICES);
       } finally {
         setLoadingVoices(false);
       }
@@ -187,6 +239,33 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     loadVoices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!preferencesLoadedRef.current) return;
+
+    try {
+      window.localStorage.setItem(TTS_PREFERENCES_STORAGE_KEY, JSON.stringify({
+        version: TTS_PREFERENCES_VERSION,
+        language: selectedLanguage,
+        voiceId: selectedVoiceId,
+        speed,
+        outputFormat,
+        sentencePauseMs,
+        paragraphPauseMs,
+        normalizeText,
+      }));
+    } catch {
+      // Preferences remain usable for the session if browser storage is unavailable.
+    }
+  }, [
+    selectedLanguage,
+    selectedVoiceId,
+    speed,
+    outputFormat,
+    sentencePauseMs,
+    paragraphPauseMs,
+    normalizeText,
+  ]);
 
   // Clean up timers, abort controllers, and URL allocations
   const clearRunningTasks = () => {
@@ -227,6 +306,23 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setText(SAMPLE_TEXT);
     setErrorMsg(null);
     trackTtsSampleInserted(source);
+  };
+
+  const handleResetPreferences = () => {
+    const defaults = DEFAULT_TTS_PREFERENCES;
+    setSelectedLanguage(defaults.language);
+    setSelectedVoiceId(defaults.voiceId);
+    setSpeed(defaults.speed);
+    setOutputFormat(defaults.outputFormat);
+    setSentencePauseMs(defaults.sentencePauseMs);
+    setParagraphPauseMs(defaults.paragraphPauseMs);
+    setNormalizeText(defaults.normalizeText);
+    lastVoiceByLanguage.current = { ...DEFAULT_VOICE_BY_LANGUAGE };
+    try {
+      window.localStorage.removeItem(TTS_PREFERENCES_STORAGE_KEY);
+    } catch {
+      // The in-memory reset still succeeds when browser storage is unavailable.
+    }
   };
 
   // Polls status check endpoint recursively
@@ -355,7 +451,12 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         selectedVoiceId,
         voices.find(v => v.id === selectedVoiceId)?.accent || 'american',
         speed,
-        outputFormat
+        outputFormat,
+        {
+          sentencePauseMs,
+          paragraphPauseMs,
+          normalizeText,
+        },
       );
 
       setJobId(jobData.jobId);
@@ -406,17 +507,15 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setIsPlaying(false);
   };
 
-  // Word count duration estimator
+  // Word-count estimate adjusted for selected speed and requested boundary pauses.
   const wordsCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  // Estimates ~140 words per minute at 1.0x speed
-  const estimatedSeconds = Math.max(1, Math.round(wordsCount / (2.3 * speed)));
-
-  const formatEstimatedDuration = () => {
-    if (wordsCount === 0) return '00:00';
-    const minutes = Math.floor(estimatedSeconds / 60);
-    const seconds = estimatedSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
+  const estimatedSeconds = estimateTtsDurationSeconds(
+    text,
+    speed,
+    sentencePauseMs,
+    paragraphPauseMs,
+  );
+  const estimatedDuration = formatTtsEstimatedDuration(estimatedSeconds);
 
   const formatCompletedDuration = () => {
     if (durationSeconds === null) return '00:00';
@@ -488,7 +587,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           {/* Editor Footer / Count */}
           <div className="flex justify-between items-center px-5 py-3 border-t border-border/60 bg-secondary/10">
             <span className="text-xs text-muted-foreground">
-              Guest Character Limit
+              {wordsCount.toLocaleString()} word{wordsCount === 1 ? '' : 's'} · Guest limit
             </span>
             <span
               className={`text-xs font-mono font-medium ${
@@ -561,6 +660,27 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 {speed === 1.0 ? 'Normal (1.00×)' : speed < 1.0 ? `Slow (${speed.toFixed(2)}×)` : `Fast (${speed.toFixed(2)}×)`}
               </span>
             </div>
+            <div className="grid grid-cols-3 gap-2" aria-label="Speech speed presets">
+              {TTS_SPEED_PRESETS.map(({ label, value: presetSpeed }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setSpeed(presetSpeed);
+                    trackTtsSpeedChanged(presetSpeed);
+                  }}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  aria-pressed={speed === presetSpeed}
+                  className={`min-h-11 rounded-lg border px-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    speed === presetSpeed
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                  }`}
+                >
+                  {label} <span className="font-mono">{presetSpeed.toFixed(2)}×</span>
+                </button>
+              ))}
+            </div>
             <div className="flex items-center h-10">
               <input
                 id="speed-slider"
@@ -606,11 +726,108 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
               {outputFormat === 'mp3'
-                ? 'MP3: Smaller file, suitable for web, sharing, and everyday use.'
-                : 'WAV: Uncompressed audio, suitable for editing and workflows that need maximum source quality.'}
+                ? 'MP3: 24 kHz high-quality VBR audio for web, sharing, and everyday use.'
+                : 'WAV: 24 kHz, 16-bit PCM audio for editing and lossless workflows.'}
             </p>
           </div>
           </div>
+
+          <details className="group border-t border-border/70 pt-5">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+              <span className="inline-flex items-center gap-2">
+                <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                Advanced speech controls
+              </span>
+              <span className="hidden text-xs font-normal text-muted-foreground group-open:hidden sm:inline">Pauses & text normalization</span>
+              <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide controls</span>
+            </summary>
+
+            <div className="mt-4 grid gap-5 rounded-xl border border-border/70 bg-secondary/10 p-4 sm:grid-cols-2">
+              <div className="min-w-0 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="sentence-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Sentence pause
+                  </label>
+                  <output htmlFor="sentence-pause" className="font-mono text-xs font-bold text-primary">
+                    {sentencePauseMs} ms
+                  </output>
+                </div>
+                <input
+                  id="sentence-pause"
+                  type="range"
+                  min={TTS_SENTENCE_PAUSE_CONTROL.min}
+                  max={TTS_SENTENCE_PAUSE_CONTROL.max}
+                  step={TTS_SENTENCE_PAUSE_CONTROL.step}
+                  value={sentencePauseMs}
+                  onChange={(event) => setSentencePauseMs(Number(event.target.value))}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+                />
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  Added at sentence chunk boundaries. Production default: 220 ms.
+                </p>
+              </div>
+
+              <div className="min-w-0 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="paragraph-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Paragraph pause
+                  </label>
+                  <output htmlFor="paragraph-pause" className="font-mono text-xs font-bold text-primary">
+                    {paragraphPauseMs} ms
+                  </output>
+                </div>
+                <input
+                  id="paragraph-pause"
+                  type="range"
+                  min={TTS_PARAGRAPH_PAUSE_CONTROL.min}
+                  max={TTS_PARAGRAPH_PAUSE_CONTROL.max}
+                  step={TTS_PARAGRAPH_PAUSE_CONTROL.step}
+                  value={paragraphPauseMs}
+                  onChange={(event) => setParagraphPauseMs(Number(event.target.value))}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+                />
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  Added between paragraph chunks. Production default: 500 ms.
+                </p>
+              </div>
+
+              <div className="flex min-w-0 items-start gap-3 rounded-lg border border-border/70 bg-background p-3 sm:col-span-2">
+                <input
+                  id="normalize-text"
+                  type="checkbox"
+                  checked={normalizeText}
+                  onChange={(event) => setNormalizeText(event.target.checked)}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
+                />
+                <label htmlFor="normalize-text" className="min-w-0 text-sm text-foreground">
+                  <span className="block font-semibold">Normalize text for speech</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                    Conservatively expands common English abbreviations, dollar amounts, and percentages and standardizes punctuation. Disable it to synthesize the submitted text without those speech-focused replacements.
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-border/70 pt-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-[11px] leading-snug text-muted-foreground">
+                  These controls, language, voice, speed, and format are saved in this browser. Script text and generated audio are never saved as preferences.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetPreferences}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className="w-full shrink-0 sm:w-auto"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Reset preferences
+                </Button>
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Generate Button and Duration Block */}
@@ -618,10 +835,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 bg-secondary/15 border border-border/80 rounded-2xl">
             <div className="text-left w-full sm:w-auto">
               <span className="text-xs font-semibold text-muted-foreground uppercase block">
-                Estimated Audio Duration
+                Estimated audio duration
               </span>
               <span className="text-lg font-mono font-bold text-foreground mt-0.5 block leading-tight">
-                {formatEstimatedDuration()}
+                {estimatedDuration}
               </span>
             </div>
 
@@ -643,8 +860,8 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           <div className="flex flex-col gap-2 px-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-semibold uppercase tracking-wide">Estimated audio</span>
-              <span className="font-mono font-bold text-foreground">{formatEstimatedDuration()}</span>
+              <span className="font-semibold uppercase tracking-wide">Estimate</span>
+              <span>{wordsCount.toLocaleString()} words at {speed.toFixed(2)}×</span>
             </div>
             <div className="flex items-center gap-1.5 sm:text-right">
             <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />

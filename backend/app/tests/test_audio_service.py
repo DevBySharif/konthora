@@ -68,6 +68,31 @@ def test_assemble_audio_inter_chunk_pause():
     
     assert len(assembled) == expected_total_samples
 
+def test_assemble_audio_uses_per_job_pause_overrides():
+    """Per-job pauses affect only the requested assembly and accept zero safely."""
+    audio_service = AudioService()
+    settings.TTS_TERMINAL_SILENCE_MS = 200
+
+    dummy_samples = int(audio_service.sample_rate * 0.1)
+    waveform = np.ones(dummy_samples, dtype=np.float32) * 0.25
+    chunks = [
+        (waveform, "sentence"),
+        (waveform, "paragraph"),
+        (waveform, "none"),
+    ]
+
+    assembled, _ = audio_service.assemble_audio(
+        chunks,
+        sentence_pause_ms=0,
+        paragraph_pause_ms=750,
+    )
+
+    expected_paragraph_pause = int(audio_service.sample_rate * 0.75)
+    expected_terminal_silence = int(audio_service.sample_rate * 0.2)
+    assert len(assembled) == (
+        dummy_samples * 3 + expected_paragraph_pause + expected_terminal_silence
+    )
+
 def test_assemble_audio_empty_input():
     """Preserve existing contract of assemble_audio for empty input."""
     audio_service = AudioService()

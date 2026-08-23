@@ -98,16 +98,17 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
       type="button"
       disabled={disabled}
       onClick={() => !disabled && setIsOpen(true)}
-      className="w-full min-w-0 relative flex items-center justify-between gap-3 p-3 rounded-lg border border-border bg-background hover:bg-secondary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
+      className="w-full min-w-0 relative flex items-center justify-between gap-2 px-2.5 py-3 sm:gap-3 sm:p-3 rounded-lg border border-border bg-background hover:bg-secondary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
     >
       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-foreground truncate">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <span className="min-w-10 flex-1 font-semibold text-sm text-foreground truncate">
             {selectedVoice?.displayName || 'Select Voice'}
           </span>
           {selectedVoice?.recommended && (
-            <span className="text-[10px] font-semibold tracking-wide uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
-              Recommended
+            <span aria-label="Recommended voice" className="shrink-0 rounded bg-primary/10 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary sm:px-1.5 sm:text-[10px]">
+              <span aria-hidden="true" className="hidden sm:inline">Recommended</span>
+              <span aria-hidden="true" className="sm:hidden">Rec.</span>
             </span>
           )}
         </div>
@@ -279,7 +280,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
         Voice
       </label>
       
-      <div className="flex items-stretch gap-2">
+      <div className="flex min-w-0 items-stretch gap-1.5 sm:gap-2">
       <div className="min-w-0 flex-1">
       {isMobile ? (
         <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>

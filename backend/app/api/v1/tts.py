@@ -63,7 +63,10 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
         voice_id=payload.voiceId,
         accent=payload.accent,
         speed=payload.speed,
-        output_format=payload.outputFormat
+        output_format=payload.outputFormat,
+        sentence_pause_ms=payload.sentencePauseMs,
+        paragraph_pause_ms=payload.paragraphPauseMs,
+        normalize_text=payload.normalizeText,
     )
 
     # 5. Register active job before enqueuing to prevent race condition limits bypass
