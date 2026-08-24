@@ -277,6 +277,13 @@ export default function HowToTranscribeAudioPage() {
                     Konthora supports MP3, WAV, M4A, AAC audio files and MP4, WebM, MOV video
                     files. Files must be within 100 MB in size and 10 minutes in duration.
                   </p>
+                  <p>
+                    If you are working specifically with an MP3 recording, use the{' '}
+                    <Link href="/mp3-to-text" className="text-primary underline underline-offset-4 hover:text-primary/80 transition-colors">
+                      MP3 transcription tool
+                    </Link>{' '}
+                    to go directly to the same English transcription workflow.
+                  </p>
                 </div>
 
                 {/* Step 2 */}
@@ -314,8 +321,10 @@ export default function HowToTranscribeAudioPage() {
                   <p>
                     Click <strong className="text-foreground">Transcribe Audio</strong>. Konthora
                     uses the{' '}
-                    <span className="font-medium text-foreground">Whisper</span>{' '}
-                    speech recognition model to convert your audio into accurate text with precise
+                    <Link href="/entity/whisper" className="font-medium text-primary underline underline-offset-4 hover:text-primary/80 transition-colors">
+                      Whisper speech recognition model
+                    </Link>{' '}
+                    to convert your audio into accurate text with precise
                     timestamps.
                   </p>
                 </div>

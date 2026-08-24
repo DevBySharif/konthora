@@ -193,7 +193,7 @@ export default function HowToAddCaptionsPage() {
                   The first step is to turn the spoken words in your video into written text.
                 </p>
                 <p>
-                  You can use Konthora&apos;s <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> tool for this. Simply upload your video or audio file directly into the browser. The system will automatically extract the audio and process a <Link href="/speech-to-text" className="text-primary hover:underline">speech to text</Link> transcription.
+                  For a video file, use Konthora&apos;s <Link href="/video-to-text" className="text-primary hover:underline">video-to-text converter</Link>. It extracts the audio track and creates a <Link href="/speech-to-text" className="text-primary hover:underline">speech-to-text</Link> transcript. For an audio-only source, use the <Link href="/audio-to-text" className="text-primary hover:underline">audio-to-text tool</Link> instead.
                 </p>
                 <p>
                   Before transcribing, you can choose a timestamp mode—such as sentence or paragraph grouping—which dictates how the text will be paced when it finally appears on screen.
