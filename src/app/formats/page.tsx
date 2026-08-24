@@ -132,8 +132,9 @@ export default function FormatsPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            This guide details the media input, generated-audio output, and transcript export formats 
-            currently supported by the platform, including limits and practical workflows.
+            Konthora generates text-to-speech audio as MP3 or WAV. For English-language
+            transcription, it accepts MP3, WAV, M4A, AAC, MP4, WebM, and MOV files up to
+            100 MB and 10 minutes, then exports TXT, SRT, VTT, or JSON.
           </p>
 
         </Container>
@@ -290,7 +291,7 @@ export default function FormatsPage() {
                     <FileText className="h-6 w-6 text-primary shrink-0" />
                     <div>
                       <h3 className="font-semibold text-foreground">VTT (Web Video Text Tracks)</h3>
-                      <p className="text-sm mt-1">A modern caption format designed for HTML5 web video players, supporting precise alignment and styling.</p>
+                      <p className="text-sm mt-1">A timed caption format for HTML5 web video players, exported with WebVTT cues that keep transcript text aligned to the audio.</p>
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-card p-5 flex items-start gap-4">

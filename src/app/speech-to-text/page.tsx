@@ -205,7 +205,7 @@ export default function SpeechToTextPage() {
             >
               Whisper
             </Link>{' '}
-            can transcribe audio files, videos, and voice recordings directly in a
+            can transcribe audio files, videos, and voice recordings through a
             browser — with no software to install and no account required.
           </p>
 

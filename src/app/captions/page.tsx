@@ -57,7 +57,7 @@ export default function CaptionsPage() {
     '@type': 'HowTo',
     name: 'How to Create Captions for Your Video',
     description:
-      'Generate SRT or VTT captions from your audio or video file in four steps using Konthora — free, no account required.',
+      'Create a timed SRT or VTT transcript from an English audio or video file in four steps using Konthora — free, no account required.',
     step: [
       {
         '@type': 'HowToStep',
@@ -75,13 +75,13 @@ export default function CaptionsPage() {
         '@type': 'HowToStep',
         position: 3,
         name: 'Transcribe',
-        text: 'Click Transcribe Audio. Konthora uses speech recognition to convert the spoken audio into text with timestamps.',
+        text: 'Click Transcribe Audio. Konthora converts spoken English audio into a timed transcript.',
       },
       {
         '@type': 'HowToStep',
         position: 4,
         name: 'Export as SRT or VTT',
-        text: 'Download your transcript in SRT or VTT format. You can then upload this file alongside your video on platforms like YouTube or your own video player.',
+        text: 'Download your timed transcript in SRT or VTT format. Review it and add non-speech cues or speaker labels if you need fully authored closed captions.',
       },
     ],
   };
@@ -106,12 +106,12 @@ export default function CaptionsPage() {
     {
       question: "Do I need software to create captions?",
       answer:
-        "No. You can generate captions in your browser for free using Konthora. By uploading your video or audio file, Konthora uses automatic speech recognition to transcribe the audio and provides downloadable SRT or VTT files, with no account required.",
+        "No. You can create a timed transcript in your browser for free using Konthora. Upload an English audio or video file to generate downloadable SRT or VTT files with no account required. Review the export and add non-speech cues or speaker labels if you need fully authored closed captions.",
     },
     {
       question: "Can I add captions to a YouTube video?",
       answer:
-        "Yes. YouTube allows you to upload an SRT or VTT caption file for your videos. You can use Konthora to generate an SRT file from your video's audio, download it, and then upload it to your YouTube Studio under the Subtitles section.",
+        "Yes. YouTube allows you to upload an SRT or VTT caption file for your videos. You can use Konthora to generate a timed SRT file from spoken English audio, review it, and then upload it to YouTube Studio under the Subtitles section.",
     },
     {
       question: "Are captions required for accessibility?",
@@ -200,7 +200,7 @@ export default function CaptionsPage() {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Captions className="h-4 w-4" aria-hidden="true" />
-              Generate Captions Free — Export as SRT or VTT
+              Create Timed Transcripts — Export as SRT or VTT
             </Link>
           </div>
         </Container>
@@ -397,7 +397,10 @@ Today, we will learn about SRT and VTT files.`}
                 <Link href="/captions/how-to-add-captions-to-video" className="hover:underline text-foreground">How to Create Captions for Your Video</Link>
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-8">
-                You can generate SRT or VTT files automatically using Konthora&apos;s free{' '}
+                Konthora creates a timed English transcript in SRT or VTT format from a
+                supported audio or video file. Review the export and add non-speech cues
+                or speaker labels if you need fully authored closed captions. Start with
+                Konthora&apos;s free{' '}
                 <Link
                   href="/speech-to-text"
                   className="text-primary underline-offset-4 hover:underline transition-colors"
@@ -423,12 +426,12 @@ Today, we will learn about SRT and VTT files.`}
                   {
                     n: 3,
                     title: 'Transcribe',
-                    body: 'Click Transcribe Audio. Konthora uses speech recognition to convert the spoken audio into text with timestamps.',
+                    body: 'Click Transcribe Audio. Konthora converts spoken English audio into a timed transcript.',
                   },
                   {
                     n: 4,
                     title: 'Export as SRT or VTT',
-                    body: 'Download your transcript in SRT or VTT format. You can then upload this file alongside your video on platforms like YouTube.',
+                    body: 'Download your timed transcript in SRT or VTT format. Review it and add non-speech cues or speaker labels if you need fully authored closed captions.',
                   },
                 ].map((step) => (
                   <div
@@ -453,7 +456,7 @@ Today, we will learn about SRT and VTT files.`}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Captions className="h-4 w-4" aria-hidden="true" />
-                  Generate Captions Free — Export as SRT or VTT
+                  Create Timed Transcripts — Export as SRT or VTT
                 </Link>
               </div>
             </section>
@@ -517,11 +520,11 @@ Today, we will learn about SRT and VTT files.`}
             id="captions-closing-cta-heading"
             className="text-3xl sm:text-4xl font-bold text-foreground"
           >
-            Ready to generate captions?
+            Ready to create a timed transcript?
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            Upload your audio or video file to create SRT or VTT caption files instantly.
-            Free, private, and no account required.
+            Upload an English audio or video file to create an SRT or VTT timed transcript.
+            Review the export before using it as closed captions. Free, private, and no account required.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -529,7 +532,7 @@ Today, we will learn about SRT and VTT files.`}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Captions className="h-5 w-5" aria-hidden="true" />
-              Generate Captions Free — Export as SRT or VTT
+              Create Timed Transcripts — Export as SRT or VTT
             </Link>
           </div>
         </Container>

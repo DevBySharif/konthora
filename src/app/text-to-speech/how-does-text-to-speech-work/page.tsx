@@ -163,7 +163,10 @@ export default function HowTtsWorksPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Text-to-speech technology turns written words into natural-sounding audio through a complex process of text normalization, linguistic analysis, and neural audio generation. 
+            Text-to-speech converts written text into synthesized spoken audio through text
+            normalization, linguistic analysis, and neural voice generation. On Konthora,
+            you can choose from 41 voices across six languages and download the generated
+            audio as MP3 or WAV.
           </p>
         </Container>
       </section>
@@ -325,7 +328,7 @@ export default function HowTtsWorksPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  Konthora provides a simple, browser-based workflow for generating high-quality speech. You do not need to create an account, and everything runs directly from your browser.
+                  Konthora provides a simple browser-based workflow for generating high-quality speech. You do not need to create an account; use the workspace in your browser to submit text and download the result.
                 </p>
                 <p>
                   You can choose from 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese. English includes 20 American and 8 British English voices. Each request allows you to process up to 2,000 characters of text. Before generating, you can adjust the playback speed of the voice. Once processing is complete, you can download your final voiceover as either an <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 or WAV</Link> file.

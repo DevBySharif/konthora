@@ -97,7 +97,7 @@ export default function HowToTranscribeAudioPage() {
     {
       question: 'How long does audio transcription take?',
       answer:
-        'Processing time depends on audio length and file size. A 1-minute audio clip typically transcribes in a few seconds, while a 10-minute recording may take 15 to 30 seconds. All processing completes directly in your browser session.',
+        'Processing time depends on the audio length and current queue availability. Konthora processes the file on its servers and returns the completed transcript in your browser session.',
     },
     {
       question: 'What is the maximum file size for transcription?',
@@ -202,7 +202,8 @@ export default function HowToTranscribeAudioPage() {
             To transcribe audio to text for free: (1) go to Konthora&rsquo;s audio-to-text tool,
             (2) upload your audio file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV — up to 100 MB and
             10 minutes), (3) choose your timestamp grouping, and (4) download or copy your
-            transcript in TXT, SRT, VTT, or JSON format. No account required.
+            transcript in TXT, SRT, VTT, or JSON format. Konthora currently supports
+            English-language audio. No account required.
           </p>
 
           {/* CTA placement 1: Quick Steps Box */}
