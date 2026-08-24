@@ -443,7 +443,7 @@ export default function HowToTranscribeAudioPage() {
               <div className="space-y-6 text-muted-foreground leading-relaxed">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">TXT Format</h3>
-                  <p>Plain text format containing speech segments without timestamp headers.</p>
+                  <p>Plain text format with a readable display timestamp before each transcript block.</p>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">SRT Format</h3>
@@ -455,7 +455,7 @@ export default function HowToTranscribeAudioPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">JSON Format</h3>
-                  <p>Structured JSON containing segment objects with word-level timing data.</p>
+                  <p>Structured JSON containing segment objects and, in word mode, word-level timing data.</p>
                 </div>
 
                 {/* Worked example code block */}

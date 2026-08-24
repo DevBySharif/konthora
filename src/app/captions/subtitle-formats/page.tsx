@@ -145,7 +145,7 @@ export default function SubtitleFormatsPage() {
                   When you extract spoken text from audio or video, the output needs to be saved in a file format. The format you choose determines how the text can be used later. Konthora supports exporting transcripts in four standalone <Link href="/formats" className="text-primary hover:underline">formats</Link>: SRT, VTT, TXT, and JSON.
                 </p>
                 <p>
-                  Some formats (like SRT and VTT) contain embedded <Link href="/speech-to-text/timestamps" className="text-primary hover:underline">timestamps</Link>, making them ideal for displaying timed <Link href="/captions/closed-captions-vs-subtitles" className="text-primary hover:underline">closed captions</Link> alongside a video. Other formats (like TXT) are simply readable text, while formats like JSON are designed to be parsed by software applications.
+                  SRT and VTT use start-and-end cues for timed text alongside a video. Konthora TXT exports use readable display timestamps before text blocks, while JSON is designed for software applications. Review SRT or VTT exports and add accessibility annotations when fully authored <Link href="/captions/closed-captions-vs-subtitles" className="text-primary hover:underline">closed captions</Link> are required.
                 </p>
                 <p>
                   For an MP4, WebM, or MOV file, use the <Link href="/video-to-text" className="text-primary hover:underline">video-to-text converter</Link> to create a transcript, then export SRT or VTT when you need timed caption cues.
@@ -205,10 +205,10 @@ export default function SubtitleFormatsPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  <Link href="/formats/txt" className="text-primary hover:underline">TXT</Link> is a standard plain text file format. When you export a transcript as a TXT file, you receive only the readable words, without any embedded timestamps or structural data.
+                  <Link href="/formats/txt" className="text-primary hover:underline">TXT</Link> is a standard plain text file format. Konthora&apos;s TXT export pairs readable text blocks with display timestamps, without the start-and-end subtitle cues used by SRT and VTT.
                 </p>
                 <p>
-                  TXT is the best format if you want to read the transcript like a document, copy and paste the text into an article, or review the content without the distraction of subtitle timing codes.
+                  TXT is useful when you want to read the transcript like a document, copy it into an article, or review it without subtitle cue syntax.
                 </p>
               </div>
             </section>
@@ -225,7 +225,7 @@ export default function SubtitleFormatsPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  <Link href="/formats/json" className="text-primary hover:underline">JSON</Link> is a lightweight data-interchange format designed to be easily parsed by software. A JSON transcript file contains highly structured data, often breaking down the transcript word-by-word alongside detailed timing information.
+                  <Link href="/formats/json" className="text-primary hover:underline">JSON</Link> is a lightweight data-interchange format designed to be easily parsed by software. A Konthora JSON transcript contains structured segments and timing fields, with word-level details when word timestamp mode is selected.
                 </p>
                 <p>
                   JSON is primarily used when you need to process transcript data programmatically, such as building custom search interfaces or organizing transcript text and timestamp data for structured workflows.
@@ -275,7 +275,7 @@ export default function SubtitleFormatsPage() {
                     <tr>
                       <td className="border border-border/70 px-4 py-3 text-foreground font-medium">TXT</td>
                       <td className="border border-border/70 px-4 py-3 text-muted-foreground">Reading and archiving</td>
-                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">No</td>
+                      <td className="border border-border/70 px-4 py-3 text-muted-foreground">Display timestamps</td>
                       <td className="border border-border/70 px-4 py-3 text-muted-foreground">Plain text documents and articles</td>
                     </tr>
                     <tr className="bg-secondary/5">

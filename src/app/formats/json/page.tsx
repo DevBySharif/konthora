@@ -178,14 +178,14 @@ export default function JsonFormatPage() {
                   <div className="p-4 sm:p-6 overflow-x-auto">
                     <pre className="text-sm text-zinc-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
 {`{
-  "text": "This is an illustrative transcript example.",
-  "segments": [
-    {
-      "start": 0.0,
-      "end": 2.5,
-      "text": "This is an illustrative transcript example."
-    }
-  ]
+  "schemaVersion": "1.0",
+  "jobId": "example-job-id",
+  "fullText": "This is an illustrative transcript example.",
+  "durationSeconds": 2.5,
+  "detectedLanguage": "en",
+  "languageProbability": 0.99,
+  "segments": [{ "id": 0, "text": "This is an illustrative transcript example.", "start": 0.0, "end": 2.5, "words": [] }],
+  "words": []
 }`}
                     </pre>
                   </div>
@@ -234,7 +234,7 @@ export default function JsonFormatPage() {
                     <FileCode2 className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-foreground">JSON vs. <Link href="/formats/txt" className="text-foreground hover:underline">TXT</Link>:</strong> 
-                      TXT is designed strictly for human readability and strips away all timestamps. JSON retains the timestamps and structures them for machines.
+                      TXT uses readable display timestamps before transcript blocks. JSON provides a structured document with transcript fields, segments, and timing data for software workflows.
                     </div>
                   </li>
                   <li className="flex gap-4 items-start">

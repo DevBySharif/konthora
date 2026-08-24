@@ -63,7 +63,7 @@ export default function AudioToTextPage() {
     {
       question: 'What export formats are available?',
       answer:
-        'You can export your transcript as plain TXT, SRT subtitle format, WebVTT caption format, or structured JSON containing segments and word-level timing data.',
+        'You can export your transcript as plain TXT, SRT subtitle format, WebVTT caption format, or structured JSON containing segments and, in word mode, word-level timing data.',
     },
     {
       question: 'Are uploaded files stored permanently?',

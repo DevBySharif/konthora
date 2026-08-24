@@ -40,7 +40,7 @@ export default function ClosedCaptionsVsSubtitlesPage() {
   const faqs: FAQItem[] = [
     {
       question: "Can I use Konthora to create closed captions?",
-      answer: "Yes. By uploading your audio or video file, you can generate a timestamped transcript and export it as an SRT or VTT file, which are standard closed caption formats.",
+      answer: "Konthora can generate a timed English transcript and export it as an SRT or VTT file. Review the export and add speaker labels or non-speech cues if you need a fully authored closed-caption track.",
     },
     {
       question: "Does Konthora burn open captions directly into my video?",
@@ -256,10 +256,10 @@ export default function ClosedCaptionsVsSubtitlesPage() {
                   Regardless of whether you are displaying captions or subtitles, video players require a standalone text file containing the dialogue and precise timing information.
                 </p>
                 <p>
-                  You can create these files automatically using the <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> tool. By uploading your media file, the system will generate a <Link href="/speech-to-text" className="text-primary hover:underline">speech to text</Link> transcription with embedded <Link href="/speech-to-text/timestamps" className="text-primary hover:underline font-medium">timestamps</Link>.
+                  You can create a timed English transcript using the <Link href="/audio-to-text" className="text-primary hover:underline">audio to text</Link> tool. By uploading supported media, the system generates a <Link href="/speech-to-text" className="text-primary hover:underline">speech to text</Link> transcript with <Link href="/speech-to-text/timestamps" className="text-primary hover:underline font-medium">timestamps</Link>.
                 </p>
                 <p>
-                  Once processing is complete, you can export the transcript as either an <Link href="/formats/srt" className="text-primary hover:underline">SRT</Link> or <Link href="/formats/vtt" className="text-primary hover:underline">VTT</Link> file. Because Konthora creates standalone subtitle files rather than permanently burning the text into the video, you retain full control over how they are uploaded and displayed on platforms like YouTube.
+                  Once processing is complete, you can export the transcript as either an <Link href="/formats/srt" className="text-primary hover:underline">SRT</Link> or <Link href="/formats/vtt" className="text-primary hover:underline">VTT</Link> file. Review the export and add speaker labels or non-speech cues when you need fully authored closed captions. Konthora creates standalone files rather than burning text into video.
                 </p>
               </div>
 

@@ -277,7 +277,7 @@ export default function FormatsPage() {
                     <AlignLeft className="h-6 w-6 text-primary shrink-0" />
                     <div>
                       <h3 className="font-semibold text-foreground">TXT (Plain Text)</h3>
-                      <p className="text-sm mt-1">A simple, readable document containing only the transcribed words without any timestamps or formatting tags.</p>
+                      <p className="text-sm mt-1">A readable transcript with a display timestamp before each text block, without SRT or VTT subtitle cue syntax.</p>
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-card p-5 flex items-start gap-4">

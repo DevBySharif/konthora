@@ -269,9 +269,7 @@ and when to disappear.`}
                   <li className="flex gap-4 items-start">
                     <AlignLeft className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-foreground">TXT (Plain Text):</strong> Contains only the spoken words. 
-                      It lacks timestamps entirely. If you only want to read the transcript or publish it as an article, 
-                      choose TXT. If you need the text synced to video, a TXT file will not work.
+                      <strong className="text-foreground">TXT (Plain Text):</strong> Uses readable display timestamps before transcript blocks, but it has no SRT-style start/end cues. Choose TXT for reading or publishing; use SRT when text must sync to video.
                     </div>
                   </li>
                   <li className="flex gap-4 items-start">

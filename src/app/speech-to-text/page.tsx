@@ -372,9 +372,9 @@ export default function SpeechToTextPage() {
                     Accessibility and Assistive Technology
                   </h3>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    Accurate transcripts make audio and video content accessible to people
-                    who are deaf or hard of hearing. Exported SRT and VTT files meet
-                    caption requirements for most video platforms.
+                    Timed transcripts can support accessible audio and video workflows. Exported
+                    SRT and VTT files provide timed transcript cues; review and add speaker or
+                    non-speech annotations when fully authored closed captions are required.
                   </p>
                 </div>
               </div>

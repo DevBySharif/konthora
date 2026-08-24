@@ -48,7 +48,7 @@ export default function TxtFormatPage() {
     },
     {
       question: "Are timestamps included in the TXT export?",
-      answer: "No. The plain TXT format contains only the transcribed words. All structural timecodes are stripped out to keep the document highly readable.",
+      answer: "Yes. Konthora&apos;s TXT export places a readable display timestamp, such as [00:00], before each transcript block. It does not use the start-and-end cue structure required by SRT or VTT subtitle files.",
     },
     {
       question: "Is there a limit on how long the transcript can be?",
@@ -145,10 +145,10 @@ export default function TxtFormatPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  A TXT (Plain Text) file is one of the simplest digital document formats. When you export a transcription from Konthora as a TXT file, you receive a clean, highly readable document containing the spoken words extracted from your media.
+                  A TXT (Plain Text) file is one of the simplest digital document formats. When you export a transcription from Konthora as a TXT file, you receive readable transcript blocks with a display timestamp before each block.
                 </p>
                 <p>
-                  Unlike specialized subtitle formats, a TXT transcript strips away all structural metadata, leaving only the continuous flow of text.
+                  Unlike specialized subtitle formats, a TXT export does not include cue end times, sequential cue numbers, or the player-specific syntax used by SRT and VTT.
                 </p>
               </div>
             </section>
@@ -165,7 +165,7 @@ export default function TxtFormatPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  When you export your transcription to TXT, the output preserves the exact words recognized by the speech-to-text engine. Based on the selected pacing mode (e.g., sentence or paragraph groupings) used during the transcription, the text is structured into readable blocks.
+                  When you export your transcription to TXT, the output preserves the recognized text and places a display timestamp before each block. The selected timestamp grouping determines how the text is organized into readable blocks.
                 </p>
                 <div className="my-8 rounded-xl bg-zinc-950 border border-border/70 overflow-hidden shadow-sm">
                   <div className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 border-b border-zinc-800">
@@ -174,15 +174,16 @@ export default function TxtFormatPage() {
                   </div>
                   <div className="p-4 sm:p-6 overflow-x-auto">
                     <pre className="text-sm text-zinc-300 font-mono leading-relaxed whitespace-pre-wrap break-words">
-{`This is an example of a plain text transcript export.
-Notice how the words flow naturally without any timecodes or structural tags interrupting the sentences.
+{`[00:00]
+This is an example of a plain text transcript export.
 
-This makes the document incredibly easy to read, copy, and paste into other applications. It is perfect for reading long conversations or generating meeting notes.`}
+[00:04]
+The text remains easy to read, copy, and paste without subtitle cue syntax.`}
                     </pre>
                   </div>
                 </div>
                 <p>
-                  <strong>What TXT does not preserve:</strong> A TXT export does not include structural subtitle cues, timing information, or the complex nested data structure required for programmatic processing.
+                  <strong>What TXT does not preserve:</strong> A TXT export does not include subtitle cue end times, sequential cue numbers, or the nested data structure used for programmatic processing.
                 </p>
               </div>
             </section>
@@ -228,14 +229,14 @@ This makes the document incredibly easy to read, copy, and paste into other appl
                     <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-foreground"><Link href="/formats/srt" className="text-foreground hover:underline">SRT</Link> and <Link href="/formats/vtt" className="text-foreground hover:underline">VTT</Link>:</strong> 
-                      These are timed subtitle formats. Unlike TXT, they include exact start and end timestamps (e.g., <code>00:01:15.500</code>) for every block of text, which is strictly required if you want text to appear on a video screen in sync with the audio.
+                      These are timed subtitle formats. They include exact start and end timestamps (for example, <code>00:01:15.500</code>) for every cue. TXT display timestamps are useful for reading but do not make a file suitable for video synchronization.
                     </div>
                   </li>
                   <li className="flex gap-4 items-start">
                     <FileText className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
                       <strong className="text-foreground">JSON:</strong> 
-                      This is a structured data format containing deep technical data, including <Link href="/speech-to-text/timestamps" className="text-primary hover:underline font-medium">word-level timestamps</Link> and confidence scores. It is used exclusively by developers to build applications, whereas TXT is designed for human readers.
+                      This is a structured data format containing segments and, when word mode is selected, <Link href="/speech-to-text/timestamps" className="text-primary hover:underline font-medium">word-level timestamps</Link>. It is intended for software workflows, whereas TXT is designed for human reading.
                     </div>
                   </li>
                 </ul>

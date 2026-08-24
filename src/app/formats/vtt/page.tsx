@@ -276,7 +276,7 @@ in the timecode.`}
                   <li className="flex gap-4 items-start">
                     <AlignLeft className="h-6 w-6 text-primary shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-foreground">TXT (Plain Text):</strong> Contains only raw spoken words with absolutely no timestamps. TXT is meant for reading or publishing as an article, but cannot be synced to a video player.
+                      <strong className="text-foreground">TXT (Plain Text):</strong> Uses readable display timestamps before transcript blocks, but it has no VTT cue timing syntax. TXT is meant for reading or publishing and cannot be synced to a video player.
                     </div>
                   </li>
                 </ul>
@@ -299,14 +299,14 @@ in the timecode.`}
                   It provides the raw VTT file for you to upload to your web player or publishing platform.
                 </p>
                 <p>
-                  When you <Link href="/speech-to-text/how-to-transcribe-audio" className="text-primary hover:underline">transcribe audio</Link> on Konthora, our system generates precise timed data. 
+                  When you <Link href="/speech-to-text/how-to-transcribe-audio" className="text-primary hover:underline">transcribe audio</Link> on Konthora, the system generates timed data.
                   You can easily export this data as a WebVTT file. You can also customize how the text is grouped—by sentence or paragraph—using our options for <Link href="/speech-to-text/timestamps" className="text-primary hover:underline">transcription timestamps</Link>.
                 </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center bg-secondary/10 p-6 rounded-xl border border-secondary/20 mt-8">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">Ready to create WebVTT captions?</h3>
+                  <h3 className="font-semibold text-foreground">Ready to create a WebVTT transcript?</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Upload an audio or video file to generate a timed VTT transcript automatically.
                   </p>
@@ -319,6 +319,22 @@ in the timecode.`}
                   Try Audio-to-Text
                 </Link>
               </div>
+            </section>
+
+            <hr className="border-border/40" />
+
+            <section aria-labelledby="vtt-reference">
+              <h2 id="vtt-reference" className="text-2xl sm:text-3xl font-bold text-foreground mb-5">
+                Technical Reference
+              </h2>
+              <p className="text-muted-foreground leading-relaxed">
+                The{' '}
+                <a href="https://www.w3.org/TR/webvtt1/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  W3C WebVTT specification
+                </a>{' '}
+                defines the <code>WEBVTT</code> header and start-and-end cue timing syntax. Konthora exports
+                the core timed-cue structure and does not add optional WebVTT styling or positioning settings.
+              </p>
             </section>
 
           </div>

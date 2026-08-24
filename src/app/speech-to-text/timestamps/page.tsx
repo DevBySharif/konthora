@@ -82,7 +82,7 @@ export default function TranscriptionTimestampsPage() {
     {
       question: 'Do all export formats include timestamps?',
       answer:
-        'No. Plain TXT exports omit timestamp markers for clean reading. SRT, VTT, and JSON exports include formatted timeline timestamps based on your selected grouping mode.',
+        'Yes, but they use different structures. Konthora TXT exports place a readable display timestamp before each block; SRT and VTT use start-and-end subtitle cues; JSON contains structured timing fields.',
     },
     {
       question: 'Can I change the timestamp mode after transcribing?',
@@ -484,10 +484,13 @@ Choose sentence or word timestamps for your file.`}
                     <Link href="/formats/txt" className="hover:text-primary transition-colors">TXT Format</Link>
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Plain text exports strip all timecode headers, providing clean prose for reading documents.
+                    Konthora TXT exports use a readable display timestamp before each transcript block.
                   </p>
                   <pre className="overflow-x-auto rounded-xl bg-secondary/50 p-4 font-mono text-xs text-foreground leading-relaxed border border-border/50">
-{`Welcome to Konthora's audio transcription workspace.
+{`[00:01]
+Welcome to Konthora's audio transcription workspace.
+
+[00:04]
 Choose sentence or word timestamps for your file.`}
                   </pre>
                 </div>
@@ -498,17 +501,17 @@ Choose sentence or word timestamps for your file.`}
                     <Link href="/formats/json" className="hover:text-primary transition-colors">JSON Format</Link>
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    Structured JSON provides segment objects containing raw floating-point second offsets and individual word objects.
+                    Structured JSON provides segment objects with raw floating-point second offsets. Word objects are included when word timestamp mode is selected.
                   </p>
                   <pre className="overflow-x-auto rounded-xl bg-secondary/50 p-4 font-mono text-xs text-foreground leading-relaxed border border-border/50">
-{`[
-  {
-    "id": 0,
-    "start": 1.20,
-    "end": 4.50,
-    "text": "Welcome to Konthora's audio transcription workspace."
-  }
-]`}
+{`{
+  "schemaVersion": "1.0",
+  "fullText": "Welcome to Konthora's audio transcription workspace.",
+  "durationSeconds": 8.1,
+  "detectedLanguage": "en",
+  "segments": [{ "id": 0, "text": "Welcome to Konthora's audio transcription workspace.", "start": 1.2, "end": 4.5, "words": [] }],
+  "words": []
+}`}
                   </pre>
                 </div>
               </div>

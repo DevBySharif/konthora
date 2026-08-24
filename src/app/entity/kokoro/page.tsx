@@ -190,10 +190,9 @@ export default function KokoroEntityPage() {
                   audio snippets, Kokoro uses a neural network to synthesize the speech dynamically.
                 </p>
                 <p>
-                  The official model, specifically <code>Kokoro-82M</code>, is hosted on 
-                  Hugging Face and its architecture is available on GitHub under an Apache 2.0 
-                  license. This open-weight approach allows independent developers and platforms 
-                  to run the inference engine directly, rather than relying on proprietary cloud APIs.
+                  The official <code>Kokoro-82M</code> model card and repository describe the
+                  model as open-weight, with Apache-licensed weights. Konthora is an independent
+                  application that uses Kokoro; it is not the Kokoro project or its publisher.
                 </p>
               </div>
             </section>
@@ -210,15 +209,14 @@ export default function KokoroEntityPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Kokoro utilizes a deep neural network to predict the acoustic properties of speech 
-                  based on text input. When text is provided to the model, it is first normalized and 
-                  converted into a phonetic representation.
+                  Kokoro uses a neural text-to-speech pipeline to synthesize audio from text. In
+                  Konthora, text preparation and voice selection happen in the product workflow
+                  before the selected Kokoro voice generates audio.
                 </p>
                 <p>
-                  The model then processes these phonemes, applying style and speaker embeddings to 
-                  determine pitch, rhythm, and tone. Finally, the network generates an audio waveform. 
-                  Because it is a neural model, Kokoro can contextualize punctuation and sentence 
-                  structure, leading to more natural inflections compared to older text-to-speech systems.
+                  The resulting waveform reflects the selected voice and supplied text. Clear
+                  punctuation and spelling can help a text-to-speech system produce more natural
+                  pauses and pronunciation, but results can vary for uncommon names and vocabulary.
                 </p>
               </div>
             </section>
@@ -235,15 +233,13 @@ export default function KokoroEntityPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  The primary Kokoro model contains approximately 82 million parameters (Kokoro-82M). 
-                  In the context of modern generative AI, where models often span tens of billions of 
-                  parameters, Kokoro is intentionally lightweight.
+                  The official Kokoro repository describes Kokoro-82M as an open-weight model with
+                  82 million parameters. That parameter count is a property of the upstream model,
+                  not a measurement of Konthora&apos;s service.
                 </p>
                 <p>
-                  This parameter efficiency means the model requires significantly less computational 
-                  overhead to run. Inference (the act of generating speech from text) can be performed 
-                  quickly, even on consumer-grade hardware or directly within constrained server environments, 
-                  without the latency associated with massive cloud-based language models.
+                  The project presents Kokoro as a lightweight model. Actual generation time in
+                  Konthora depends on the selected voice, text length, and current service load.
                 </p>
               </div>
             </section>
@@ -303,9 +299,9 @@ export default function KokoroEntityPage() {
                   with natural pacing.
                 </p>
                 <p>
-                  Like other modern neural text-to-speech architectures, Kokoro synthesizes the audio 
-                  from scratch, allowing the neural network to infer context, apply smooth transitions 
-                  between phonemes, and mimic human breathing and intonation patterns dynamically.
+                  Like other neural text-to-speech systems, Kokoro generates speech from text rather
+                  than concatenating a fixed library of recorded phrases. Output quality can still
+                  vary with text, voice, and pronunciation context.
                 </p>
               </div>
             </section>
@@ -359,12 +355,34 @@ export default function KokoroEntityPage() {
                   may occur.
                 </p>
                 <p>
-                  Additionally, the Konthora implementation of Kokoro is strictly limited to English 
-                  language inputs. The interface currently allows a maximum of 2,000 characters per 
-                  generation. Because it operates statelessly in the browser with no account system, 
+                  Konthora currently exposes Kokoro voices for English, Hindi, Spanish, French,
+                  Italian, and Portuguese. The interface currently allows a maximum of 2,000 characters per
+                  generation. Because no account is required,
                   audio outputs must be downloaded during the active session.
                 </p>
               </div>
+            </section>
+
+            <hr className="border-border/40" />
+
+            <section aria-labelledby="kokoro-sources">
+              <h2 id="kokoro-sources" className="text-2xl sm:text-3xl font-bold text-foreground mb-5">
+                Sources
+              </h2>
+              <ul className="space-y-2 text-muted-foreground leading-relaxed">
+                <li>
+                  <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Official Kokoro repository
+                  </a>{' '}
+                  — model overview, parameter count, and Apache-licensed weights.
+                </li>
+                <li>
+                  <a href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Hexgrad Kokoro-82M model card
+                  </a>{' '}
+                  — the publisher&apos;s model listing and license information.
+                </li>
+              </ul>
             </section>
 
           </div>

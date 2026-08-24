@@ -185,14 +185,15 @@ export default function WhisperEntityPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Whisper is an automatic speech recognition system released by OpenAI. It is designed 
-                  to transcribe spoken language into text. The model was trained on a massive dataset of diverse, 
-                  weakly supervised audio, giving it robustness against background noise, varied accents, and technical jargon.
+                  Whisper is an automatic speech recognition system released by OpenAI. The original
+                  research describes training on 680,000 hours of multilingual and multitask weak
+                  supervision. Konthora uses only the English-focused <code>small.en</code> variant
+                  for its current transcription product.
                 </p>
                 <p>
-                  Unlike proprietary cloud-only APIs, OpenAI open-sourced the Whisper model weights and code 
-                  under the MIT License. This open-source distribution allows developers to run the inference 
-                  engine independently without sending audio data to third-party servers.
+                  OpenAI releases Whisper&apos;s code and model weights under the MIT License. This
+                  upstream license does not make Konthora affiliated with OpenAI, and it does not
+                  expand the capabilities exposed by Konthora&apos;s product.
                 </p>
               </div>
             </section>
@@ -234,8 +235,7 @@ export default function WhisperEntityPage() {
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
                   Konthora utilizes the Whisper model to power its free, browser-based transcription tool. 
-                  Specifically, Konthora implements the <code>small.en</code> variant of the Whisper model, 
-                  which provides an optimal balance between transcription precision and computational speed 
+                  Specifically, Konthora implements the <code>small.en</code> variant of the Whisper model
                   for English-language audio.
                 </p>
                 <p>
@@ -315,9 +315,10 @@ export default function WhisperEntityPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
                 <p>
-                  One of the most practical applications of the Whisper model is the generation of timestamped 
-                  subtitles and closed captions. Through the Konthora interface, the raw timestamps produced 
-                  by Whisper can be grouped by word, sentence, or paragraph, and exported directly as SRT or VTT files.
+                  Konthora groups timing data into word, sentence, or paragraph modes and can export
+                  timed SRT or VTT transcripts. These exports are a starting point for captions;
+                  review and add speaker labels or non-speech cues when fully authored closed captions
+                  are required.
                 </p>
               </div>
 
@@ -328,6 +329,28 @@ export default function WhisperEntityPage() {
                 <AudioLines className="h-4 w-4" aria-hidden="true" />
                 Try the Audio-to-Text Tool
               </Link>
+            </section>
+
+            <hr className="border-border/40" />
+
+            <section aria-labelledby="whisper-sources">
+              <h2 id="whisper-sources" className="text-2xl sm:text-3xl font-bold text-foreground mb-5">
+                Sources
+              </h2>
+              <ul className="space-y-2 text-muted-foreground leading-relaxed">
+                <li>
+                  <a href="https://github.com/openai/whisper" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Official OpenAI Whisper repository
+                  </a>{' '}
+                  — model overview, architecture summary, and MIT license.
+                </li>
+                <li>
+                  <a href="https://arxiv.org/abs/2212.04356" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Original Whisper research paper
+                  </a>{' '}
+                  — training method and the 680,000-hour supervision description.
+                </li>
+              </ul>
             </section>
 
           </div>
