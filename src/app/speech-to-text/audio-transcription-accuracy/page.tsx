@@ -15,7 +15,7 @@ import { Mic } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "Audio Transcription Accuracy: What Affects the Results? | Konthora",
   description:
-    "Learn what affects audio transcription accuracy, including background noise and microphone quality, and discover how to improve your automatic speech-to-text results.",
+    "Learn what affects English audio transcription accuracy, from background noise to microphone quality, and how to improve speech-to-text results.",
   path: '/speech-to-text/audio-transcription-accuracy',
 });
 

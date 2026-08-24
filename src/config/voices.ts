@@ -85,7 +85,7 @@ export function buildVoice(
   const heading = content.heading || `${name} ${genderWord} ${languageLabel} AI Voice`;
   const title = `${name} — ${languageLabel} ${genderWord} Text-to-Speech Voice | Konthora`;
   const accentArticle = /^[aeiou]/i.test(config.accent) ? 'an' : 'a';
-  const description = `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with ${accentArticle} ${config.accent} accent in Konthora. Listen to the preview, generate ${languageLabel} speech at ${config.minimumSpeed}×–${config.maximumSpeed}× speed, and export audio as MP3 or WAV.`;
+  const description = `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with ${accentArticle} ${config.accent} accent. Preview it, create ${languageLabel} speech, and download MP3 or WAV audio in Konthora.`;
 
   return {
     ...config,

@@ -24,7 +24,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'Speech to Text: How Audio Transcription Works | Konthora',
   description:
-    'Speech-to-text converts spoken audio into written text using automatic speech recognition. Learn how it works, what accuracy to expect, and transcribe audio free with Konthora.',
+    'Learn how speech-to-text converts audio into written text, what affects accuracy, and how to transcribe English audio free with Konthora.',
   path: '/speech-to-text',
 });
 

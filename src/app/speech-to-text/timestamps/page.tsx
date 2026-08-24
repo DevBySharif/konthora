@@ -23,7 +23,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'Transcription Timestamps Explained | Konthora',
   description:
-    'Understand transcription timestamps: sentence, paragraph, and word-level timing, when each helps, and how to export timestamped transcripts as TXT, SRT, VTT, or JSON.',
+    'Learn when sentence, paragraph, and word timestamps help, and export English transcripts as TXT, SRT, VTT, or JSON.',
   path: '/speech-to-text/timestamps',
 });
 

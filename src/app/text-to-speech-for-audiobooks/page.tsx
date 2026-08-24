@@ -15,7 +15,7 @@ import { Mic } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "Text-to-Speech for Audiobooks | Konthora",
   description:
-    "Learn how to generate spoken narration for audiobook-style projects using text-to-speech. Discover how to format scripts, choose voices, and manage character limits.",
+    "Learn how to create audiobook-style narration with text-to-speech, format scripts, choose English voices, and manage character limits.",
   path: '/text-to-speech-for-audiobooks',
 });
 

@@ -15,7 +15,7 @@ import { Mic } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "Text-to-Speech for Social Media Videos | Konthora",
   description:
-    "Learn how to create narration for short-form social media videos using text-to-speech. Discover how to choose an English voice, adjust playback speed, and export MP3 or WAV audio.",
+    "Learn how to create short-form social media narration with text-to-speech, choose an English voice, adjust speed, and export MP3 or WAV audio.",
   path: '/text-to-speech-for-social-media',
 });
 

@@ -18,7 +18,7 @@ import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: 'Free AI Text to Speech Online | Konthora',
   description:
-    'Convert text into natural AI speech free in your browser with 41 voices across six languages. Download voiceovers as MP3 or WAV and control speed between 0.75× and 1.25×.',
+    'Create AI speech from text free in your browser with 41 voices in six languages. Download MP3 or WAV voiceovers and control speed from 0.75× to 1.25×.',
   path: '/text-to-speech',
 });
 

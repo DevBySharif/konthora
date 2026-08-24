@@ -15,7 +15,7 @@ import { Captions } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "Subtitle and Transcript Formats: SRT, VTT, TXT, and JSON | Konthora",
   description:
-    "Learn the practical differences between SRT, VTT, TXT, and JSON formats, and discover how to choose the right format for your subtitle and transcription workflows.",
+    "Compare SRT, VTT, TXT, and JSON formats to choose the right export for subtitle and English transcription workflows.",
   path: '/captions/subtitle-formats',
 });
 

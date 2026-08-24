@@ -25,7 +25,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'Supported Audio, Video & Transcript Formats | Konthora',
   description:
-    'Complete reference for Konthora supported formats: MP3 and WAV audio outputs, accepted audio/video inputs for transcription, and TXT, SRT, VTT, and JSON exports.',
+    'Reference Konthora formats: MP3 and WAV audio outputs, supported audio/video transcription inputs, and TXT, SRT, VTT, and JSON exports.',
   path: '/formats',
 });
 

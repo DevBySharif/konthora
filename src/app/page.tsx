@@ -21,7 +21,7 @@ import { FinalCTA } from '@/components/home/FinalCTA';
 export const metadata: Metadata = constructMetadata({
   title: 'Konthora | Free AI Text to Speech & Timestamped Transcription',
   description:
-    `Use Konthora free in your browser: generate natural AI speech with ${TOTAL_TTS_VOICES} voices across ${TTS_LANGUAGE_COUNT} languages, or transcribe English audio and video into timestamped text you can export as TXT, SRT, VTT, or JSON.`,
+    `Konthora offers free AI text to speech with ${TOTAL_TTS_VOICES} voices in ${TTS_LANGUAGE_COUNT} languages, plus English audio/video transcription with timestamps.`,
   path: '/',
 });
 
