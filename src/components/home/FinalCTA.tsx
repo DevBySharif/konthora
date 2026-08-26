@@ -37,7 +37,7 @@ export function FinalCTA() {
                   Transcribe audio
                 </Link>
               </div>
-              <p className="mt-6 text-sm text-muted-foreground">Free forever · No sign-up · Files auto-delete in 60 minutes</p>
+              <p className="mt-6 text-sm text-muted-foreground">Free · No sign-up · Files auto-delete in 60 minutes</p>
             </div>
           </div>
         </Reveal>

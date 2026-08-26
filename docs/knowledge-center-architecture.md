@@ -49,13 +49,13 @@ Technology must support the product, not become the product.
 ## 3. Strategic Positioning
 
 **Niche to own:**
-Free + private + browser-only + English (US/UK) + genuine captions pipeline for independent creators, students, podcasters, educators, and accessibility-focused users.
+Free + private + browser-only + 6 languages + genuine captions pipeline for independent creators, students, podcasters, educators, and accessibility-focused users.
 
 **Factual differentiators (verified from backend â€” never contradict in copy):**
 
 | Product | Verified Facts |
 |---|---|
-| **Text-to-Speech** | 28 voices (20 US, 8 UK; male + female), Kokoro-based neural synthesis, 2,000-character limit per generation, MP3 and WAV output, speed 0.75Ã—â€“1.25Ã—, English only |
+| **Text-to-Speech** | 41 voices (20 US, 8 UK, 4 Hindi, 3 Spanish, 1 French, 2 Italian, 3 Portuguese), Kokoro-based neural synthesis, 2,000-character limit per generation, MP3 and WAV output, speed 0.75×–1.25×, 6 languages |
 | **Transcription** | Accepts MP3, WAV, M4A, AAC, MP4, WebM, MOV; 100 MB file limit; 10-minute duration limit; English (auto-detect routes to English); sentence / paragraph / word timestamp grouping; TXT, SRT, VTT, JSON export; Whisper model |
 | **Privacy** | 60-minute automatic deletion of all uploaded files and generated transcripts; TTS text processed in-memory only; no user account required |
 
