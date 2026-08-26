@@ -65,6 +65,10 @@ export default function HomePage() {
     name: siteConfig.name,
     url: siteConfig.url,
     logo: `${siteConfig.url}/icon.png`,
+    sameAs: [
+      'https://www.producthunt.com/products/konthora',
+      'https://www.launchory.app/startups/konthora',
+    ],
     contactPoint: {
       '@type': 'ContactPoint',
       email: siteConfig.contactEmail,

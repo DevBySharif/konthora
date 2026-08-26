@@ -161,7 +161,7 @@ export default function TextToSpeechPage() {
         id="capabilities"
         eyebrow="Capabilities"
         title="Everything the speech workspace supports"
-        description="Konthora serves tens of thousands of free, browser-based text-to-speech, powered by the open Kokoro voice model. Here is exactly what is supported."
+        description="Konthora provides free, browser-based text-to-speech powered by the open Kokoro voice model. Here is exactly what is supported."
         cards={capabilityCards}
         compact
       />
