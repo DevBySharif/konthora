@@ -23,11 +23,10 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
     >
       <span
         className={`relative inline-flex shrink-0 transition-transform duration-200 group-hover:scale-105 ${containerClass}`}
-        aria-hidden="true"
       >
         <Image
           src="/brand/konthora-logo-light.svg"
-          alt=""
+          alt="Konthora"
           fill
           sizes={imageSize}
           unoptimized
@@ -43,7 +42,7 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
         />
         <Image
           src="/brand/konthora-logo-dark.svg"
-          alt=""
+          alt="Konthora"
           fill
           sizes={imageSize}
           unoptimized
