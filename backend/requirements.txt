@@ -1,3 +1,7 @@
+# Hugging Face ZeroGPU & Gradio
+spaces
+gradio
+
 # Core FastAPI Web Server
 fastapi==0.141.1
 uvicorn==0.52.1
@@ -15,9 +19,8 @@ scipy==1.17.1
 soundfile==0.14.0
 cffi==2.1.1
 
-# Deep Learning and Transformers (CPU support by default)
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.13.0+cpu
+# Deep Learning and Transformers
+torch
 transformers==5.14.1
 huggingface_hub==1.26.0
 safetensors==0.8.0
