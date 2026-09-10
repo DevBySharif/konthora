@@ -116,7 +116,7 @@ def get_job_status(jobId: str, token: str = Depends(get_bearer_token)):
         downloadUrl=download_url
     )
 
-@router.get("/tts/jobs/{jobId}/audio")
+@router.api_route("/tts/jobs/{jobId}/audio", methods=["GET", "HEAD"])
 def download_audio_file(jobId: str, token: str = Depends(get_bearer_token)):
     """
     Serves the compiled audio file container (MP3 or WAV).

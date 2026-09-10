@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 import secrets
 import hashlib
@@ -32,7 +32,9 @@ class TtsJob:
         self.status = "queued"
         self.progress_stage = "queued"
         self.created_at = datetime.now(timezone.utc).replace(tzinfo=None)
-        self.expires_at = datetime.now(timezone.utc).replace(tzinfo=None) # Updated after processing finishes
+        self.retention_minutes = retention_minutes
+        self.expiry_delta = timedelta(minutes=retention_minutes)
+        self.expires_at = self.created_at + self.expiry_delta
 
         self.duration_seconds: Optional[float] = None
         self.error_code: Optional[str] = None
@@ -42,8 +44,6 @@ class TtsJob:
         # Access token creation
         self.raw_access_token = secrets.token_urlsafe(32)
         self.access_token_hash = self._hash_token(self.raw_access_token)
-
-        self.retention_minutes = retention_minutes
 
     def _hash_token(self, token: str) -> str:
         return hashlib.sha256(token.encode('utf-8')).hexdigest()
@@ -59,7 +59,7 @@ class TtsJob:
         self.file_path = file_path
         self.duration_seconds = duration_seconds
         now = datetime.now(timezone.utc).replace(tzinfo=None)
-        self.expires_at = now + getattr(self, "expiry_delta", None) or now
+        self.expires_at = now + self.expiry_delta
         self.clear_text()
 
     def finalize_failure(self, error_code: str, error_message: str):
@@ -67,6 +67,8 @@ class TtsJob:
         self.progress_stage = "failed"
         self.error_code = error_code
         self.error_message = error_message
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        self.expires_at = now + self.expiry_delta
         self.clear_text()
 
     def clear_text(self):
