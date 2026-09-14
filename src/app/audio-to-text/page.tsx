@@ -16,9 +16,9 @@ import { siteConfig } from '@/config/site';
 import { FileAudio, Upload, Clock, Languages, FileDown, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Audio to Text with Timestamps | Konthora',
+  title: 'Free Audio to Text Converter | Timestamps & SRT Export',
   description:
-    'Upload audio or video for English audio transcription. Choose sentence, paragraph, or word timestamps, then export your transcript as TXT, SRT, VTT, or JSON.',
+    'Convert audio and video to text online with accurate timestamps. Export transcripts to TXT, SRT, VTT, and JSON with sentence, paragraph, or word-level sync.',
   path: '/audio-to-text',
 });
 

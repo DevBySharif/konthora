@@ -372,11 +372,11 @@ export default function HowToTranscribeAudioPage() {
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-card p-4">
-                    <h4 className="font-semibold text-foreground mb-1">Audio Formats</h4>
+                    <h3 className="font-semibold text-foreground mb-1">Audio Formats</h3>
                     <p className="text-sm">MP3, WAV, M4A, AAC</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-card p-4">
-                    <h4 className="font-semibold text-foreground mb-1">Video Formats</h4>
+                    <h3 className="font-semibold text-foreground mb-1">Video Formats</h3>
                     <p className="text-sm">MP4, WebM, MOV (audio track extracted)</p>
                   </div>
                 </div>

@@ -887,7 +887,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
       {/* Output Results Area */}
       <div className="mt-8 pt-7 border-t border-border/60">
         <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h3 className="text-lg font-bold text-foreground">Generated Audio</h3>
+          <h2 className="text-lg font-bold text-foreground">Generated Audio</h2>
           {status === 'completed' && <span className="text-xs font-semibold text-primary">Ready to play or download</span>}
         </div>
 

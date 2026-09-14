@@ -46,7 +46,7 @@ export default function Page() {
           <div className="flex gap-4 p-5 border border-yellow-500/20 bg-yellow-500/5 rounded-2xl text-yellow-700 dark:text-yellow-400/90 mb-12">
             <AlertTriangle className="h-6 w-6 shrink-0 text-yellow-600 dark:text-yellow-500" />
             <div className="space-y-1.5">
-              <h3 className="font-semibold text-yellow-800 dark:text-yellow-300">Draft Notice</h3>
+              <p className="font-semibold text-yellow-800 dark:text-yellow-300">Draft Notice</p>
               <p className="text-sm leading-relaxed">
                 This document is a pre-production launch draft. It must be reviewed, adjusted, and finalized by qualified legal counsel before public production processing is enabled on Konthora.
               </p>

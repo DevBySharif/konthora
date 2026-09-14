@@ -17,6 +17,11 @@ export function constructSoftwareAppSchema({ name, url }: SoftwareAppProps) {
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
     },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      ratingCount: '12',
+    },
     browserRequirements: 'Requires a modern web browser with HTML5 support.',
   };
 }

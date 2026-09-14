@@ -549,7 +549,7 @@ export function TranscriptionWorkspace() {
 
       {/* ── Results Output ────────────────────────────────────────────────── */}
       <div className="mt-8 pt-6 border-t border-border/60">
-        <h3 className="text-lg font-bold text-foreground mb-4">Transcription Output</h3>
+        <h2 className="text-lg font-bold text-foreground mb-4">Transcription Output</h2>
 
         <div className="bg-card border border-border rounded-2xl shadow-xs overflow-hidden">
           {phase !== 'completed' || !job?.transcript ? (

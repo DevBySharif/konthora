@@ -16,9 +16,9 @@ import { siteConfig } from '@/config/site';
 import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Free AI Text to Speech Online | Konthora',
+  title: 'Free AI Text to Speech Online | Kokoro TTS Studio',
   description:
-    'Create AI speech from text free in your browser with 41 voices in six languages. Download MP3 or WAV voiceovers and control speed from 0.75× to 1.25×.',
+    'Free AI text to speech generator powered by Kokoro neural voice studio. Convert text into natural speech with 41 AI voices in 6 languages, with MP3 and WAV export.',
   path: '/text-to-speech',
 });
 

@@ -67,7 +67,7 @@ export default function AboutPage() {
               <div className="inline-flex p-2 rounded-lg bg-primary/10 text-primary mb-4">
                 <Volume2 className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Natural Speech Output</h3>
+              <h2 className="text-lg font-bold text-foreground mb-2">Natural Speech Output</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Konthora uses neural voice synthesis models to create conversational, human-like voice outputs that avoid standard robotic inflections.
               </p>
@@ -77,7 +77,7 @@ export default function AboutPage() {
               <div className="inline-flex p-2 rounded-lg bg-primary/10 text-primary mb-4">
                 <FileAudio className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Accurate Timestamps</h3>
+              <h2 className="text-lg font-bold text-foreground mb-2">Accurate Timestamps</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Our transcription workflow is designed to parse media files and link text segments directly with timeline timestamps down to individual words, ideal for syncing subtitles and indexes.
               </p>
@@ -87,7 +87,7 @@ export default function AboutPage() {
               <div className="inline-flex p-2 rounded-lg bg-primary/10 text-primary mb-4">
                 <Target className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Quality-First Approach</h3>
+              <h2 className="text-lg font-bold text-foreground mb-2">Quality-First Approach</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 We focus only on doing two things exceptionally well—Text to Speech and Audio Transcription—rather than building a bloated platform with dozens of unrelated, mediocre AI features.
               </p>
@@ -97,7 +97,7 @@ export default function AboutPage() {
               <div className="inline-flex p-2 rounded-lg bg-primary/10 text-primary mb-4">
                 <Users className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Privacy & Transparency</h3>
+              <h2 className="text-lg font-bold text-foreground mb-2">Privacy & Transparency</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 We are committed to transparent user agreements and safe content management, providing clear notices about temporary data processing and automatic deletion parameters.
               </p>

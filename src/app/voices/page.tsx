@@ -18,9 +18,9 @@ import {
    Metadata
 ───────────────────────────────────────────── */
 export const metadata: Metadata = constructMetadata({
-  title: 'AI Text-to-Speech Voices Available in Konthora | Konthora',
+  title: '41 AI Voice Profiles & Accents | Kokoro Neural Voices',
   description:
-    'Explore the American English and British English AI voices available in Konthora. Learn how to choose the right voice for your text-to-speech projects.',
+    'Explore 41 neural AI voice profiles across American, British, Hindi, Spanish, French, Italian, and Portuguese accents. Listen to previews and choose the right voice for your text to speech.',
   path: '/voices',
 });
 

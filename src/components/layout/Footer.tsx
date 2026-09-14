@@ -4,6 +4,7 @@ import { Mail } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { Container } from '../ui/Container';
 import { KonthoraBrand } from '../brand/KonthoraBrand';
+import { getAllVoices, getVoiceUrl } from '@/config/voices';
 
 const footerColumns = [
   {
@@ -40,6 +41,7 @@ const footerColumns = [
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const allVoices = getAllVoices();
 
   return (
     <footer className="border-t border-border/70 bg-card/40 text-foreground transition-colors duration-200" aria-labelledby="footer-heading">
@@ -117,8 +119,37 @@ export function Footer() {
           </div>
         </div>
 
+        {/* All AI Voices compact internal link grid */}
+        <div className="mt-16 pt-8 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              All AI Voices
+            </h3>
+            <Link
+              href="/voices"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Browse Full Voice Directory &rarr;
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {allVoices.map((voice) => (
+              <Link
+                key={voice.slug}
+                href={getVoiceUrl(voice.slug)}
+                className="inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/50 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground"
+              >
+                <span>{voice.shortName}</span>
+                <span className="text-[10px] text-muted-foreground/70">
+                  ({voice.accent.includes('American') ? 'US' : voice.accent.includes('British') ? 'UK' : voice.language})
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-20 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <p className="text-sm text-muted-foreground font-medium">
             &copy; {currentYear} Konthora. All rights reserved.
           </p>

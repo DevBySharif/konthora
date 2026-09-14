@@ -6,7 +6,6 @@ import { Container } from '@/components/ui/Container';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
-import { TOTAL_TTS_VOICES, TTS_LANGUAGE_COUNT } from '@/config/productFacts';
 import { Hero } from '@/components/home/Hero';
 import { Trusted } from '@/components/home/Trusted';
 import { TextToSpeech } from '@/components/home/TextToSpeech';
@@ -19,9 +18,9 @@ import { ProductFacts } from '@/components/home/ProductFacts';
 import { FinalCTA } from '@/components/home/FinalCTA';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Konthora | Free AI Text to Speech & Timestamped Transcription',
+  title: 'Free AI Text to Speech Online | Kokoro TTS Studio',
   description:
-    `Konthora offers free AI text to speech with ${TOTAL_TTS_VOICES} voices in ${TTS_LANGUAGE_COUNT} languages, plus English audio/video transcription with timestamps.`,
+    'Free AI text to speech generator powered by Kokoro neural voice studio. Convert text into natural speech with 41 AI voices in 6 languages, with MP3 and WAV export.',
   path: '/',
 });
 

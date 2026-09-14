@@ -82,6 +82,12 @@ app.add_middleware(
     allowed_hosts=settings.trusted_hosts_list,
 )
 
+@app.middleware("http")
+async def add_robots_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
+
 # Register routes
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(tts_router, prefix="/api/v1")

@@ -11,5 +11,8 @@ export default async function OpengraphImage() {
   return new ImageResponse(<OgImage logoSrc={logoSrc} />, {
     width: size.width,
     height: size.height,
+    headers: {
+      'X-Robots-Tag': 'noindex',
+    },
   });
 }
