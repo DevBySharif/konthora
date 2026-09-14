@@ -124,7 +124,14 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+export const API_HOST_URL = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? 'https://api.konthora.dev.bd'
+    : 'http://localhost:8000')
+).replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+
+export const API_BASE_URL = `${API_HOST_URL}/api/v1`;
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
