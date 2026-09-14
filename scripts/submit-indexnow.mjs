@@ -1,4 +1,6 @@
-import { pathToFileURL } from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 export const INDEXNOW_HOST = 'konthora.dev.bd';
@@ -114,8 +116,33 @@ export async function submitIndexNowUrls(inputs, fetchImpl = globalThis.fetch) {
   };
 }
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
+
+export function getAllSitemapUrlsFromArtifact() {
+  const sitemapBodyPath = path.join(rootDir, '.next/server/app/sitemap.xml.body');
+  if (fs.existsSync(sitemapBodyPath)) {
+    const xml = fs.readFileSync(sitemapBodyPath, 'utf8');
+    const matches = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g)).map((m) => m[1].trim());
+    if (matches.length > 0) return normalizeIndexNowUrls(matches);
+  }
+  const sitemapTs = fs.readFileSync(path.join(rootDir, 'src/app/sitemap.ts'), 'utf8');
+  const routesMatch = sitemapTs.match(/const routes = \[([\s\S]*?)\];/);
+  if (routesMatch) {
+    const lines = routesMatch[1]
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith("'") || l.startsWith('"'))
+      .map((l) => l.replace(/^['"]|['"],?$/g, ''));
+    return normalizeIndexNowUrls(lines.map((r) => (r ? `${INDEXNOW_ORIGIN}${r}` : `${INDEXNOW_ORIGIN}/`)));
+  }
+  return [`${INDEXNOW_ORIGIN}/`];
+}
+
 function printUsage() {
   console.error('Usage: npm run indexnow -- /path [/another-path | https://konthora.dev.bd/path]');
+  console.error('       npm run indexnow -- --all  (submits all sitemap URLs)');
 }
 
 async function runCli() {
@@ -126,8 +153,12 @@ async function runCli() {
     return;
   }
 
+  const targets = inputs.includes('--all')
+    ? getAllSitemapUrlsFromArtifact()
+    : inputs;
+
   try {
-    const result = await submitIndexNowUrls(inputs);
+    const result = await submitIndexNowUrls(targets);
     console.log(`IndexNow HTTP ${result.status}: ${result.statusMessage}. Submitted ${result.payload.urlList.length} URL(s).`);
     if (!result.accepted) {
       process.exitCode = 1;

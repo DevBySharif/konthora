@@ -59,3 +59,23 @@ test('submits one mocked batch to the official endpoint', async () => {
   assert.equal(result.accepted, true);
   assert.equal(result.status, 202);
 });
+
+test('getAllSitemapUrlsFromArtifact extracts all sitemap canonical URLs', async () => {
+  const { getAllSitemapUrlsFromArtifact } = await import('../../scripts/submit-indexnow.mjs');
+  const urls = getAllSitemapUrlsFromArtifact();
+  assert.ok(urls.length >= 91, `Sitemap must contain all routes (found ${urls.length})`);
+  assert.ok(urls.includes('https://konthora.dev.bd/'), 'Must include homepage');
+  assert.ok(urls.includes('https://konthora.dev.bd/text-to-speech'), 'Must include text-to-speech');
+  assert.ok(urls.includes('https://konthora.dev.bd/audio-to-text'), 'Must include audio-to-text');
+  assert.ok(urls.includes('https://konthora.dev.bd/voices/af-heart'), 'Must include voice profile');
+});
+
+test('API route /api/indexnow and static key file return matching verification key', async () => {
+  const keyFile = await readFile(new URL('../../public/ff904654fd97c20407266dd4f36709dad68735eda40b31f7bd84ac4b0bfe3478.txt', import.meta.url), 'utf8');
+  const routeFile = await readFile(new URL('../../src/app/api/indexnow/route.ts', import.meta.url), 'utf8');
+  const libFile = await readFile(new URL('../../src/lib/indexnow.ts', import.meta.url), 'utf8');
+
+  assert.ok(routeFile.includes(keyFile.trim()), 'API route must return the verification key');
+  assert.ok(libFile.includes(keyFile.trim()), 'src/lib/indexnow.ts must declare the verification key');
+});
+
