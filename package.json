@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test:frontend": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/frontend/*.test.mjs",
     "indexnow": "node scripts/submit-indexnow.mjs",
-    "indexnow:all": "node scripts/submit-indexnow.mjs --all"
+    "indexnow:all": "node scripts/submit-indexnow.mjs --all",
+    "ping:sitemap": "node scripts/pingSitemaps.mjs",
+    "postbuild": "node scripts/pingSitemaps.mjs",
+    "gsc:index": "node scripts/gscIndexing.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^16.3.0",
