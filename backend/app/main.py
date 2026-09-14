@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -12,6 +13,8 @@ from app.core.exceptions import TtsException
 from app.core.queue import TtsQueueManager
 from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.cleanup_service import CleanupService
+from app.services.kokoro_service import KokoroService
+from app.services.transcription_service import TranscriptionService
 from app.api.v1.health import router as health_router
 from app.api.v1.tts import router as tts_router
 from app.api.v1.transcription import router as transcription_router
@@ -37,6 +40,18 @@ async def lifespan(app: FastAPI):
 
         # 3. Start background file/metadata cleanup loop
         cleanup_service.start()
+
+        # 4. Trigger initial singleton instantiation and model loading during startup (cold-start optimization)
+        logger.info("Pre-warming model singletons for Kokoro TTS and Faster-Whisper...")
+        try:
+            loop = asyncio.get_running_loop()
+            kokoro_service = KokoroService()
+            transcription_service = TranscriptionService()
+            await loop.run_in_executor(None, kokoro_service.load_pipeline, "a")
+            await loop.run_in_executor(None, transcription_service.load_model)
+            logger.info("Model warm-up completed successfully.")
+        except Exception as e:
+            logger.warning(f"Initial model preloading deferred or failed: {e}")
 
     yield
 

@@ -213,3 +213,14 @@ def test_ffmpeg_encoder_unavailability_error(client):
             headers={"Authorization": f"Bearer {job.raw_access_token}"}
         )
         assert response.status_code == 400
+
+def test_hf_space_rate_limit_and_worker_caps():
+    from app.core.config import Settings
+    # Verify class model field defaults directly
+    fields = Settings.model_fields
+    assert fields["TRANSCRIPTION_RATE_LIMIT_PER_HOUR"].default == 15
+    assert fields["TRANSCRIPTION_MAX_CONCURRENT_PER_IP"].default == 1
+    assert fields["TTS_RATE_LIMIT_PER_HOUR"].default == 30
+    assert fields["TTS_MAX_CONCURRENT_PER_IP"].default == 2
+    assert fields["TTS_WORKER_COUNT"].default == 1
+    assert fields["TRANSCRIPTION_WORKER_COUNT"].default == 1

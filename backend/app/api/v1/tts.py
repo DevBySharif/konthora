@@ -9,6 +9,7 @@ from app.schemas.tts import TtsJobCreate, TtsJobResponse, TtsJobStatusResponse, 
 from app.services.job_service import JobService
 from app.services.kokoro_service import KokoroService
 from app.services.rate_limit_service import RateLimitService
+from app.core.config import settings
 from app.core.queue import TtsQueueManager
 from app.core.exceptions import (
     UnauthorizedJobAccessException,
@@ -49,8 +50,8 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
     # 1. Enforce requests-per-hour rate limits
     rate_limiter.check_rate_limit(client_ip)
 
-    # 2. Enforce active jobs capacity per client IP (max 3 concurrent)
-    rate_limiter.check_active_jobs_limit(client_ip, max_active=3)
+    # 2. Enforce active jobs capacity per client IP
+    rate_limiter.check_active_jobs_limit(client_ip, max_active=settings.TTS_MAX_CONCURRENT_PER_IP)
 
     # 3. Validate voice selection against catalog
     voices = kokoro_service.get_voices()

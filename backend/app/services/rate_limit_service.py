@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional
 from fastapi import Request
 from loguru import logger
 
@@ -48,7 +48,7 @@ class RateLimitService:
         """
         now = time.time()
         window = settings.TTS_RATE_LIMIT_WINDOW_SECONDS
-        max_requests = settings.TTS_RATE_LIMIT_REQUESTS
+        max_requests = getattr(settings, "TTS_RATE_LIMIT_PER_HOUR", settings.TTS_RATE_LIMIT_REQUESTS)
 
         # Initialize history
         if client_ip not in self._request_history:
@@ -73,10 +73,13 @@ class RateLimitService:
         # Record this request
         self._request_history[client_ip].append(now)
 
-    def check_active_jobs_limit(self, client_ip: str, max_active: int = 3):
+    def check_active_jobs_limit(self, client_ip: str, max_active: Optional[int] = None):
         """
         Prevents a single client from monopolizing the worker queue for TTS.
         """
+        if max_active is None:
+            max_active = getattr(settings, "TTS_MAX_CONCURRENT_PER_IP", getattr(settings, "TTS_ACTIVE_JOBS_PER_CLIENT", 2))
+
         active = self._active_jobs.get(client_ip, set())
         if len(active) >= max_active:
             logger.warning(f"Active jobs limit hit for IP: {client_ip}. Active count: {len(active)}")
@@ -102,7 +105,7 @@ class RateLimitService:
         """Enforces sliding-window request limits for Audio Transcription."""
         now = time.time()
         window = settings.TRANSCRIPTION_RATE_LIMIT_WINDOW_SECONDS
-        max_requests = settings.TRANSCRIPTION_RATE_LIMIT_REQUESTS
+        max_requests = getattr(settings, "TRANSCRIPTION_RATE_LIMIT_PER_HOUR", settings.TRANSCRIPTION_RATE_LIMIT_REQUESTS)
 
         if client_ip not in self._trans_request_history:
             self._trans_request_history[client_ip] = []
@@ -122,8 +125,11 @@ class RateLimitService:
 
         self._trans_request_history[client_ip].append(now)
 
-    def check_transcription_active_jobs_limit(self, client_ip: str, max_active: int = 1):
+    def check_transcription_active_jobs_limit(self, client_ip: str, max_active: Optional[int] = None):
         """Enforces concurrent active jobs limits for Audio Transcription."""
+        if max_active is None:
+            max_active = getattr(settings, "TRANSCRIPTION_MAX_CONCURRENT_PER_IP", getattr(settings, "TRANSCRIPTION_ACTIVE_JOBS_PER_CLIENT", 1))
+
         active = self._trans_active_jobs.get(client_ip, set())
         if len(active) >= max_active:
             logger.warning(f"Transcription active jobs limit hit for IP: {client_ip}. Active count: {len(active)}")

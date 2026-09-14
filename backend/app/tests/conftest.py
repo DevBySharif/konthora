@@ -11,6 +11,7 @@ os.environ["APP_ENV"] = "testing"
 os.environ["TTS_STORAGE_ROOT"] = "./test_storage"
 os.environ["TTS_MAX_QUEUE_SIZE"] = "2"
 os.environ["TTS_RATE_LIMIT_REQUESTS"] = "5"
+os.environ["TTS_RATE_LIMIT_PER_HOUR"] = "5"
 os.environ["TTS_RATE_LIMIT_WINDOW_SECONDS"] = "10"
 
 from app.main import app
