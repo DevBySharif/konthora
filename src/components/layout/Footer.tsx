@@ -75,6 +75,8 @@ export function Footer() {
                 alt="Konthora - Natural AI voices and accurate transcription in your browser | Product Hunt"
                 width={250}
                 height={54}
+                loading="lazy"
+                decoding="async"
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1228496&theme=dark&t=1787315761233"
                 className="block h-auto max-w-full"
               />
@@ -90,6 +92,8 @@ export function Footer() {
                 alt="Featured on Launchory"
                 width={240}
                 height={54}
+                loading="lazy"
+                decoding="async"
                 className="block h-auto max-w-full"
               />
             </a>
@@ -127,19 +131,19 @@ export function Footer() {
             </h3>
             <Link
               href="/voices"
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-primary hover:underline py-1 touch-manipulation"
             >
               Browse Full Voice Directory &rarr;
             </Link>
           </div>
-          <div className="flex flex-wrap gap-1.5 text-xs">
+          <div className="flex flex-wrap gap-2 sm:gap-2.5 text-xs">
             {allVoices.map((voice) => (
               <Link
                 key={voice.slug}
                 href={getVoiceUrl(voice.slug)}
-                className="inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/50 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
-                <span>{voice.shortName}</span>
+                <span className="font-medium">{voice.shortName}</span>
                 <span className="text-[10px] text-muted-foreground/70">
                   ({voice.accent.includes('American') ? 'US' : voice.accent.includes('British') ? 'UK' : voice.language})
                 </span>
