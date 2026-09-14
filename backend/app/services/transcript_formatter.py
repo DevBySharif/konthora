@@ -93,6 +93,8 @@ class TranscriptFormatter:
             last_w_end = start
             for w in words:
                 w_text = w.get("word", "").strip()
+                if not w_text:
+                    continue
                 w_start = float(w.get("start", 0.0))
                 w_end = float(w.get("end", 0.0))
 
@@ -123,6 +125,55 @@ class TranscriptFormatter:
             })
 
         return valid_segments
+
+    def _format_words_to_text(self, words: List[Dict[str, Any]]) -> str:
+        """
+        Reconstructs coherent, properly spaced text from a list of word token dictionaries.
+        Handles stripped tokens, Whisper leading-space tokens, punctuation, and contractions.
+        """
+        raw_tokens = [w.get("word", "") for w in words if w.get("word", "") is not None]
+        cleaned_tokens = [t.strip() for t in raw_tokens if t.strip()]
+        if not cleaned_tokens:
+            return ""
+
+        # Characters/tokens that should attach directly to the preceding word without a space
+        no_pre_space = {
+            ".", ",", "!", "?", ":", ";", "%", "…",
+            ")", "]", "}", "”", "’", '"'
+        }
+        # Tokens that should attach to the FOLLOWING word without trailing space
+        no_post_space = {
+            "(", "[", "{", "“", "‘", "$"
+        }
+
+        result_parts: List[str] = []
+
+        for i, token in enumerate(cleaned_tokens):
+            if i == 0:
+                result_parts.append(token)
+                continue
+
+            prev_token = cleaned_tokens[i - 1]
+
+            # Contractions like 's, 't, 're, 've, 'm, 'd, n't, 'll, ’s, etc.
+            is_contraction = (
+                token.startswith("'") or
+                token.startswith("’") or
+                token == "n't" or
+                token == "n’t"
+            )
+
+            # Check if this token should attach to previous word
+            if token in no_pre_space or is_contraction:
+                result_parts.append(token)
+            # Check if previous token was an opening delimiter
+            elif prev_token in no_post_space:
+                result_parts.append(token)
+            else:
+                result_parts.append(" " + token)
+
+        assembled = "".join(result_parts)
+        return re.sub(r'\s+', ' ', assembled).strip()
 
     def group_sentences(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -163,8 +214,8 @@ class TranscriptFormatter:
             word_str = w["word"].strip()
             is_terminal = len(word_str) > 0 and word_str[-1] in [".", "?", "!"]
 
-            # Character length limit check
-            current_char_count = len("".join(current_sentence_text))
+            # Character length limit check with proper space estimation
+            current_char_count = len(" ".join(current_sentence_text))
 
             if is_terminal or current_char_count >= self.sent_max_chars:
                 # Commit sentence
@@ -179,9 +230,7 @@ class TranscriptFormatter:
         return sentences
 
     def _build_sentence_unit(self, unit_id: int, words: List[Dict[str, Any]]) -> Dict[str, Any]:
-        text = "".join([w["word"] for w in words]).strip()
-        # Clean extra spaces
-        text = re.sub(r'\s+', ' ', text)
+        text = self._format_words_to_text(words)
         return {
             "id": unit_id,
             "text": text,
@@ -232,6 +281,7 @@ class TranscriptFormatter:
 
     def _build_paragraph_unit(self, unit_id: int, sentences: List[Dict[str, Any]]) -> Dict[str, Any]:
         text = " ".join([s["text"] for s in sentences]).strip()
+        text = re.sub(r'\s+', ' ', text)
         words = []
         for s in sentences:
             words.extend(s.get("words", []))
@@ -285,8 +335,7 @@ class TranscriptFormatter:
         return lines
 
     def _build_line_unit(self, unit_id: int, words: List[Dict[str, Any]]) -> Dict[str, Any]:
-        text = "".join([w["word"] for w in words]).strip()
-        text = re.sub(r'\s+', ' ', text)
+        text = self._format_words_to_text(words)
         return {
             "id": unit_id,
             "text": text,

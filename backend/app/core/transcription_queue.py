@@ -1,6 +1,7 @@
 import asyncio
 import concurrent.futures
 import json
+import re
 from pathlib import Path
 from typing import Dict, Any, Optional, Set
 from loguru import logger
@@ -160,7 +161,8 @@ class TranscriptionQueueManager:
             trans_result = trans_service.transcribe_audio(wav_path, language=lang)
 
             # Save raw outputs temporarily
-            job.temp_full_text = " ".join([s["text"] for s in trans_result["segments"]]).strip()
+            raw_segment_texts = [s.get("text", "").strip() for s in trans_result["segments"] if s.get("text", "").strip()]
+            job.temp_full_text = re.sub(r'\s+', ' ', " ".join(raw_segment_texts)).strip()
             job.temp_segments = trans_result["segments"]
 
             # 4. Formulate output groupings and files
@@ -242,6 +244,13 @@ class TranscriptionQueueManager:
             else: # sentence mode
                 formatted_units = formatter.group_sentences(valid_segments)
 
+            # Derive canonical full text from formatted units to guarantee word spacing matches exports
+            if formatted_units:
+                unit_full_text = " ".join([u.get("text", "").strip() for u in formatted_units if u.get("text", "").strip()]).strip()
+                canonical_full_text = re.sub(r'\s+', ' ', unit_full_text)
+            else:
+                canonical_full_text = job.temp_full_text
+
             # Build export text
             if job.export_format == "srt":
                 export_text = formatter.export_srt(formatted_units)
@@ -264,7 +273,7 @@ class TranscriptionQueueManager:
                         "probability": trans_result["language_probability"]
                     },
                     "timestampMode": job.timestamp_mode,
-                    "fullText": job.temp_full_text,
+                    "fullText": canonical_full_text,
                     "segments": formatted_units,
                     "words": words_list
                 }
@@ -280,7 +289,7 @@ class TranscriptionQueueManager:
             preview_doc = {
                 "schemaVersion": "1.0",
                 "jobId": job_id,
-                "fullText": job.temp_full_text,
+                "fullText": canonical_full_text,
                 "durationSeconds": info["duration"],
                 "detectedLanguage": trans_result["detected_language"],
                 "languageProbability": trans_result["language_probability"],
@@ -294,9 +303,9 @@ class TranscriptionQueueManager:
             word_count = sum(len(s.get("words", [])) for s in valid_segments)
             if word_count == 0:
                 # count from text splits
-                word_count = len(job.temp_full_text.split())
+                word_count = len(canonical_full_text.split())
 
-            char_count = len(job.temp_full_text)
+            char_count = len(canonical_full_text)
 
             logger.info(f"Processing Job {job_id} | Stage: finalizing_result")
             job.progress_stage = "finalizing_result"

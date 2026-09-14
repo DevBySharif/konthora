@@ -88,11 +88,16 @@ test('all export formats use edited text and keep timing data', () => {
 
   assert.equal(files.txt.name, 'My-custom-export.txt');
   assert.match(files.txt.content, /Corrected Konthora text\./u);
+  assert.doesNotMatch(files.txt.content, /CorrectedKonthoratext/u);
   assert.match(files.srt.content, /00:00:01,500 --> 00:00:04,000/u);
+  assert.match(files.srt.content, /Corrected Konthora text\./u);
   assert.match(files.vtt.content, /^WEBVTT/u);
+  assert.match(files.vtt.content, /Corrected Konthora text\./u);
   const json = JSON.parse(files.json.content);
   assert.equal(json.edited, true);
   assert.equal(json.segments[1].text, 'Corrected Konthora text.');
+  assert.match(json.fullText, /Hello world\. Corrected Konthora text\./u);
+  assert.doesNotMatch(json.fullText, /Helloworld/u);
   assert.equal(json.segments[1].start, 1.5);
   assert.equal(json.segments[1].end, 4);
   assert.equal(json.segments[1].edited, true);
