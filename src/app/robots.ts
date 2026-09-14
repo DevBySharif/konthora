@@ -2,11 +2,18 @@ import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    siteConfig.url ||
+    'https://konthora.dev.bd'
+  ).replace(/\/+$/, '');
+
   return {
     rules: {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: `${siteConfig.url}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }

@@ -7,6 +7,13 @@ import { getAllVoices, getVoiceUrl } from '@/config/voices';
 const CONTENT_LAST_MODIFIED = new Date('2026-08-01');
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    siteConfig.url ||
+    'https://konthora.dev.bd'
+  ).replace(/\/+$/, '');
+
   const voiceRoutes = getAllVoices().map((voice) => getVoiceUrl(voice.slug));
 
   const routes = [
@@ -63,10 +70,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...voiceRoutes,
   ];
 
-  return routes.map((route) => ({
-    url: `${siteConfig.url}${route}`,
-    lastModified: CONTENT_LAST_MODIFIED,
-    changeFrequency: route === '' ? 'weekly' : 'monthly',
-    priority: route === '' ? 1.0 : route.includes('to-') ? 0.9 : 0.5,
-  }));
+  return routes.map((route) => {
+    const isHome = route === '';
+    const isPrimaryTool =
+      route === '/text-to-speech' ||
+      route === '/audio-to-text' ||
+      route === '/speech-to-text' ||
+      route === '/text-to-mp3' ||
+      route === '/mp3-to-text' ||
+      route === '/video-to-text';
+
+    let priority = 0.5;
+    let changeFrequency: 'weekly' | 'monthly' = 'monthly';
+
+    if (isHome) {
+      priority = 1.0;
+      changeFrequency = 'weekly';
+    } else if (isPrimaryTool || route.includes('to-')) {
+      priority = 0.9;
+      changeFrequency = 'weekly';
+    } else if (route.startsWith('/voices/')) {
+      priority = 0.7;
+      changeFrequency = 'monthly';
+    } else if (route.startsWith('/formats/') || route.startsWith('/captions/')) {
+      priority = 0.6;
+      changeFrequency = 'monthly';
+    }
+
+    return {
+      url: `${baseUrl}${route}`,
+      lastModified: CONTENT_LAST_MODIFIED,
+      changeFrequency,
+      priority,
+    };
+  });
 }

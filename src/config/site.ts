@@ -1,10 +1,16 @@
 import { TOTAL_TTS_VOICES, TTS_LANGUAGE_COUNT } from '@/config/productFacts';
 
+const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.SITE_URL ||
+  'https://konthora.dev.bd'
+).replace(/\/+$/, '');
+
 export const siteConfig = {
   name: 'Konthora',
   tagline: 'Natural Speech. Precise Transcripts.',
   description: `Konthora provides browser-based text-to-speech with ${TOTAL_TTS_VOICES} AI voices across ${TTS_LANGUAGE_COUNT} languages, plus English audio and video transcription with accurate timestamps.`,
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  url: siteUrl,
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'support@konthora.dev.bd',
   author: 'Konthora Team',
   keywords: [
