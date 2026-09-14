@@ -224,3 +224,64 @@ def test_hf_space_rate_limit_and_worker_caps():
     assert fields["TTS_MAX_CONCURRENT_PER_IP"].default == 2
     assert fields["TTS_WORKER_COUNT"].default == 1
     assert fields["TRANSCRIPTION_WORKER_COUNT"].default == 1
+
+def test_dev_bypass_secret_config():
+    from app.core.config import Settings
+    fields = Settings.model_fields
+    assert "DEV_BYPASS_SECRET" in fields
+    assert fields["DEV_BYPASS_SECRET"].default == ""
+
+def test_dev_bypass_rate_limiting(client):
+    rate_limiter = RateLimitService()
+    test_ip = "192.168.100.99"
+
+    with patch("app.core.config.settings.DEV_BYPASS_SECRET", "super-secret-bypass-token"):
+        # Without header, should hit rate limit
+        rate_limiter._request_history[test_ip] = [time.time()] * 100
+        with pytest.raises(Exception):
+            rate_limiter.check_tts_rate_limit(test_ip)
+
+        # With wrong bypass key, should still hit rate limit
+        with pytest.raises(Exception):
+            rate_limiter.check_tts_rate_limit(test_ip, bypass_key="wrong-key")
+
+        # With matching bypass key, passes without error
+        rate_limiter.check_tts_rate_limit(test_ip, bypass_key="super-secret-bypass-token")
+
+        # Check active jobs bypass for TTS
+        rate_limiter._active_jobs[test_ip] = {"job1", "job2", "job3", "job4"}
+        with pytest.raises(Exception):
+            rate_limiter.check_tts_active_jobs_limit(test_ip, max_active=2)
+        rate_limiter.check_tts_active_jobs_limit(test_ip, max_active=2, bypass_key="super-secret-bypass-token")
+
+        # Check transcription rate limit bypass
+        rate_limiter._trans_request_history[test_ip] = [time.time()] * 100
+        with pytest.raises(Exception):
+            rate_limiter.check_transcription_rate_limit(test_ip)
+        rate_limiter.check_transcription_rate_limit(test_ip, bypass_key="super-secret-bypass-token")
+
+        # Check transcription active jobs bypass
+        rate_limiter._trans_active_jobs[test_ip] = {"tjob1", "tjob2"}
+        with pytest.raises(Exception):
+            rate_limiter.check_transcription_active_jobs_limit(test_ip, max_active=1)
+        rate_limiter.check_transcription_active_jobs_limit(test_ip, max_active=1, bypass_key="super-secret-bypass-token")
+
+def test_dev_bypass_endpoint_header(client):
+    rate_limiter = RateLimitService()
+    # Artificially exhaust client limit for testclient IP
+    for ip in ["testclient", "127.0.0.1"]:
+        rate_limiter._request_history[ip] = [time.time()] * 100
+
+    with patch("app.core.config.settings.DEV_BYPASS_SECRET", "developer-secret-xyz"):
+        # Normal request fails with 429
+        response = client.post("/api/v1/tts/jobs", json={"text": "Rate limited test", "voiceId": "af_heart"})
+        assert response.status_code == 429
+
+        # Request with X-Dev-Bypass-Key bypasses and succeeds (200)
+        bypassed_resp = client.post(
+            "/api/v1/tts/jobs",
+            json={"text": "Bypassed test", "voiceId": "af_heart"},
+            headers={"X-Dev-Bypass-Key": "developer-secret-xyz"}
+        )
+        assert bypassed_resp.status_code == 200
+        assert "jobId" in bypassed_resp.json()

@@ -83,8 +83,8 @@ async def create_transcription_job(
 
     # 2. Rate Limits & Active Jobs Limit Checks
     client_ip = rate_limiter.get_client_ip(request)
-    rate_limiter.check_transcription_rate_limit(client_ip)
-    rate_limiter.check_transcription_active_jobs_limit(client_ip, settings.TRANSCRIPTION_MAX_CONCURRENT_PER_IP)
+    rate_limiter.check_transcription_rate_limit(client_ip, request=request)
+    rate_limiter.check_transcription_active_jobs_limit(client_ip, settings.TRANSCRIPTION_MAX_CONCURRENT_PER_IP, request=request)
 
     # 3. Reserve Queue Admission Slot
     if not await queue_manager.reserve_admission_slot():

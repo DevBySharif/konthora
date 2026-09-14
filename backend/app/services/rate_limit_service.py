@@ -1,3 +1,4 @@
+import hmac
 import time
 from typing import Dict, List, Set, Optional
 from fastapi import Request
@@ -41,11 +42,39 @@ class RateLimitService:
 
         return "127.0.0.1"
 
-    def check_rate_limit(self, client_ip: str):
+    def is_dev_bypass(self, request: Optional[Request] = None, bypass_key: Optional[str] = None) -> bool:
+        """
+        Validates whether the incoming request contains a valid developer bypass header.
+        Uses constant-time comparison to prevent timing attacks.
+        """
+        secret = (settings.DEV_BYPASS_SECRET or "").strip()
+        if not secret:
+            return False
+
+        header_key = bypass_key
+        if header_key is None and request is not None:
+            header_key = request.headers.get("X-Dev-Bypass-Key")
+
+        if not header_key:
+            return False
+
+        return hmac.compare_digest(header_key.strip(), secret)
+
+    def check_tts_rate_limit(
+        self,
+        client_ip: str,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
         """
         Enforces requests per window limits for TTS.
+        Bypasses if a valid X-Dev-Bypass-Key matches DEV_BYPASS_SECRET.
         Raises RateLimitExceededException if client exceeds limits.
         """
+        if self.is_dev_bypass(request=request, bypass_key=bypass_key):
+            logger.info(f"Rate limit bypassed via secret dev header for IP: {client_ip} (TTS)")
+            return
+
         now = time.time()
         window = settings.TTS_RATE_LIMIT_WINDOW_SECONDS
         max_requests = getattr(settings, "TTS_RATE_LIMIT_PER_HOUR", settings.TTS_RATE_LIMIT_REQUESTS)
@@ -73,10 +102,30 @@ class RateLimitService:
         # Record this request
         self._request_history[client_ip].append(now)
 
-    def check_active_jobs_limit(self, client_ip: str, max_active: Optional[int] = None):
+    def check_rate_limit(
+        self,
+        client_ip: str,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
+        """Backward-compatible alias for check_tts_rate_limit."""
+        return self.check_tts_rate_limit(client_ip, request=request, bypass_key=bypass_key)
+
+    def check_tts_active_jobs_limit(
+        self,
+        client_ip: str,
+        max_active: Optional[int] = None,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
         """
         Prevents a single client from monopolizing the worker queue for TTS.
+        Bypasses if a valid X-Dev-Bypass-Key matches DEV_BYPASS_SECRET.
         """
+        if self.is_dev_bypass(request=request, bypass_key=bypass_key):
+            logger.info(f"Active jobs limit bypassed via secret dev header for IP: {client_ip} (TTS)")
+            return
+
         if max_active is None:
             max_active = getattr(settings, "TTS_MAX_CONCURRENT_PER_IP", getattr(settings, "TTS_ACTIVE_JOBS_PER_CLIENT", 2))
 
@@ -86,6 +135,16 @@ class RateLimitService:
             raise RateLimitExceededException(
                 message="You have too many active speech generation jobs. Please wait for them to finish."
             )
+
+    def check_active_jobs_limit(
+        self,
+        client_ip: str,
+        max_active: Optional[int] = None,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
+        """Backward-compatible alias for check_tts_active_jobs_limit."""
+        return self.check_tts_active_jobs_limit(client_ip, max_active=max_active, request=request, bypass_key=bypass_key)
 
     def register_active_job(self, client_ip: str, job_id: str):
         if client_ip not in self._active_jobs:
@@ -101,8 +160,20 @@ class RateLimitService:
     # ==========================================
     # Transcription Namespace Rate Limiting
     # ==========================================
-    def check_transcription_rate_limit(self, client_ip: str):
-        """Enforces sliding-window request limits for Audio Transcription."""
+    def check_transcription_rate_limit(
+        self,
+        client_ip: str,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
+        """
+        Enforces sliding-window request limits for Audio Transcription.
+        Bypasses if a valid X-Dev-Bypass-Key matches DEV_BYPASS_SECRET.
+        """
+        if self.is_dev_bypass(request=request, bypass_key=bypass_key):
+            logger.info(f"Rate limit bypassed via secret dev header for IP: {client_ip} (Transcription)")
+            return
+
         now = time.time()
         window = settings.TRANSCRIPTION_RATE_LIMIT_WINDOW_SECONDS
         max_requests = getattr(settings, "TRANSCRIPTION_RATE_LIMIT_PER_HOUR", settings.TRANSCRIPTION_RATE_LIMIT_REQUESTS)
@@ -125,8 +196,21 @@ class RateLimitService:
 
         self._trans_request_history[client_ip].append(now)
 
-    def check_transcription_active_jobs_limit(self, client_ip: str, max_active: Optional[int] = None):
-        """Enforces concurrent active jobs limits for Audio Transcription."""
+    def check_transcription_active_jobs_limit(
+        self,
+        client_ip: str,
+        max_active: Optional[int] = None,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
+        """
+        Enforces concurrent active jobs limits for Audio Transcription.
+        Bypasses if a valid X-Dev-Bypass-Key matches DEV_BYPASS_SECRET.
+        """
+        if self.is_dev_bypass(request=request, bypass_key=bypass_key):
+            logger.info(f"Active jobs limit bypassed via secret dev header for IP: {client_ip} (Transcription)")
+            return
+
         if max_active is None:
             max_active = getattr(settings, "TRANSCRIPTION_MAX_CONCURRENT_PER_IP", getattr(settings, "TRANSCRIPTION_ACTIVE_JOBS_PER_CLIENT", 1))
 

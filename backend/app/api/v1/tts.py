@@ -48,10 +48,10 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
     client_ip = rate_limiter.get_client_ip(request)
 
     # 1. Enforce requests-per-hour rate limits
-    rate_limiter.check_rate_limit(client_ip)
+    rate_limiter.check_tts_rate_limit(client_ip, request=request)
 
     # 2. Enforce active jobs capacity per client IP
-    rate_limiter.check_active_jobs_limit(client_ip, max_active=settings.TTS_MAX_CONCURRENT_PER_IP)
+    rate_limiter.check_tts_active_jobs_limit(client_ip, max_active=settings.TTS_MAX_CONCURRENT_PER_IP, request=request)
 
     # 3. Validate voice selection against catalog
     voices = kokoro_service.get_voices()

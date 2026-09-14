@@ -48,6 +48,9 @@ class Settings(BaseSettings):
 
     ESPEAK_PATH: str = ""
 
+    # Secret developer key to bypass rate limits and concurrency caps
+    DEV_BYPASS_SECRET: str = ""
+
     # Transcription Settings
     TRANSCRIPTION_MODEL: str = "small.en"
     TRANSCRIPTION_DEVICE: str = "cpu"

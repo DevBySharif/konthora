@@ -133,6 +133,26 @@ export const API_HOST_URL = (
 
 export const API_BASE_URL = `${API_HOST_URL}/api/v1`;
 
+export function withDevBypassHeaders(headers?: HeadersInit): HeadersInit {
+  const bypassKey = process.env.NEXT_PUBLIC_DEV_BYPASS_KEY;
+  if (!bypassKey) return headers || {};
+
+  if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+    const cloned = new Headers(headers);
+    cloned.set('X-Dev-Bypass-Key', bypassKey);
+    return cloned;
+  }
+
+  if (Array.isArray(headers)) {
+    return [...headers, ['X-Dev-Bypass-Key', bypassKey]];
+  }
+
+  return {
+    ...(headers || {}),
+    'X-Dev-Bypass-Key': bypassKey,
+  };
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -149,9 +169,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export async function fetchVoices(): Promise<ApiVoice[]> {
   const response = await fetch(`${API_BASE_URL}/tts/voices`, {
     method: 'GET',
-    headers: {
+    headers: withDevBypassHeaders({
       'Accept': 'application/json',
-    },
+    }),
   });
   return handleResponse<ApiVoice[]>(response);
 }
@@ -170,10 +190,10 @@ export async function createTtsJob(
 ): Promise<ApiJobResponse> {
   const response = await fetch(`${API_BASE_URL}/tts/jobs`, {
     method: 'POST',
-    headers: {
+    headers: withDevBypassHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-    },
+    }),
     body: JSON.stringify({
       text,
       voiceId,
@@ -189,10 +209,10 @@ export async function createTtsJob(
 export async function getTtsJobStatus(jobId: string, token: string, signal?: AbortSignal): Promise<ApiJobStatusResponse> {
   const response = await fetch(`${API_BASE_URL}/tts/jobs/${jobId}`, {
     method: 'GET',
-    headers: {
+    headers: withDevBypassHeaders({
       'Accept': 'application/json',
       'Authorization': `Bearer ${token}`,
-    },
+    }),
     signal,
   });
   return handleResponse<ApiJobStatusResponse>(response);
@@ -201,9 +221,9 @@ export async function getTtsJobStatus(jobId: string, token: string, signal?: Abo
 export async function fetchAudioBlob(jobId: string, token: string): Promise<Blob> {
   const response = await fetch(`${API_BASE_URL}/tts/jobs/${jobId}/audio`, {
     method: 'GET',
-    headers: {
+    headers: withDevBypassHeaders({
       'Authorization': `Bearer ${token}`,
-    },
+    }),
   });
 
   if (!response.ok) {
@@ -220,7 +240,7 @@ export async function fetchAudioBlob(jobId: string, token: string): Promise<Blob
 export async function fetchTranscriptionCapabilities(): Promise<ApiTranscriptionCapabilities> {
   const response = await fetch(`${API_BASE_URL}/transcription/capabilities`, {
     method: 'GET',
-    headers: { 'Accept': 'application/json' },
+    headers: withDevBypassHeaders({ 'Accept': 'application/json' }),
   });
   return handleResponse<ApiTranscriptionCapabilities>(response);
 }
@@ -240,7 +260,7 @@ export async function createTranscriptionJob(
 
   const response = await fetch(`${API_BASE_URL}/transcription/jobs`, {
     method: 'POST',
-    headers: { 'Accept': 'application/json' },
+    headers: withDevBypassHeaders({ 'Accept': 'application/json' }),
     body: formData,
     signal,
   });
@@ -254,10 +274,10 @@ export async function getTranscriptionJobStatus(
 ): Promise<ApiTranscriptionStatusResponse> {
   const response = await fetch(`${API_BASE_URL}/transcription/jobs/${jobId}`, {
     method: 'GET',
-    headers: {
+    headers: withDevBypassHeaders({
       'Accept': 'application/json',
       'Authorization': `Bearer ${token}`,
-    },
+    }),
     signal,
   });
   return handleResponse<ApiTranscriptionStatusResponse>(response);
@@ -269,10 +289,10 @@ export async function fetchStructuredTranscript(
 ): Promise<ApiStructuredTranscript> {
   const response = await fetch(`${API_BASE_URL}/transcription/jobs/${jobId}/transcript`, {
     method: 'GET',
-    headers: {
+    headers: withDevBypassHeaders({
       'Accept': 'application/json',
       'Authorization': `Bearer ${token}`,
-    },
+    }),
   });
   return handleResponse<ApiStructuredTranscript>(response);
 }
@@ -284,7 +304,7 @@ export async function fetchTranscriptBlob(
 ): Promise<Blob> {
   const response = await fetch(`${API_BASE_URL}/transcription/jobs/${jobId}/result?format=${exportFormat}`, {
     method: 'GET',
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: withDevBypassHeaders({ 'Authorization': `Bearer ${token}` }),
   });
 
   if (!response.ok) {
