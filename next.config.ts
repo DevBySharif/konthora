@@ -36,8 +36,11 @@ const LOCAL_ORIGINS =
 
 const csp = [
   "default-src 'self'",
-  // Next.js injects inline bootstrap scripts; Satori needs inline styles.
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.clarity.ms",
+  // Next.js emits inline bootstrap scripts; Satori needs inline styles.
+  // React only calls eval() in development (for call-stack reconstruction and
+  // the dev overlay) and never in production, so 'unsafe-eval' is granted only
+  // for a local/dev configuration. The production policy stays strict.
+  `script-src 'self' 'unsafe-inline'${isLocalApi ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.clarity.ms`,
   "style-src 'self' 'unsafe-inline'",
   // Fonts: next/font self-hosts, Google Fonts is the fallback, data: covers inline.
   "font-src 'self' data: https://fonts.gstatic.com",
