@@ -2,7 +2,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
+import { SpeakableSummary } from '@/components/tools/SpeakableSummary';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -15,10 +19,18 @@ import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { FileAudio, Upload, Clock, Languages, FileDown, ShieldCheck } from 'lucide-react';
 
+
+/**
+ * Concise factual summary quoted verbatim by voice assistants and AI answer
+ * engines via Speakable schema. Keep it consistent with the visible copy.
+ */
+const SPEAKABLE_AUDIO_TO_TEXT =
+  'Konthora converts audio and video into accurate transcripts for free in the browser. You can upload files up to 100 megabytes and 10 minutes long, choose sentence, paragraph, or word-level timestamps, edit the result, and export as TXT, SRT, VTT, or JSON. Transcripts are deleted automatically after 60 minutes.';
+
 export const metadata: Metadata = constructMetadata({
   title: 'Free Audio to Text Converter | Timestamps & SRT Export',
   description:
-    'Convert audio and video to text online with accurate timestamps. Export transcripts to TXT, SRT, VTT, and JSON with sentence, paragraph, or word-level sync.',
+    'Convert audio and video to text with accurate timestamps. Export to TXT, SRT, VTT, or JSON with sentence, paragraph, or word-level sync.',
   path: '/audio-to-text',
 });
 
@@ -29,6 +41,11 @@ export default function AudioToTextPage() {
     name: 'Konthora Audio to Text with Timestamps',
     url: pageUrl,
   });
+
+  const speakableSchema = constructSpeakableSchema(
+    `${siteConfig.url}/audio-to-text`,
+    SPEAKABLE_AUDIO_TO_TEXT,
+  );
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -146,6 +163,10 @@ export default function AudioToTextPage() {
   return (
     <>
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={speakableSchema} />
+      <SpeakableSummary id="speakable-summary">
+        {SPEAKABLE_AUDIO_TO_TEXT}
+      </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 

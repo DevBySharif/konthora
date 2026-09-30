@@ -108,6 +108,21 @@ function getHtmlFiles(dir) {
   return files;
 }
 
+/** Extracts the raw <title> text from a built HTML page. */
+function getTitle(html) {
+  return html.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? '';
+}
+
+/** Extracts the content attribute of a <meta> tag by attribute name and value. */
+function getMetaContent(html, attrName, attrValue) {
+  const re = new RegExp(
+    `<meta\\b[^>]*\\b${attrName}=["']${attrValue}["'][^>]*>`,
+    'i',
+  );
+  const tag = html.match(re)?.[0] ?? '';
+  return tag.match(/content=["']([\s\S]*?)["']/i)?.[1] ?? '';
+}
+
 test('Confirm zero broken internal links across the entire site', () => {
   const htmlDir = path.join(rootDir, '.next/server/app');
   const htmlFiles = getHtmlFiles(htmlDir);
@@ -231,22 +246,34 @@ test('Heading structure: strictly ONE h1, sequential hierarchy, and no empty hea
 test('Landing pages and voice profiles have high-intent titles and synchronized Open Graph metadata', () => {
   const htmlDir = path.join(rootDir, '.next/server/app');
 
-  // Verify homepage
+  // Verify homepage — brand + combined offering, distinct from /text-to-speech
   const homeHtml = fs.readFileSync(path.join(htmlDir, 'index.html'), 'utf8');
   assert.ok(
-    homeHtml.includes('<title>Free AI Text to Speech Online | Kokoro TTS Studio</title>'),
+    homeHtml.includes('<title>Konthora — Free AI Voice &amp; Transcription Studio</title>'),
     'Homepage must have targeted title'
   );
   assert.ok(
-    homeHtml.includes('content="Free AI Text to Speech Online | Kokoro TTS Studio"'),
+    homeHtml.includes('content="Konthora — Free AI Voice &amp; Transcription Studio"'),
     'Homepage og:title must match canonical title'
   );
 
-  // Verify /text-to-speech
+  // Verify /text-to-speech — keeps the high-intent "text to speech" query
   const ttsHtml = fs.readFileSync(path.join(htmlDir, 'text-to-speech.html'), 'utf8');
   assert.ok(
     ttsHtml.includes('<title>Free AI Text to Speech Online | Kokoro TTS Studio</title>'),
     '/text-to-speech must have targeted title'
+  );
+
+  // The homepage and /text-to-speech must not compete for the same query.
+  assert.notEqual(
+    getTitle(homeHtml),
+    getTitle(ttsHtml),
+    'Homepage and /text-to-speech must have distinct <title> values'
+  );
+  assert.notEqual(
+    getMetaContent(homeHtml, 'property', 'og:title'),
+    getMetaContent(ttsHtml, 'property', 'og:title'),
+    'Homepage and /text-to-speech must have distinct og:title values'
   );
 
   // Verify /audio-to-text
@@ -270,7 +297,14 @@ test('Landing pages and voice profiles have high-intent titles and synchronized 
   assert.ok(voiceSampleHtml.includes('Heart'), 'Voice title must include name');
   assert.ok(voiceSampleHtml.includes('Female'), 'Voice title must include gender');
   assert.ok(voiceSampleHtml.includes('American English'), 'Voice title must include accent');
-  assert.ok(voiceSampleHtml.includes('Voice for'), 'Voice title must include primary use case');
+  // Name + gender + accent + a use case cannot fit inside the SERP title budget
+  // without truncation — which is what produced 116-130 character titles before.
+  // The title therefore carries identity only, and the use cases are asserted
+  // where they are actually rendered and indexed: the H1 and the body copy.
+  assert.ok(
+    voiceSampleHtml.includes('voiceovers') || voiceSampleHtml.includes('narration'),
+    'Voice page must include the primary use case in its indexed copy'
+  );
 });
 
 test('Schema and metadata audit: no duplicate meta tags, no missing image alt attributes', () => {
@@ -316,9 +350,19 @@ test('Crawl budget, robots.txt disallow rules, and voice links internal link boo
   const robotsBodyPath = path.join(rootDir, '.next/server/app/robots.txt.body');
   assert.ok(fs.existsSync(robotsBodyPath), 'robots.txt build artifact should exist');
   const robotsTxt = fs.readFileSync(robotsBodyPath, 'utf8');
-  assert.ok(robotsTxt.includes('Disallow: /_next/static/media/'), 'robots.txt must disallow /_next/static/media/');
   assert.ok(robotsTxt.includes('Disallow: /api/'), 'robots.txt must disallow /api/');
   assert.ok(robotsTxt.includes('Sitemap: https://konthora.dev.bd/sitemap.xml'), 'robots.txt must declare https production sitemap');
+  // Previously disallowed, which also blocked crawlers from the Open Graph and
+  // Twitter image assets that live under /_next/static/media/.
+  assert.ok(
+    !robotsTxt.includes('Disallow: /_next/static/media/'),
+    'robots.txt must NOT disallow /_next/static/media/ — it holds the OG image assets',
+  );
+  // AI answer engines and LLM crawlers are granted explicitly so the decision
+  // is reviewable rather than an accident of the wildcard rule.
+  for (const bot of ['GPTBot', 'OAI-SearchBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended', 'CCBot']) {
+    assert.ok(robotsTxt.includes(bot), `robots.txt must explicitly allow ${bot}`);
+  }
 
   // 2. Next.js headers check
   const nextConfigContent = fs.readFileSync(path.join(rootDir, 'next.config.ts'), 'utf8');
@@ -349,3 +393,114 @@ test('Crawl budget, robots.txt disallow rules, and voice links internal link boo
 });
 
 
+
+test('Titles and descriptions stay within SERP truncation limits', () => {
+  // Google truncates titles around 580px (~60 chars) and descriptions around
+  // 920px (~155 chars). Anything longer is wasted, because the differentiating
+  // part never reaches the search result.
+  const htmlDir = path.join(rootDir, '.next/server/app');
+  // Google truncates titles at roughly 580px and descriptions at roughly 920px.
+  // 65/155 characters is the practical budget for those limits.
+  const TITLE_MAX = 65;
+  const DESC_MAX = 155;
+
+  const longTitles = [];
+  const longDescriptions = [];
+  const duplicateTitles = new Map();
+
+  for (const file of getHtmlFiles(htmlDir)) {
+    const rel = path.relative(htmlDir, file).replace(/\\/g, '/');
+    if (rel.startsWith('_')) continue;
+    const content = fs.readFileSync(file, 'utf8');
+
+    const title = getTitle(content);
+    if (title) {
+      if (title.length > TITLE_MAX) {
+        longTitles.push({ rel, len: title.length, title });
+      }
+      duplicateTitles.set(title, [...(duplicateTitles.get(title) ?? []), rel]);
+    }
+
+    const description = getMetaContent(content, 'name', 'description');
+    if (description && description.length > DESC_MAX) {
+      longDescriptions.push({ rel, len: description.length, description });
+    }
+  }
+
+  assert.deepEqual(
+    longTitles,
+    [],
+    `Titles over ${TITLE_MAX} chars will be truncated: ${JSON.stringify(longTitles, null, 2)}`,
+  );
+  assert.deepEqual(
+    longDescriptions,
+    [],
+    `Descriptions over ${DESC_MAX} chars will be truncated: ${JSON.stringify(longDescriptions, null, 2)}`,
+  );
+
+  const duplicateEntries = [...duplicateTitles.entries()].filter(([, pages]) => pages.length > 1);
+  assert.deepEqual(
+    duplicateEntries,
+    [],
+    `Duplicate <title> values: ${JSON.stringify(duplicateEntries)}`,
+  );
+});
+
+test('No page emits fabricated review data (aggregateRating / ratingValue)', () => {
+  // Konthora has no review platform. Any ratingValue in shipped JSON-LD would be
+  // invented structured data: a Google manual-action risk, an advertising-law
+  // problem, and a factual error an AI engine could attribute to the brand.
+  const htmlDir = path.join(rootDir, '.next/server/app');
+  const violations = [];
+
+  for (const file of getHtmlFiles(htmlDir)) {
+    const rel = path.relative(htmlDir, file).replace(/\\/g, '/');
+    if (rel.startsWith('_')) continue;
+    const content = fs.readFileSync(file, 'utf8');
+
+    for (const match of content.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+      if (/"aggregateRating"|"ratingValue"|"ratingCount"/i.test(match[1])) {
+        violations.push(rel);
+      }
+    }
+  }
+
+  assert.deepEqual(
+    [...new Set(violations)],
+    [],
+    `Pages emitting fabricated aggregateRating/ratingValue: ${JSON.stringify([...new Set(violations)])}`,
+  );
+});
+
+test('AI-search surfaces exist: llms.txt, llms-full.txt, and freshness signals', () => {
+  // llms.txt is the convention (llmstxt.org) for telling language models what a
+  // site is and which pages matter.
+  const llmsPath = path.join(rootDir, 'public/llms.txt');
+  const llmsFullPath = path.join(rootDir, 'public/llms-full.txt');
+  assert.ok(fs.existsSync(llmsPath), 'public/llms.txt must exist for AI answer engines');
+  assert.ok(fs.existsSync(llmsFullPath), 'public/llms-full.txt must exist for AI answer engines');
+
+  const llms = fs.readFileSync(llmsPath, 'utf8');
+  assert.ok(llms.includes('# Konthora'), 'llms.txt must start with an H1 title block');
+  assert.ok(
+    llms.includes('https://konthora.dev.bd/text-to-speech'),
+    'llms.txt must link the primary text-to-speech tool',
+  );
+  assert.ok(
+    llms.includes('https://konthora.dev.bd/audio-to-text'),
+    'llms.txt must link the primary audio-to-text tool',
+  );
+
+  // dateModified is a freshness signal for both Google and AI answer engines, so
+  // it belongs in JSON-LD and not only in the sitemap.
+  const homeHtml = fs.readFileSync(path.join(rootDir, '.next/server/app/index.html'), 'utf8');
+  assert.ok(homeHtml.includes('dateModified'), 'Homepage JSON-LD must declare dateModified');
+
+  // Speakable must point at an element that actually exists in the DOM.
+  if (homeHtml.includes('SpeakableSpecification')) {
+    assert.ok(
+      homeHtml.includes('id="speakable-summary"'),
+      'Speakable schema references #speakable-summary, which must exist in the HTML',
+    );
+  }
+});

@@ -26,34 +26,18 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
       >
         <Image
           src="/brand/konthora-logo-light.svg"
-          alt="Konthora"
+          alt=""
           fill
           sizes={imageSize}
           unoptimized
-          style={{
-            width: '120%',
-            height: '120%',
-            top: '-10%',
-            right: 'auto',
-            bottom: 'auto',
-            left: '-10%',
-          }}
           className="konthora-logo konthora-logo--light object-contain"
         />
         <Image
           src="/brand/konthora-logo-dark.svg"
-          alt="Konthora"
+          alt=""
           fill
           sizes={imageSize}
           unoptimized
-          style={{
-            width: '120%',
-            height: '120%',
-            top: '-10%',
-            right: 'auto',
-            bottom: 'auto',
-            left: '-10%',
-          }}
           className="konthora-logo konthora-logo--dark object-contain"
         />
       </span>

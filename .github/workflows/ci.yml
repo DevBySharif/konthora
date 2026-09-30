@@ -3,7 +3,7 @@
 # =============================================================================
 # Runs on push/PR to main. Checks:
 #   backend  : pip check + unit test suite (pytest)
-#   frontend : eslint + tsc --noEmit + production build
+#   frontend : eslint + tsc --noEmit + production build + frontend test suite
 #
 # This workflow NEVER deploys and NEVER reads repository secrets. The real-model
 # integration tests (test_integration.py / test_transcription_integration.py)
@@ -60,7 +60,7 @@ jobs:
         run: python -m pytest app/tests -q --timeout=120
 
   frontend:
-    name: Frontend (lint + typecheck + build)
+    name: Frontend (lint + typecheck + build + tests)
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -81,5 +81,10 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+      # The frontend suite audits real build artifacts under .next/, so the
+      # production build has to run before it.
       - name: Production build
         run: npm run build
+
+      - name: Frontend tests
+        run: npm run test:frontend

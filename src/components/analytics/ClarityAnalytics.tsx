@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 // Official Microsoft Clarity snippet, adapted to load only after the page has
 // become interactive and idling (never blocking the first render). The script
@@ -39,19 +40,14 @@ function injectClarity(projectId: string) {
   }
 }
 
-export default function ClarityAnalytics() {
+export default function ClarityAnalytics({ projectId }: { projectId: string }) {
+  // Re-inject on navigation so the tag follows client-side route changes.
+  const pathname = usePathname();
+
   useEffect(() => {
-    // Production only — no-op in development/test builds and when the project ID is
-    // unset (the variable is inlined at build time).
-    if (process.env.NODE_ENV !== 'production') {
-      return;
-    }
-    const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
-    if (!projectId) {
-      return;
-    }
+    if (!projectId) return;
     injectClarity(projectId);
-  }, []);
+  }, [projectId, pathname]);
 
   return null;
 }

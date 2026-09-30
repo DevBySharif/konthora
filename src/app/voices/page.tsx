@@ -20,7 +20,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: '41 AI Voice Profiles & Accents | Kokoro Neural Voices',
   description:
-    'Explore 41 neural AI voice profiles across American, British, Hindi, Spanish, French, Italian, and Portuguese accents. Listen to previews and choose the right voice for your text to speech.',
+    'Browse 41 neural AI voices across American, British, Hindi, Spanish, French, Italian, and Portuguese accents. Compare specs and pick your voice.',
   path: '/voices',
 });
 

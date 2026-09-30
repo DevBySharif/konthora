@@ -8,7 +8,6 @@ import {
   formatDisplayTimestamp,
   formatTranscriptForCopy,
   isTranscriptDirty,
-  requiresTranscriptDiscardConfirmation,
   sanitizeExportBaseName,
   transcriptWorkspaceReducer,
 } from '../../src/lib/transcriptWorkspace.ts';
@@ -75,9 +74,9 @@ test('replace one changes one match and dirty results require discard confirmati
   });
   assert.equal(state.segments[0].text, 'Welcome world.');
   assert.equal(state.segments[1].text, 'HELLO again from Konthora.');
-  assert.equal(requiresTranscriptDiscardConfirmation(isTranscriptDirty(state)), true);
+  assert.equal(isTranscriptDirty(state), true);
   state = transcriptWorkspaceReducer(state, { type: 'revert' });
-  assert.equal(requiresTranscriptDiscardConfirmation(isTranscriptDirty(state)), false);
+  assert.equal(isTranscriptDirty(state), false);
 });
 
 test('all export formats use edited text and keep timing data', () => {

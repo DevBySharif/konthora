@@ -15,7 +15,7 @@ import { Mic } from 'lucide-react';
 export const metadata: Metadata = constructMetadata({
   title: "Text-to-Speech for YouTube Videos | Konthora",
   description:
-    "Learn how to create voiceovers for YouTube videos using text-to-speech. Discover how to choose a voice, format your script, and generate MP3 or WAV narration.",
+    "Learn how to create YouTube voiceovers with text-to-speech: choose a voice, format your script, and generate MP3 or WAV narration.",
   path: '/text-to-speech-for-youtube-videos',
 });
 

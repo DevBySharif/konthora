@@ -14,7 +14,7 @@ import { siteConfig } from '@/config/site';
 export const metadata: Metadata = constructMetadata({
   title: "Text-to-Speech vs Screen Readers: What Is the Difference?",
   description:
-    "Learn the difference between text-to-speech tools and screen readers. Understand their distinct capabilities and when each assistive technology is appropriate.",
+    "Learn how text-to-speech tools differ from screen readers, their distinct capabilities, and when each assistive technology is appropriate.",
   path: '/accessibility/tts-vs-screen-reader',
 });
 

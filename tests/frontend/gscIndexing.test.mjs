@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import {
-  base64url,
   loadServiceAccountCredentials,
   normalizeGscUrl,
   getAllSitemapUrls,
@@ -13,7 +12,6 @@ import {
 } from '../../scripts/gscIndexing.mjs';
 import {
   GOOGLE_PING_URL,
-  BING_PING_URL,
   pingSearchEngine,
   pingAllSearchEngines,
 } from '../../scripts/pingSitemaps.mjs';

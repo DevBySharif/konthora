@@ -1,7 +1,11 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
+import { SpeakableSummary } from '@/components/tools/SpeakableSummary';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -14,8 +18,16 @@ import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { FileVideo, Clock, Languages, FileDown, Scissors } from 'lucide-react';
 
+
+/**
+ * Concise factual summary quoted verbatim by voice assistants and AI answer
+ * engines via Speakable schema. Keep it consistent with the visible copy.
+ */
+const SPEAKABLE_VIDEO_TO_TEXT =
+  'Konthora converts video files into text transcripts for free in the browser. MP4, WebM, and MOV files up to 100 megabytes and 10 minutes long are supported, with sentence, paragraph, or word-level timestamps and export to TXT, SRT, VTT, or JSON.';
+
 export const metadata: Metadata = constructMetadata({
-  title: 'Video to Text Converter — Transcribe MP4, WebM & MOV | Konthora',
+  title: 'Video to Text Converter for MP4, WebM & MOV | Konthora',
   description:
     'Convert video to text in your browser. Upload MP4, WebM, or MOV, choose timestamp grouping, and export your transcript as TXT, SRT, VTT, or JSON.',
   path: '/video-to-text',
@@ -28,6 +40,11 @@ export default function VideoToTextPage() {
     name: 'Konthora Video to Text Converter',
     url: pageUrl,
   });
+
+  const speakableSchema = constructSpeakableSchema(
+    `${siteConfig.url}/video-to-text`,
+    SPEAKABLE_VIDEO_TO_TEXT,
+  );
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -140,6 +157,10 @@ export default function VideoToTextPage() {
   return (
     <>
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={speakableSchema} />
+      <SpeakableSummary id="speakable-summary">
+        {SPEAKABLE_VIDEO_TO_TEXT}
+      </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 

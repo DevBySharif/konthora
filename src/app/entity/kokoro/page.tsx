@@ -14,23 +14,23 @@ import {
   Users,
 } from 'lucide-react';
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Metadata
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export const metadata: Metadata = constructMetadata({
-  title: 'Kokoro TTS: Open-Weight Neural Text-to-Speech Model | Konthora',
+  title: 'Kokoro TTS: Open-Weight Neural Voice Model | Konthora',
   description:
     'Kokoro is an open-weight, 82-million-parameter neural text-to-speech model developed by Hexgrad. Learn how its lightweight architecture generates speech.',
   path: '/entity/kokoro',
 });
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Page component
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function KokoroEntityPage() {
   const pageUrl = `${siteConfig.url}/entity/kokoro`;
 
-  /* ── Schema: BreadcrumbList ── */
+  /* â”€â”€ Schema: BreadcrumbList â”€â”€ */
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -40,7 +40,7 @@ export default function KokoroEntityPage() {
     ],
   };
 
-  /* ── Schema: TechArticle ── */
+  /* â”€â”€ Schema: TechArticle â”€â”€ */
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
@@ -56,7 +56,7 @@ export default function KokoroEntityPage() {
     mainEntityOfPage: pageUrl,
   };
 
-  /* ── Schema: FAQPage ── */
+  /* â”€â”€ Schema: FAQPage â”€â”€ */
   const faqs: FAQItem[] = [
     {
       question: "Who created the Kokoro TTS model?",
@@ -96,7 +96,7 @@ export default function KokoroEntityPage() {
       <JsonLd schema={articleSchema} />
       <JsonLd schema={faqSchema} />
 
-      {/* ── HERO / INTRO ── */}
+      {/* â”€â”€ HERO / INTRO â”€â”€ */}
       <section
         aria-labelledby="entity-h1"
         className="relative overflow-hidden bg-radial-faint py-16 md:py-24 border-b border-border/40"
@@ -169,12 +169,12 @@ export default function KokoroEntityPage() {
         </Container>
       </section>
 
-      {/* ── ARTICLE BODY ── */}
+      {/* â”€â”€ ARTICLE BODY â”€â”€ */}
       <article aria-label="Kokoro TTS reference" className="border-b border-border/40">
         <Container className="max-w-4xl py-14 md:py-20">
           <div className="space-y-16">
 
-            {/* ── H2: What Is Kokoro TTS? ── */}
+            {/* â”€â”€ H2: What Is Kokoro TTS? â”€â”€ */}
             <section aria-labelledby="what-is-kokoro">
               <h2
                 id="what-is-kokoro"
@@ -199,7 +199,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: How Kokoro Generates Speech ── */}
+            {/* â”€â”€ H2: How Kokoro Generates Speech â”€â”€ */}
             <section aria-labelledby="how-kokoro-generates">
               <h2
                 id="how-kokoro-generates"
@@ -223,7 +223,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Why Kokoro Uses a Lightweight Architecture ── */}
+            {/* â”€â”€ H2: Why Kokoro Uses a Lightweight Architecture â”€â”€ */}
             <section aria-labelledby="lightweight-architecture">
               <h2
                 id="lightweight-architecture"
@@ -246,7 +246,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Kokoro Voices Available in Konthora ── */}
+            {/* â”€â”€ H2: Kokoro Voices Available in Konthora â”€â”€ */}
             <section aria-labelledby="kokoro-voices">
               <h2
                 id="kokoro-voices"
@@ -267,13 +267,13 @@ export default function KokoroEntityPage() {
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
                   <div className="rounded-xl border border-border/70 bg-card p-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                      <Globe className="h-4 w-4 text-primary" /> American English — 20 voices
+                      <Globe className="h-4 w-4 text-primary" /> American English â€” 20 voices
                     </h3>
                     <p className="text-sm text-muted-foreground">20 verified voices are available in the Konthora workspace.</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-card p-4">
                     <h3 className="font-semibold text-foreground flex items-center gap-2 mb-3">
-                      <Globe className="h-4 w-4 text-primary" /> British English — 8 voices
+                      <Globe className="h-4 w-4 text-primary" /> British English â€” 8 voices
                     </h3>
                     <p className="text-sm text-muted-foreground">8 verified voices are available in the Konthora workspace.</p>
                   </div>
@@ -283,7 +283,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Kokoro Compared with Earlier TTS Approaches ── */}
+            {/* â”€â”€ H2: Kokoro Compared with Earlier TTS Approaches â”€â”€ */}
             <section aria-labelledby="kokoro-comparison">
               <h2
                 id="kokoro-comparison"
@@ -308,7 +308,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Using Kokoro Through Konthora ── */}
+            {/* â”€â”€ H2: Using Kokoro Through Konthora â”€â”€ */}
             <section aria-labelledby="using-kokoro">
               <h2
                 id="using-kokoro"
@@ -340,7 +340,7 @@ export default function KokoroEntityPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Limitations and Practical Considerations ── */}
+            {/* â”€â”€ H2: Limitations and Practical Considerations â”€â”€ */}
             <section aria-labelledby="limitations">
               <h2
                 id="limitations"
@@ -374,13 +374,13 @@ export default function KokoroEntityPage() {
                   <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     Official Kokoro repository
                   </a>{' '}
-                  — model overview, parameter count, and Apache-licensed weights.
+                  â€” model overview, parameter count, and Apache-licensed weights.
                 </li>
                 <li>
                   <a href="https://huggingface.co/hexgrad/Kokoro-82M" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     Hexgrad Kokoro-82M model card
                   </a>{' '}
-                  — the publisher&apos;s model listing and license information.
+                  â€” the publisher&apos;s model listing and license information.
                 </li>
               </ul>
             </section>
@@ -389,7 +389,7 @@ export default function KokoroEntityPage() {
         </Container>
       </article>
 
-      {/* ── FAQ SECTION ── */}
+      {/* â”€â”€ FAQ SECTION â”€â”€ */}
       <Section className="bg-secondary/10" id="kokoro-faq-section">
         <Container className="max-w-4xl">
           <div className="text-center mb-12">

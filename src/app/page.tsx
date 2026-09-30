@@ -1,7 +1,12 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructOrganizationSchema,
+  constructWebSiteSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
 import { Container } from '@/components/ui/Container';
 import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
@@ -18,9 +23,12 @@ import { ProductFacts } from '@/components/home/ProductFacts';
 import { FinalCTA } from '@/components/home/FinalCTA';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Free AI Text to Speech Online | Kokoro TTS Studio',
+  // Brand + combined offering. /text-to-speech keeps the high-intent
+  // "Free AI Text to Speech Online" title, so the homepage must not duplicate
+  // it or the two pages compete for the same query.
+  title: 'Konthora — Free AI Voice & Transcription Studio',
   description:
-    'Free AI text to speech generator powered by Kokoro neural voice studio. Convert text into natural speech with 41 AI voices in 6 languages, with MP3 and WAV export.',
+    'Konthora turns text into natural AI speech and audio into timestamped transcripts. Generate MP3 or WAV voiceovers and export TXT, SRT, VTT, or JSON free.',
   path: '/',
 });
 
@@ -58,42 +66,29 @@ const homeFaqs: FAQItem[] = [
 ];
 
 export default function HomePage() {
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: siteConfig.name,
-    url: siteConfig.url,
-    logo: `${siteConfig.url}/icon.png`,
-    sameAs: [
-      'https://www.producthunt.com/products/konthora',
-      'https://www.launchory.app/startups/konthora',
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      email: siteConfig.contactEmail,
-      contactType: 'customer support',
-      availableLanguage: 'English',
-    },
-  };
+  const organizationSchema = constructOrganizationSchema(
+    siteConfig.name,
+    siteConfig.url,
+    `${siteConfig.url}/icon.png`,
+  );
 
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: siteConfig.name,
-    url: siteConfig.url,
-    description: siteConfig.description,
-    publisher: {
-      '@type': 'Organization',
-      name: siteConfig.name,
-      url: siteConfig.url,
-      logo: `${siteConfig.url}/icon.png`,
-    },
-  };
+  const websiteSchema = constructWebSiteSchema(
+    siteConfig.name,
+    siteConfig.url,
+    siteConfig.description,
+  );
 
   const webAppSchema = constructSoftwareAppSchema({
     name: `${siteConfig.name} AI Audio Tools`,
     url: siteConfig.url,
   });
+
+  // Short, self-contained blurb that voice assistants and AI answer engines may
+  // read verbatim. Must stay concise and factual — it is quoted as-is.
+  const speakableSummary =
+    'Konthora is a free browser-based AI audio studio. It converts text into natural speech using 41 neural voices across 6 languages, and converts audio and video into transcripts with sentence, paragraph, or word-level timestamps. No account is required.';
+
+  const speakableSchema = constructSpeakableSchema(siteConfig.url, speakableSummary);
 
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -114,6 +109,16 @@ export default function HomePage() {
       <JsonLd schema={websiteSchema} />
       <JsonLd schema={webAppSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={speakableSchema} />
+
+      {/*
+        Target of the Speakable schema above. Keep it as plain, factual prose in
+        a visually-hidden container: visible to crawlers and screen readers,
+        rendered by voice assistants, but not shown on the page.
+      */}
+      <p id="speakable-summary" className="sr-only">
+        {speakableSummary}
+      </p>
 
       <Hero />
         <Trusted />

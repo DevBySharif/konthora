@@ -9,23 +9,23 @@ import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { Captions } from 'lucide-react';
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Metadata
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export const metadata: Metadata = constructMetadata({
-  title: 'Captions and Subtitles: What They Are and Why They Matter | Konthora',
+  title: 'Captions vs Subtitles: What They Are and Why | Konthora',
   description:
     'Learn the difference between captions and subtitles, what closed captions are, and how to create SRT or VTT caption files for free with Konthora.',
   path: '/captions',
 });
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Page component
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function CaptionsPage() {
   const pageUrl = `${siteConfig.url}/captions`;
 
-  /* ── Schema: BreadcrumbList ── */
+  /* â”€â”€ Schema: BreadcrumbList â”€â”€ */
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -35,7 +35,7 @@ export default function CaptionsPage() {
     ],
   };
 
-  /* ── Schema: Article ── */
+  /* â”€â”€ Schema: Article â”€â”€ */
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -51,19 +51,19 @@ export default function CaptionsPage() {
     mainEntityOfPage: pageUrl,
   };
 
-  /* ── Schema: HowTo — "How to Create Captions for Your Video" ── */
+  /* â”€â”€ Schema: HowTo â€” "How to Create Captions for Your Video" â”€â”€ */
   const howToSchema = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
     name: 'How to Create Captions for Your Video',
     description:
-      'Create a timed SRT or VTT transcript from an English audio or video file in four steps using Konthora — free, no account required.',
+      'Create a timed SRT or VTT transcript from an English audio or video file in four steps using Konthora â€” free, no account required.',
     step: [
       {
         '@type': 'HowToStep',
         position: 1,
         name: 'Upload your video or audio file',
-        text: "Go to Konthora’s audio-to-text tool. Upload your MP4, WebM, MOV, or audio file. Konthora extracts the audio track automatically.",
+        text: "Go to Konthoraâ€™s audio-to-text tool. Upload your MP4, WebM, MOV, or audio file. Konthora extracts the audio track automatically.",
       },
       {
         '@type': 'HowToStep',
@@ -86,7 +86,7 @@ export default function CaptionsPage() {
     ],
   };
 
-  /* ── Schema: FAQPage ── */
+  /* â”€â”€ Schema: FAQPage â”€â”€ */
   const faqs: FAQItem[] = [
     {
       question: "What is the difference between captions and subtitles?",
@@ -137,7 +137,7 @@ export default function CaptionsPage() {
       <JsonLd schema={howToSchema} />
       <JsonLd schema={faqSchema} />
 
-      {/* ── HERO / INTRO ── */}
+      {/* â”€â”€ HERO / INTRO â”€â”€ */}
       <section
         aria-labelledby="captions-h1"
         className="relative overflow-hidden bg-radial-faint py-16 md:py-24 border-b border-border/40"
@@ -184,12 +184,12 @@ export default function CaptionsPage() {
             <span className="text-gradient">What They Are and Why They Matter</span>
           </h1>
 
-          {/* Search promise — delivered before first scroll */}
+          {/* Search promise â€” delivered before first scroll */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
             Captions display the spoken words in a video as on-screen text, while
             subtitles translate speech from one language to another. Closed captions also
-            include non-speech audio descriptions — such as [music playing] or [door slams]
-            — making them essential for accessibility. Both are typically delivered as SRT
+            include non-speech audio descriptions â€” such as [music playing] or [door slams]
+            â€” making them essential for accessibility. Both are typically delivered as SRT
             or VTT files that a video player reads alongside the video.
           </p>
 
@@ -200,18 +200,18 @@ export default function CaptionsPage() {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Captions className="h-4 w-4" aria-hidden="true" />
-              Create Timed Transcripts — Export as SRT or VTT
+              Create Timed Transcripts â€” Export as SRT or VTT
             </Link>
           </div>
         </Container>
       </section>
 
-      {/* ── ARTICLE BODY ── */}
+      {/* â”€â”€ ARTICLE BODY â”€â”€ */}
       <article aria-label="Captions and Subtitles guide" className="border-b border-border/40">
         <Container className="max-w-4xl py-14 md:py-20">
           <div className="space-y-16">
 
-            {/* ── H2: What Are Captions? ── */}
+            {/* â”€â”€ H2: What Are Captions? â”€â”€ */}
             <section aria-labelledby="what-are-captions">
               <h2
                 id="what-are-captions"
@@ -238,7 +238,7 @@ export default function CaptionsPage() {
             {/* Divider */}
             <hr className="border-border/40" />
 
-            {/* ── H2: What Are Subtitles? ── */}
+            {/* â”€â”€ H2: What Are Subtitles? â”€â”€ */}
             <section aria-labelledby="what-are-subtitles">
               <h2
                 id="what-are-subtitles"
@@ -264,7 +264,7 @@ export default function CaptionsPage() {
             {/* Divider */}
             <hr className="border-border/40" />
 
-            {/* ── H2: Captions vs. Subtitles: The Key Differences ── */}
+            {/* â”€â”€ H2: Captions vs. Subtitles: The Key Differences â”€â”€ */}
             <section aria-labelledby="captions-vs-subtitles">
               <h2
                 id="captions-vs-subtitles"
@@ -309,7 +309,7 @@ export default function CaptionsPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Open Captions vs. Closed Captions ── */}
+            {/* â”€â”€ H2: Open Captions vs. Closed Captions â”€â”€ */}
             <section aria-labelledby="open-vs-closed-captions">
               <h2
                 id="open-vs-closed-captions"
@@ -337,7 +337,7 @@ export default function CaptionsPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Caption File Formats: SRT and VTT ── */}
+            {/* â”€â”€ H2: Caption File Formats: SRT and VTT â”€â”€ */}
             <section aria-labelledby="caption-file-formats">
               <h2
                 id="caption-file-formats"
@@ -388,7 +388,7 @@ Today, we will learn about SRT and VTT files.`}
 
             <hr className="border-border/40" />
 
-            {/* ── H2: How to Create Captions for Your Video ── */}
+            {/* â”€â”€ H2: How to Create Captions for Your Video â”€â”€ */}
             <section aria-labelledby="how-to-create-captions" id="how-to-create-captions-section">
               <h2
                 id="how-to-create-captions"
@@ -416,7 +416,7 @@ Today, we will learn about SRT and VTT files.`}
                   {
                     n: 1,
                     title: 'Upload your file',
-                    body: 'Go to Konthora’s audio-to-text tool. Upload your MP4, WebM, MOV, or audio file. Konthora extracts the audio track automatically.',
+                    body: 'Go to Konthoraâ€™s audio-to-text tool. Upload your MP4, WebM, MOV, or audio file. Konthora extracts the audio track automatically.',
                   },
                   {
                     n: 2,
@@ -456,14 +456,14 @@ Today, we will learn about SRT and VTT files.`}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Captions className="h-4 w-4" aria-hidden="true" />
-                  Create Timed Transcripts — Export as SRT or VTT
+                  Create Timed Transcripts â€” Export as SRT or VTT
                 </Link>
               </div>
             </section>
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Why Captions Matter for Accessibility ── */}
+            {/* â”€â”€ H2: Why Captions Matter for Accessibility â”€â”€ */}
             <section aria-labelledby="why-captions-matter">
               <h2
                 id="why-captions-matter"
@@ -492,7 +492,7 @@ Today, we will learn about SRT and VTT files.`}
         </Container>
       </article>
 
-      {/* ── FAQ SECTION ── */}
+      {/* â”€â”€ FAQ SECTION â”€â”€ */}
       <Section className="bg-secondary/10" id="captions-faq-section">
         <Container className="max-w-4xl">
           <div className="text-center mb-12">
@@ -510,7 +510,7 @@ Today, we will learn about SRT and VTT files.`}
         </Container>
       </Section>
 
-      {/* ── CLOSING CTA ── */}
+      {/* â”€â”€ CLOSING CTA â”€â”€ */}
       <section
         aria-labelledby="captions-closing-cta-heading"
         className="py-16 md:py-24 border-t border-border/40 bg-radial-faint"
@@ -532,7 +532,7 @@ Today, we will learn about SRT and VTT files.`}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Captions className="h-5 w-5" aria-hidden="true" />
-              Create Timed Transcripts — Export as SRT or VTT
+              Create Timed Transcripts â€” Export as SRT or VTT
             </Link>
           </div>
         </Container>

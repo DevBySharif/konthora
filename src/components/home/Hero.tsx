@@ -28,8 +28,8 @@ export function Hero() {
     <section className="relative overflow-hidden" aria-labelledby="hero-heading">
       {/* Ambient background */}
       <div className="absolute inset-0 bg-radial-faint" aria-hidden="true" />
-      <div className="orb top-[-12rem] left-[-8rem] h-[26rem] w-[26rem] bg-primary/20 dark:bg-primary/15" aria-hidden="true" />
-      <div className="orb top-[-6rem] right-[-10rem] h-[28rem] w-[28rem] bg-primary-soft/15 dark:bg-primary-soft/10" aria-hidden="true" />
+      <div className="orb top-[-12rem] left-[-8rem] h-[26rem] w-[26rem] bg-white/[0.07]" aria-hidden="true" />
+      <div className="orb top-[-6rem] right-[-10rem] h-[28rem] w-[28rem] bg-white/[0.05]" aria-hidden="true" />
       <div
         className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent"
         aria-hidden="true"
@@ -45,7 +45,7 @@ export function Hero() {
             className="text-center lg:text-left"
           >
             <motion.div variants={item(0)}>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary dark:border-primary/30 dark:bg-primary/10 dark:text-primary-soft">
+              <span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-gradient-to-r from-white/12 to-white/[0.02] px-3.5 py-1.5 text-xs font-normal tracking-[-0.01em] text-foreground/90">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 AI Voice & Transcription Studio
               </span>
@@ -54,11 +54,13 @@ export function Hero() {
             <motion.h1
               id="hero-heading"
               variants={item(0.05)}
-              className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl md:text-6xl"
+              className="mt-6 text-4xl font-medium leading-[1.12] tracking-[-0.045em] text-foreground sm:text-5xl md:text-6xl"
             >
-              Natural speech.{' '}
-              <span className="text-gradient">Precise transcripts.</span>{' '}
-              In your browser.
+              <span className="headline-line">
+                Natural speech.{' '}
+                <span className="serif-accent serif-accent-anim text-muted-foreground">Precise transcripts.</span>{' '}
+                In your browser.
+              </span>
             </motion.h1>
 
             <motion.p
@@ -76,17 +78,17 @@ export function Hero() {
             >
               <Link
                 href={siteConfig.links.textToSpeech}
-                className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-primary-foreground shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+                className="shine solid-metal group inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 <AudioLines className="h-5 w-5" aria-hidden="true" />
                 Generate Speech
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
               <Link
                 href={siteConfig.links.audioToText}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-6 text-base font-semibold text-foreground backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+                className="shine glass-ghost inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                <Mic2 className="h-5 w-5 text-primary" aria-hidden="true" />
+                <Mic2 className="h-5 w-5" aria-hidden="true" />
                 Transcribe Audio
               </Link>
             </motion.div>
@@ -154,7 +156,7 @@ export function Hero() {
                 animate={reduce ? undefined : { y: [0, 8, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft/15 text-primary-soft dark:text-primary-soft">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-foreground">
                   <Mic2 className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm font-semibold">word-level sync</span>

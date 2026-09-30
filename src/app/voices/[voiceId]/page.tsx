@@ -8,7 +8,7 @@ import { Section } from '@/components/ui/Section';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { FAQ } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
-import { VoicePreviewPlayer } from '@/components/tools/VoicePreviewPlayer';
+
 import { siteConfig } from '@/config/site';
 import {
   getAllVoices,
@@ -138,13 +138,6 @@ export default async function VoicePage({ params }: VoicePageProps) {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <VoicePreviewPlayer
-              voiceId={voice.id}
-              voiceName={voice.shortName}
-              accent={voice.accent}
-              gender={voice.gender}
-              recommended={voice.recommended}
-            />
             <Link
               href={generateSlug}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"

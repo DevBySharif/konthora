@@ -72,13 +72,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return routes.map((route) => {
     const isHome = route === '';
+
+    // Pages that embed a live workspace and target a commercial query.
     const isPrimaryTool =
       route === '/text-to-speech' ||
       route === '/audio-to-text' ||
-      route === '/speech-to-text' ||
       route === '/text-to-mp3' ||
       route === '/mp3-to-text' ||
       route === '/video-to-text';
+
+    /**
+     * `/speech-to-text` is an explainer ("How Audio Transcription Works") that
+     * embeds no workspace. It was previously marked as a primary tool, so it
+     * competed with `/audio-to-text` for the same commercial query while
+     * offering nothing to click. Demoted to a normal guide below.
+     */
+    const isExplainer = route === '/speech-to-text';
 
     let priority = 0.5;
     let changeFrequency: 'weekly' | 'monthly' = 'monthly';
@@ -86,7 +95,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (isHome) {
       priority = 1.0;
       changeFrequency = 'weekly';
-    } else if (isPrimaryTool || route.includes('to-')) {
+    } else if (isPrimaryTool) {
       priority = 0.9;
       changeFrequency = 'weekly';
     } else if (route.startsWith('/voices/')) {
@@ -95,6 +104,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     } else if (route.startsWith('/formats/') || route.startsWith('/captions/')) {
       priority = 0.6;
       changeFrequency = 'monthly';
+    } else if (route.startsWith('/speech-to-text/') || route.startsWith('/transcribe-')) {
+      priority = 0.6;
+      changeFrequency = 'monthly';
+    }
+
+    // `route.includes('to-')` used to sweep every guide into 0.9/weekly, which
+    // over-signalled 30+ informational pages. Guides now sit at 0.6.
+    if (!isHome && !isExplainer && priority === 0.5 && route.includes('to-')) {
+      priority = 0.6;
     }
 
     return {

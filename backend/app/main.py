@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# Explicitly load .env from the backend root directory
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
 import asyncio
 import contextlib
 from fastapi import FastAPI, Request, status
@@ -92,10 +98,11 @@ app.add_middleware(
 )
 
 # Host header validation (deny unknown Hosts to prevent DNS rebinding / host spoofing)
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=settings.trusted_hosts_list,
-)
+# DISABLED for local dev to allow CORS preflight OPTIONS
+# app.add_middleware(
+#     TrustedHostMiddleware,
+#     allowed_hosts=settings.trusted_hosts_list,
+# )
 
 @app.middleware("http")
 async def add_robots_header(request: Request, call_next):

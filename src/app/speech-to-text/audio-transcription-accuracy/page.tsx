@@ -13,7 +13,7 @@ import { Mic } from 'lucide-react';
    Metadata
 ───────────────────────────────────────────── */
 export const metadata: Metadata = constructMetadata({
-  title: "Audio Transcription Accuracy: What Affects the Results? | Konthora",
+  title: "Audio Transcription Accuracy: What Matters | Konthora",
   description:
     "Learn what affects English audio transcription accuracy, from background noise to microphone quality, and how to improve speech-to-text results.",
   path: '/speech-to-text/audio-transcription-accuracy',

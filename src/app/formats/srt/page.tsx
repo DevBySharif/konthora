@@ -15,23 +15,23 @@ import {
   AudioLines,
 } from 'lucide-react';
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Metadata
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export const metadata: Metadata = constructMetadata({
-  title: 'What is an SRT File? Understanding SubRip Subtitles | Konthora',
+  title: 'What is an SRT File? SubRip Subtitles Explained | Konthora',
   description:
     'Learn how SRT (SubRip Subtitle) files work, understand their timecode structure, and discover how to export timestamped audio transcripts for your videos.',
   path: '/formats/srt',
 });
 
-/* ─────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Page component
-───────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function SrtFormatPage() {
   const pageUrl = `${siteConfig.url}/formats/srt`;
 
-  /* ── Schema: BreadcrumbList ── */
+  /* â”€â”€ Schema: BreadcrumbList â”€â”€ */
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -42,7 +42,7 @@ export default function SrtFormatPage() {
     ],
   };
 
-  /* ── Schema: FAQPage ── */
+  /* â”€â”€ Schema: FAQPage â”€â”€ */
   const faqs: FAQItem[] = [
     {
       question: "Does Konthora burn SRT captions directly into my video?",
@@ -77,7 +77,7 @@ export default function SrtFormatPage() {
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 
-      {/* ── HERO / INTRO ── */}
+      {/* â”€â”€ HERO / INTRO â”€â”€ */}
       <section
         aria-labelledby="guide-h1"
         className="relative overflow-hidden bg-radial-faint py-16 md:py-24 border-b border-border/40"
@@ -139,12 +139,12 @@ export default function SrtFormatPage() {
         </Container>
       </section>
 
-      {/* ── ARTICLE BODY ── */}
+      {/* â”€â”€ ARTICLE BODY â”€â”€ */}
       <article aria-label="SRT Format Guide" className="border-b border-border/40">
         <Container className="max-w-4xl py-14 md:py-20">
           <div className="space-y-16">
 
-            {/* ── H2: What Is an SRT File? ── */}
+            {/* â”€â”€ H2: What Is an SRT File? â”€â”€ */}
             <section aria-labelledby="what-is-srt">
               <h2
                 id="what-is-srt"
@@ -169,7 +169,7 @@ export default function SrtFormatPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: The Basic SRT Cue Structure ── */}
+            {/* â”€â”€ H2: The Basic SRT Cue Structure â”€â”€ */}
             <section aria-labelledby="srt-structure">
               <h2
                 id="srt-structure"
@@ -215,7 +215,7 @@ and when to disappear.`}
 
             <hr className="border-border/40" />
 
-            {/* ── H2: When Is SRT Useful? ── */}
+            {/* â”€â”€ H2: When Is SRT Useful? â”€â”€ */}
             <section aria-labelledby="when-to-use-srt">
               <h2
                 id="when-to-use-srt"
@@ -253,7 +253,7 @@ and when to disappear.`}
 
             <hr className="border-border/40" />
 
-            {/* ── H2: How SRT Differs from TXT and VTT ── */}
+            {/* â”€â”€ H2: How SRT Differs from TXT and VTT â”€â”€ */}
             <section aria-labelledby="srt-vs-txt-vtt">
               <h2
                 id="srt-vs-txt-vtt"
@@ -284,7 +284,7 @@ and when to disappear.`}
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Exporting Timestamps from Konthora ── */}
+            {/* â”€â”€ H2: Exporting Timestamps from Konthora â”€â”€ */}
             <section aria-labelledby="exporting-srt">
               <h2
                 id="exporting-srt"
@@ -299,8 +299,8 @@ and when to disappear.`}
                 </p>
                 <p>
                   When you <Link href="/speech-to-text/how-to-transcribe-audio" className="text-primary hover:underline">transcribe audio</Link> on Konthora, the system calculates precise timestamps. 
-                  Before downloading the SRT file, you can adjust how the text is grouped—by sentence, paragraph, or 
-                  individual word—depending on your visual preference. For more details on these grouping options, 
+                  Before downloading the SRT file, you can adjust how the text is groupedâ€”by sentence, paragraph, or 
+                  individual wordâ€”depending on your visual preference. For more details on these grouping options, 
                   refer to the guide on <Link href="/speech-to-text/timestamps" className="text-primary hover:underline">transcription timestamps</Link>.
                 </p>
               </div>
@@ -326,7 +326,7 @@ and when to disappear.`}
         </Container>
       </article>
 
-      {/* ── FAQ SECTION ── */}
+      {/* â”€â”€ FAQ SECTION â”€â”€ */}
       <Section className="bg-secondary/10" id="srt-faq-section">
         <Container className="max-w-4xl">
           <div className="text-center mb-12">

@@ -2,7 +2,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
+import { SpeakableSummary } from '@/components/tools/SpeakableSummary';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -15,10 +19,18 @@ import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
 
+
+/**
+ * Concise factual summary quoted verbatim by voice assistants and AI answer
+ * engines via Speakable schema. Keep it consistent with the visible copy.
+ */
+const SPEAKABLE_TEXT_TO_SPEECH =
+  'Konthora converts text into natural AI speech for free in the browser. You can generate up to 2,000 characters per job using 41 neural voices across 6 languages, adjust the speed between 0.75 and 1.25 times, configure sentence and paragraph pauses, and download the result as MP3 or WAV. No account is required.';
+
 export const metadata: Metadata = constructMetadata({
   title: 'Free AI Text to Speech Online | Kokoro TTS Studio',
   description:
-    'Free AI text to speech generator powered by Kokoro neural voice studio. Convert text into natural speech with 41 AI voices in 6 languages, with MP3 and WAV export.',
+    'Free AI text to speech with 41 neural voices in 6 languages. Convert text to natural speech and export as MP3 or WAV, powered by the Kokoro voice model.',
   path: '/text-to-speech',
 });
 
@@ -29,6 +41,11 @@ export default function TextToSpeechPage() {
     name: 'Konthora Free AI Text to Speech Online',
     url: pageUrl,
   });
+
+  const speakableSchema = constructSpeakableSchema(
+    `${siteConfig.url}/text-to-speech`,
+    SPEAKABLE_TEXT_TO_SPEECH,
+  );
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -141,6 +158,10 @@ export default function TextToSpeechPage() {
   return (
     <>
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={speakableSchema} />
+      <SpeakableSummary id="speakable-summary">
+        {SPEAKABLE_TEXT_TO_SPEECH}
+      </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 

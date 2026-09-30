@@ -17,11 +17,11 @@ import {
   Upload,
 } from 'lucide-react';
 
-/* ─────────────────────────────────────────────
-   Metadata — canonical, unique title & description
-───────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Metadata â€” canonical, unique title & description
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export const metadata: Metadata = constructMetadata({
-  title: 'How to Transcribe Audio to Text (Free, with Timestamps) | Konthora',
+  title: 'How to Transcribe Audio to Text, Free | Konthora',
   description:
     'Step-by-step guide to transcribing audio to text for free with sentence, paragraph, or word timestamps. Accepts MP3, WAV, M4A, AAC, MP4, WebM, and MOV.',
   path: '/speech-to-text/how-to-transcribe-audio',
@@ -30,7 +30,7 @@ export const metadata: Metadata = constructMetadata({
 export default function HowToTranscribeAudioPage() {
   const pageUrl = `${siteConfig.url}/speech-to-text/how-to-transcribe-audio`;
 
-  /* ── Schema: BreadcrumbList ── */
+  /* â”€â”€ Schema: BreadcrumbList â”€â”€ */
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -51,7 +51,7 @@ export default function HowToTranscribeAudioPage() {
     ],
   };
 
-  /* ── Schema: HowTo ── */
+  /* â”€â”€ Schema: HowTo â”€â”€ */
   const howToSchema = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
@@ -69,7 +69,7 @@ export default function HowToTranscribeAudioPage() {
         '@type': 'HowToStep',
         position: 2,
         name: 'Upload your audio or video file',
-        text: 'Select or drag and drop your file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV — up to 100 MB and 10 minutes in duration).',
+        text: 'Select or drag and drop your file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV â€” up to 100 MB and 10 minutes in duration).',
       },
       {
         '@type': 'HowToStep',
@@ -92,7 +92,7 @@ export default function HowToTranscribeAudioPage() {
     ],
   };
 
-  /* ── Schema: FAQPage ── */
+  /* â”€â”€ Schema: FAQPage â”€â”€ */
   const faqs: FAQItem[] = [
     {
       question: 'How long does audio transcription take?',
@@ -142,7 +142,7 @@ export default function HowToTranscribeAudioPage() {
       <JsonLd schema={howToSchema} />
       <JsonLd schema={faqSchema} />
 
-      {/* ── HERO ── */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <section
         aria-labelledby="how-to-h1"
         className="relative overflow-hidden bg-radial-faint py-16 md:py-24 border-b border-border/40"
@@ -197,10 +197,10 @@ export default function HowToTranscribeAudioPage() {
             <span className="text-gradient">(Free, with Timestamps)</span>
           </h1>
 
-          {/* Search Promise — pre-first scroll */}
+          {/* Search Promise â€” pre-first scroll */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
             To transcribe audio to text for free: (1) go to Konthora&rsquo;s audio-to-text tool,
-            (2) upload your audio file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV — up to 100 MB and
+            (2) upload your audio file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV â€” up to 100 MB and
             10 minutes), (3) choose your timestamp grouping, and (4) download or copy your
             transcript in TXT, SRT, VTT, or JSON format. Konthora currently supports
             English-language audio. No account required.
@@ -220,11 +220,11 @@ export default function HowToTranscribeAudioPage() {
         </Container>
       </section>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* â”€â”€ MAIN CONTENT â”€â”€ */}
       <article aria-label="Audio transcription guide" className="border-b border-border/40">
         <Container className="max-w-4xl py-14 md:py-20">
           <div className="space-y-16">
-            {/* ── H2: Quick Steps: Transcribe Audio in 4 Steps ── */}
+            {/* â”€â”€ H2: Quick Steps: Transcribe Audio in 4 Steps â”€â”€ */}
             <section aria-labelledby="quick-steps">
               <h2
                 id="quick-steps"
@@ -236,7 +236,7 @@ export default function HowToTranscribeAudioPage() {
                 <ol className="space-y-4">
                   {[
                     'Go to Konthora\u2019s free Audio-to-Text tool in your web browser.',
-                    'Upload your audio or video file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV — up to 100 MB / 10 mins).',
+                    'Upload your audio or video file (MP3, WAV, M4A, AAC, MP4, WebM, or MOV â€” up to 100 MB / 10 mins).',
                     'Select your preferred timestamp grouping: sentence-level, paragraph-level, or word-level.',
                     'Click Transcribe Audio and export your result as TXT, SRT, VTT, or JSON format.',
                   ].map((step, idx) => (
@@ -253,7 +253,7 @@ export default function HowToTranscribeAudioPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Step-by-Step: How to Transcribe Audio on Konthora ── */}
+            {/* â”€â”€ H2: Step-by-Step: How to Transcribe Audio on Konthora â”€â”€ */}
             <section aria-labelledby="step-by-step">
               <h2
                 id="step-by-step"
@@ -267,7 +267,7 @@ export default function HowToTranscribeAudioPage() {
                 <div className="space-y-3">
                   <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <Upload className="h-5 w-5 text-primary" aria-hidden="true" />
-                    Step 1 — Upload Your Audio or Video File
+                    Step 1 â€” Upload Your Audio or Video File
                   </h3>
                   <p>
                     Open the Konthora Audio to Text workspace. Drag and drop your media file
@@ -290,7 +290,7 @@ export default function HowToTranscribeAudioPage() {
                 <div className="space-y-3">
                   <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <Clock className="h-5 w-5 text-primary" aria-hidden="true" />
-                    Step 2 — Choose Your Language and Timestamp Mode
+                    Step 2 â€” Choose Your Language and Timestamp Mode
                   </h3>
                   <p>
                     Verify that your audio language is set to English. Next, choose how you
@@ -316,7 +316,7 @@ export default function HowToTranscribeAudioPage() {
                 <div className="space-y-3">
                   <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-                    Step 3 — Start Transcription
+                    Step 3 â€” Start Transcription
                   </h3>
                   <p>
                     Click <strong className="text-foreground">Transcribe Audio</strong>. Konthora
@@ -333,7 +333,7 @@ export default function HowToTranscribeAudioPage() {
                 <div className="space-y-3">
                   <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <FileDown className="h-5 w-5 text-primary" aria-hidden="true" />
-                    Step 4 — Download or Copy Your Transcript
+                    Step 4 â€” Download or Copy Your Transcript
                   </h3>
                   <p>
                     Once transcription is complete, review your transcript in the browser. You
@@ -358,7 +358,7 @@ export default function HowToTranscribeAudioPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Supported Audio and Video Formats ── */}
+            {/* â”€â”€ H2: Supported Audio and Video Formats â”€â”€ */}
             <section aria-labelledby="supported-formats">
               <h2
                 id="supported-formats"
@@ -389,7 +389,7 @@ export default function HowToTranscribeAudioPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Understanding Timestamp Options ── */}
+            {/* â”€â”€ H2: Understanding Timestamp Options â”€â”€ */}
             <section aria-labelledby="timestamp-options">
               <h2
                 id="timestamp-options"
@@ -441,7 +441,7 @@ export default function HowToTranscribeAudioPage() {
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Exporting Your Transcript ── */}
+            {/* â”€â”€ H2: Exporting Your Transcript â”€â”€ */}
             <section aria-labelledby="exporting-transcript">
               <h2
                 id="exporting-transcript"
@@ -485,7 +485,7 @@ Upload your audio or video file to get accurate timestamps.`}
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Tips for Better Transcription Results ── */}
+            {/* â”€â”€ H2: Tips for Better Transcription Results â”€â”€ */}
             <section aria-labelledby="better-results-tips">
               <h2
                 id="better-results-tips"
@@ -498,7 +498,7 @@ Upload your audio or video file to get accurate timestamps.`}
                   {[
                     'Record with a dedicated microphone in a quiet room to reduce background noise.',
                     'Maintain a steady speaking distance from your microphone to keep volume levels consistent.',
-                    'Avoid overlapping voices — single-speaker speech transcribes with highest accuracy.',
+                    'Avoid overlapping voices â€” single-speaker speech transcribes with highest accuracy.',
                     'Use high-bitrate MP3 or WAV files instead of heavily compressed voice memos.',
                   ].map((tip, idx) => (
                     <li key={idx} className="flex gap-2.5">
@@ -516,7 +516,7 @@ Upload your audio or video file to get accurate timestamps.`}
         </Container>
       </article>
 
-      {/* ── FAQ SECTION ── */}
+      {/* â”€â”€ FAQ SECTION â”€â”€ */}
       <Section className="bg-secondary/10" id="how-to-faq-section">
         <Container className="max-w-4xl">
           <div className="text-center mb-12">
@@ -534,7 +534,7 @@ Upload your audio or video file to get accurate timestamps.`}
         </Container>
       </Section>
 
-      {/* ── CLOSING CTA — placement 3 ── */}
+      {/* â”€â”€ CLOSING CTA â€” placement 3 â”€â”€ */}
       <section
         aria-labelledby="how-to-closing-cta-heading"
         className="py-16 md:py-24 border-t border-border/40 bg-radial-faint"

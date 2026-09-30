@@ -82,3 +82,9 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# Google Search Console exports — real query/traffic data, keep local only
+gsc-export/
+
+# Standalone design reference page, not part of the Konthora site
+public/vesper/

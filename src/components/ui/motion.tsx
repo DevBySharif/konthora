@@ -82,24 +82,3 @@ export function StaggerItem({ children, className, y = 24 }: { children: React.R
     </motion.div>
   );
 }
-
-interface FadeInProps {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}
-
-export function FadeIn({ children, className, delay = 0 }: FadeInProps) {
-  const reduce = useReducedMotion();
-
-  return (
-    <motion.div
-      className={className}
-      initial={reduce ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
-    >
-      {children}
-    </motion.div>
-  );
-}

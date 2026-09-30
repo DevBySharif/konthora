@@ -13,7 +13,7 @@ import { Captions } from 'lucide-react';
    Metadata
 ───────────────────────────────────────────── */
 export const metadata: Metadata = constructMetadata({
-  title: "Subtitle and Transcript Formats: SRT, VTT, TXT, and JSON | Konthora",
+  title: "Subtitle Formats: SRT, VTT, TXT and JSON | Konthora",
   description:
     "Compare SRT, VTT, TXT, and JSON formats to choose the right export for subtitle and English transcription workflows.",
   path: '/captions/subtitle-formats',

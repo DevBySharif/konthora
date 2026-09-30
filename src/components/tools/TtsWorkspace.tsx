@@ -23,6 +23,8 @@ import {
   createTtsJob,
   getTtsJobStatus,
   fetchAudioBlob,
+  ApiError,
+  isAbortError,
   ApiVoice
 } from '@/lib/api';
 import {
@@ -37,7 +39,6 @@ import {
   trackTtsAudioDownloaded,
   getCharacterCountBucket
 } from '@/components/analytics/events';
-import { VoicePicker } from './VoicePicker';
 import {
   DEFAULT_VOICE_BY_LANGUAGE,
   SupportedLanguage,
@@ -109,6 +110,17 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 const SAMPLE_TEXT =
   'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
 
+const POLL_INTERVAL_MS = 1500;
+/**
+ * Hard ceiling on consecutive failed polls. Without this a backend outage leaves
+ * the UI on "Processing…" forever while hammering the API every 1.5s. 40 polls
+ * at 1.5s is roughly one minute of tolerance, which is generous for a single
+ * dropped packet but short enough to surface a real outage to the user.
+ */
+const MAX_CONSECUTIVE_POLL_FAILURES = 40;
+/** Absolute wall-clock ceiling for one synthesis job (10 minutes). */
+const MAX_JOB_DURATION_MS = 10 * 60 * 1000;
+
 export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | null }) {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
@@ -142,13 +154,44 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  /**
+   * Guards every async continuation. A poll chain started by `handleSubmit`
+   * can resolve after the user navigates away; without this flag it would call
+   * setState on a dead component and restart the interval with no owner to
+   * ever clear it.
+   */
+  const mountedRef = useRef(true);
+  /** Object URL for the current generated clip, revoked exactly once. */
+  const audioUrlRef = useRef<string | null>(null);
 
   // Analytics refs
   const jobStartTimeRef = useRef<number | null>(null);
   const hasTrackedPlayRef = useRef<boolean>(false);
 
+  /**
+   * Voices valid for the active language. Recommended voices sort first so the
+   * default choice is the best available one.
+   */
+  const availableVoices = voices
+    .filter((voice) => voice.language === selectedLanguage || (!voice.language && selectedLanguage === 'en-US'))
+    .sort((a, b) => Number(b.recommended ?? false) - Number(a.recommended ?? false));
+
+  /**
+   * Guards against `selectedVoiceId` pointing at a voice that is not in the
+   * filtered set (restored preferences, a language switch, or a catalogue that
+   * changed between renders). Without this the <select> would silently display
+   * its first option while the API payload used the stale id.
+   *
+   * `selectedVoiceId` remains the raw preference; every read that matters uses
+   * this resolved value. Deliberately no effect syncing the two — that would be
+   * a cascading render, and derived state should just be derived.
+   */
+  const resolvedVoiceId = availableVoices.some((voice) => voice.id === selectedVoiceId)
+    ? selectedVoiceId
+    : (availableVoices[0]?.id ?? '');
+
   const handleVoiceSelect = (voiceId: string) => {
-    if (voiceId === selectedVoiceId) return;
+    if (voiceId === resolvedVoiceId) return;
     setSelectedVoiceId(voiceId);
 
     const voice = voices.find(v => v.id === voiceId);
@@ -279,9 +322,29 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     }
   };
 
+  /**
+   * Single owner of the object URL. Revoking through a ref (instead of reading
+   * `audioUrl` state) keeps revocation idempotent and lets unmount release the
+   * blob even though state updates are no-ops after teardown.
+   */
+  const releaseAudioUrl = () => {
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  };
+
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       clearRunningTasks();
+      releaseAudioUrl();
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+        audioPlayerRef.current.src = '';
+        audioPlayerRef.current = null;
+      }
     };
   }, []);
 
@@ -294,10 +357,8 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setJobId(null);
     setDurationSeconds(null);
     clearRunningTasks();
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
-    }
+    releaseAudioUrl();
+    setAudioUrl(null);
     setIsPlaying(false);
     hasTrackedPlayRef.current = false;
   };
@@ -331,13 +392,38 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setStatus('polling');
     setProgressStage('queued');
 
+    // Reset the liveness guards for this job.
+    let consecutiveFailures = 0;
+    const startedAt = Date.now();
+
     const poll = async () => {
+      if (!mountedRef.current) return;
+
+      // Absolute ceiling, so a job that never reaches a terminal state cannot
+      // hold the submit button disabled indefinitely.
+      if (Date.now() - startedAt > MAX_JOB_DURATION_MS) {
+        clearRunningTasks();
+        setStatus('failed');
+        setProgressStage('failed');
+        setErrorMsg('This took longer than expected and was stopped. Please try again.');
+        trackTtsGenerationFailed({
+          stage: 'poll',
+          error_code: 'JOB_TIMEOUT',
+          voice_id: resolvedVoiceId,
+          format: outputFormat,
+        });
+        return;
+      }
+
       // Abort controller for current request loop
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
       try {
         const data = await getTtsJobStatus(id, token, controller.signal);
+        consecutiveFailures = 0;
+
+        if (!mountedRef.current) return;
 
         if (data.status === 'completed') {
           setProgressStage('completed');
@@ -345,18 +431,21 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           // Request file download, convert to blob, set Object URL
           const blob = await fetchAudioBlob(id, token);
+          if (!mountedRef.current) return;
+
           const localUrl = URL.createObjectURL(blob);
 
-          // Cleanup existing audio URL before assigning new one to prevent leaks
-          setAudioUrl((prev) => {
-            if (prev) URL.revokeObjectURL(prev);
-            return localUrl;
-          });
+          // Release the previous URL through the ref, never inside a state
+          // updater: updaters must stay pure so React's replay in StrictMode
+          // and concurrent renders cannot double-revoke a committed URL.
+          releaseAudioUrl();
+          audioUrlRef.current = localUrl;
+          setAudioUrl(localUrl);
 
           setStatus('completed');
           clearRunningTasks();
 
-          const voice = voices.find(v => v.id === selectedVoiceId);
+          const voice = voices.find(v => v.id === resolvedVoiceId);
           if (voice && jobStartTimeRef.current) {
             trackTtsGenerationCompleted({
               voice_id: voice.id,
@@ -364,7 +453,6 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               gender: voice.gender,
               speed,
               format: outputFormat,
-              character_count: text.length,
               character_count_bucket: getCharacterCountBucket(text.length),
               duration_seconds: data.durationSeconds ?? undefined,
               elapsed_seconds: Math.round((Date.now() - jobStartTimeRef.current) / 1000)
@@ -379,7 +467,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           trackTtsGenerationFailed({
             stage: 'poll',
-            voice_id: selectedVoiceId,
+            voice_id: resolvedVoiceId,
             format: outputFormat
           });
         } else if (data.status === 'expired') {
@@ -391,7 +479,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           trackTtsGenerationFailed({
             stage: 'poll',
             error_code: 'expired',
-            voice_id: selectedVoiceId,
+            voice_id: resolvedVoiceId,
             format: outputFormat
           });
         } else {
@@ -399,15 +487,36 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           setProgressStage(data.progressStage);
         }
       } catch (err) {
-        const error = err as Error;
-        if (error.name === 'AbortError') return;
-        console.error('Job status polling error:', error);
-        // Do not fail immediately on minor network drops, let interval retry
+        // Covers both caller cancellation and the per-request timeout signal.
+        if (isAbortError(err)) return;
+        if (!mountedRef.current) return;
+
+        console.error('Job status polling error:', err);
+
+        consecutiveFailures += 1;
+
+        // Surface a real outage instead of spinning on "Processing…" forever.
+        if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+          clearRunningTasks();
+          setStatus('failed');
+          setProgressStage('failed');
+          setErrorMsg(
+            'Lost connection to the speech synthesis server. Please check that the backend is running and try again.',
+          );
+
+          trackTtsGenerationFailed({
+            stage: 'poll',
+            error_code: 'POLL_TIMEOUT',
+            voice_id: resolvedVoiceId,
+            format: outputFormat
+          });
+        }
       }
     };
 
     poll();
-    pollTimerRef.current = setInterval(poll, 1500);
+    if (!mountedRef.current) return;
+    pollTimerRef.current = setInterval(poll, POLL_INTERVAL_MS);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -423,14 +532,12 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setProgressStage('queued');
 
     // Revoke previous audio resources
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
-    }
+    releaseAudioUrl();
+    setAudioUrl(null);
     setIsPlaying(false);
     hasTrackedPlayRef.current = false;
 
-    const voice = voices.find(v => v.id === selectedVoiceId);
+    const voice = voices.find(v => v.id === resolvedVoiceId);
     if (voice) {
       trackTtsGenerateClicked({
         voice_id: voice.id,
@@ -438,18 +545,23 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         gender: voice.gender,
         speed,
         format: outputFormat,
-        character_count: text.length,
         character_count_bucket: getCharacterCountBucket(text.length)
       });
     }
 
     jobStartTimeRef.current = Date.now();
 
+    // Own controller for the submission itself. `clearRunningTasks` on unmount
+    // aborts it, so a submit still in flight when the user navigates away can
+    // never proceed to start the poll interval.
+    const submitController = new AbortController();
+    abortControllerRef.current = submitController;
+
     try {
       const jobData = await createTtsJob(
         text,
-        selectedVoiceId,
-        voices.find(v => v.id === selectedVoiceId)?.accent || 'american',
+        resolvedVoiceId,
+        voices.find(v => v.id === resolvedVoiceId)?.accent || 'american',
         speed,
         outputFormat,
         {
@@ -457,27 +569,42 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           paragraphPauseMs,
           normalizeText,
         },
+        submitController.signal,
       );
+
+      // Bail out if we were torn down while the POST was in flight.
+      if (!mountedRef.current) return;
 
       setJobId(jobData.jobId);
 
       // Start status verification interval
       startStatusPolling(jobData.jobId, jobData.accessToken);
     } catch (err) {
-      const error = err as { code?: string; message?: string };
+      if (isAbortError(err) || !mountedRef.current) return;
+
+      // Prefer the typed ApiError, which carries the code and Retry-After.
+      const error = err instanceof ApiError ? err : (err as { code?: string; message?: string });
       console.error('Job submission failed:', error);
       setStatus('failed');
       setProgressStage('failed');
 
-      const friendlyMsg = error.code === 'RATE_LIMITED'
-        ? (error.message || 'Rate limit exceeded. Please try again later.')
-        : (error.message || 'Could not connect to the speech synthesis server.');
+      let friendlyMsg: string;
+      if (error.code === 'RATE_LIMITED') {
+        const wait = err instanceof ApiError ? err.retryAfterSeconds : undefined;
+        friendlyMsg = wait
+          ? `Rate limit exceeded. Please try again in ${wait} second${wait === 1 ? '' : 's'}.`
+          : (error.message || 'Rate limit exceeded. Please try again later.');
+      } else if (err instanceof ApiError && err.code === 'INVALID_RESPONSE') {
+        friendlyMsg = err.message;
+      } else {
+        friendlyMsg = error.message || 'Could not connect to the speech synthesis server.';
+      }
       setErrorMsg(friendlyMsg);
 
       trackTtsGenerationFailed({
         stage: 'submit',
         error_code: error.code,
-        voice_id: selectedVoiceId,
+        voice_id: resolvedVoiceId,
         format: outputFormat
       });
     }
@@ -497,7 +624,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
       setIsPlaying(true);
 
       if (!hasTrackedPlayRef.current) {
-        trackTtsPreviewPlayed({ voice_id: selectedVoiceId, format: outputFormat });
+        trackTtsPreviewPlayed({ voice_id: resolvedVoiceId, format: outputFormat });
         hasTrackedPlayRef.current = true;
       }
     }
@@ -568,6 +695,9 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           {/* Textarea Area */}
           <div className="relative">
+            <label htmlFor="tts-text-input" className="sr-only">
+              Script text to convert to speech
+            </label>
             <textarea
               id="tts-text-input"
               value={text}
@@ -580,7 +710,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               disabled={status === 'submitting' || status === 'polling'}
               placeholder="Type or paste your text here to convert it to natural speech..."
               className="w-full min-h-[220px] p-5 bg-transparent border-0 focus:ring-0 focus:outline-none resize-y text-foreground leading-relaxed text-base"
-              aria-describedby={errorMsg ? 'tts-validation-error' : undefined}
+              aria-describedby={errorMsg ? 'tts-validation-error tts-char-count' : 'tts-char-count'}
             />
           </div>
 
@@ -590,12 +720,12 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               {wordsCount.toLocaleString()} word{wordsCount === 1 ? '' : 's'} · Guest limit
             </span>
             <span
+              id="tts-char-count"
               className={`text-xs font-mono font-medium ${
                 text.length >= charLimit - 100
                   ? 'text-red-500 font-bold'
                   : 'text-muted-foreground'
               }`}
-              aria-live="polite"
             >
               {text.length.toLocaleString()} / {charLimit.toLocaleString()}
             </span>
@@ -615,16 +745,24 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         <div className="space-y-6 p-5 sm:p-6 lg:p-7 border border-border bg-card rounded-2xl shadow-xs">
           {/* Language Selector */}
           <div className="flex flex-col gap-3">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <div
+              id="tts-language-label"
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+            >
               Language
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            </div>
+            <div
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"
+              role="group"
+              aria-labelledby="tts-language-label"
+            >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <button
                   key={lang.value}
                   type="button"
                   onClick={() => handleLanguageChange(lang.value as SupportedLanguage)}
                   disabled={status === 'submitting' || status === 'polling'}
+                  aria-pressed={selectedLanguage === lang.value}
                   className={`min-h-11 rounded-lg border text-sm font-semibold tracking-wide transition-colors cursor-pointer py-2 px-3 ${
                     selectedLanguage === lang.value
                       ? 'border-primary bg-primary/5 text-primary'
@@ -641,14 +779,38 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(15rem,0.75fr)] lg:items-start">
-          {/* Voice Picker V2 */}
-          <VoicePicker
-            voices={voices.filter(v => v.language === selectedLanguage || (!v.language && selectedLanguage === 'en-US'))}
-            selectedVoiceId={selectedVoiceId}
-            selectedLanguage={selectedLanguage}
-            onSelectVoice={handleVoiceSelect}
-            disabled={status === 'submitting' || status === 'polling' || loadingVoices}
-          />
+          {/* Voice Selector */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="tts-voice-select"
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+            >
+              Voice
+            </label>
+            <select
+              id="tts-voice-select"
+              value={resolvedVoiceId}
+              onChange={(e) => handleVoiceSelect(e.target.value)}
+              disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
+              className="min-h-11 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {availableVoices.length === 0 ? (
+                <option value="">No voices available for this language</option>
+              ) : (
+                availableVoices.map((voice) => (
+                  <option key={voice.id} value={voice.id}>
+                    {voice.displayName} — {voice.accent}
+                    {voice.recommended ? ' (Recommended)' : ''}
+                  </option>
+                ))
+              )}
+            </select>
+            {availableVoices.length === 0 && (
+              <p className="text-[11px] text-destructive leading-snug">
+                No voices are available for this language right now. Please pick another language.
+              </p>
+            )}
+          </div>
 
           {/* Speed Slider */}
           <div className="flex flex-col gap-2 lg:order-2 lg:col-span-2 border-t border-border/70 pt-5">
@@ -700,10 +862,17 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           {/* Format Selector */}
           <div className="flex flex-col gap-2 lg:order-1">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <div
+              id="tts-format-label"
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+            >
               Output Format
-            </label>
-            <div className="grid grid-cols-2 gap-2 min-h-11">
+            </div>
+            <div
+              className="grid grid-cols-2 gap-2 min-h-11"
+              role="group"
+              aria-labelledby="tts-format-label"
+            >
               {(['mp3', 'wav'] as const).map((fmt) => (
                 <button
                   key={fmt}
@@ -846,7 +1015,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               type="submit"
               size="lg"
               className="w-full sm:w-auto sm:min-w-64 cursor-pointer"
-              disabled={status === 'submitting' || status === 'polling'}
+              disabled={status === 'submitting' || status === 'polling' || availableVoices.length === 0}
               aria-describedby="tts-submit-status"
             >
               {status === 'submitting' || status === 'polling' ? (
@@ -964,7 +1133,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     href={audioUrl}
                     download={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
                     className="flex-1 md:flex-none"
-                    onClick={() => trackTtsAudioDownloaded({ voice_id: selectedVoiceId, format: outputFormat })}
+                    onClick={() => trackTtsAudioDownloaded({ voice_id: resolvedVoiceId, format: outputFormat })}
                   >
                     <Button variant="primary" size="md" className="w-full gap-2 cursor-pointer">
                       <Download className="w-4 h-4" />

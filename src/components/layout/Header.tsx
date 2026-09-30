@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { headerNavLinks } from '@/config/navigation';
 import { siteConfig } from '@/config/site';
-import { ThemeToggle } from '../ThemeToggle';
 import { Container } from '../ui/Container';
 import { KonthoraBrand } from '../brand/KonthoraBrand';
 import { Menu, X, ArrowRight } from 'lucide-react';
@@ -51,31 +50,19 @@ export function Header() {
         <KonthoraBrand variant="header" />
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1" aria-label="Main Navigation" role="list">
+        <nav className="hidden lg:flex items-center gap-2" aria-label="Main Navigation">
           {headerNavLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                role="listitem"
                 aria-current={isActive ? 'page' : undefined}
-                className={`relative rounded-lg px-3.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                className={`metal-pill h-10 px-[18px] text-sm tracking-[-0.01em] ${
+                  isActive ? 'border-white/70' : ''
                 }`}
               >
                 {link.label}
-                {isActive && (
-                  <motion.span
-                    layoutId="header-active-pill"
-                    transition={{
-                      type: 'spring',
-                      duration: reduce ? 0 : 0.4,
-                      bounce: 0.25,
-                    }}
-                    className="absolute inset-0 -z-10 rounded-lg bg-primary/10 ring-1 ring-primary/20"
-                  />
-                )}
               </Link>
             );
           })}
@@ -83,12 +70,9 @@ export function Header() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
-          <ThemeToggle />
-
-          {/* CTA Button (desktop) */}
           <Link
             href={siteConfig.links.textToSpeech}
-            className="group hidden lg:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-from to-brand-to px-4 py-2.5 text-sm font-semibold text-white shadow-card-hover transition-all duration-200 hover:-translate-y-0.5 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+            className="shine solid-metal group hidden lg:inline-flex items-center justify-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Get Started
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
@@ -101,7 +85,7 @@ export function Header() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
             aria-label="Toggle main menu"
-            className="inline-flex lg:hidden items-center justify-center w-10 h-10 rounded-xl border border-border bg-card/60 text-foreground hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer"
+            className="shine glass-ghost inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 cursor-pointer"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -112,7 +96,7 @@ export function Header() {
                 transition={{ duration: 0.18 }}
                 className="inline-flex"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </motion.span>
             </AnimatePresence>
           </button>
@@ -162,8 +146,8 @@ export function Header() {
                           href={link.href}
                           onClick={handleLinkClick}
                           aria-current={isActive ? 'page' : undefined}
-                          className={`flex items-center justify-between rounded-xl px-4 py-3 text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                            isActive ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'text-foreground hover:bg-secondary/50'
+                          className={`metal-pill flex items-center justify-between rounded-lg px-4 py-3 text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                            isActive ? 'border-white/70' : ''
                           }`}
                         >
                           {link.label}
@@ -177,7 +161,7 @@ export function Header() {
                   <Link
                     href={siteConfig.links.textToSpeech}
                     onClick={handleLinkClick}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-from to-brand-to px-4 py-3 text-base font-semibold text-white shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    className="shine solid-metal inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                   >
                     Get Started
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />

@@ -13,7 +13,7 @@ import { Captions } from 'lucide-react';
    Metadata
 ───────────────────────────────────────────── */
 export const metadata: Metadata = constructMetadata({
-  title: "Closed Captions vs Subtitles: What's the Difference? | Konthora",
+  title: "Closed Captions vs Subtitles: The Difference | Konthora",
   description:
     "Learn the practical differences between closed captions and subtitles, when to use each format, and how to create subtitle files with Konthora.",
   path: '/captions/closed-captions-vs-subtitles',

@@ -78,10 +78,6 @@ export type TranscriptWorkspaceAction =
 const MAX_HISTORY_ENTRIES = 30;
 export const MAX_EXPORT_BASE_NAME_LENGTH = 80;
 
-export function requiresTranscriptDiscardConfirmation(dirty: boolean): boolean {
-  return dirty;
-}
-
 function cloneInitialSegments(segments: TranscriptSegmentData[]): EditableTranscriptSegment[] {
   return segments.map((segment) => ({
     ...segment,

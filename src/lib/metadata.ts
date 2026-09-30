@@ -6,15 +6,23 @@ interface MetadataProps {
   description: string;
   path: string;
   noIndex?: boolean;
+  /** Absolute or site-relative language variants for hreflang. */
+  languages?: Record<string, string>;
 }
 
-const OG_IMAGE = '/opengraph-image';
+/**
+ * `opengraph-image` is a generated route; Next serves it at
+ * `/opengraph-image?<hash>`. Referencing the bare path works in most crawlers
+ * but is a fragile reference, so it is resolved to an absolute URL here.
+ */
+const OG_IMAGE = `${siteConfig.url}/opengraph-image`;
 
 export function constructMetadata({
   title,
   description,
   path,
   noIndex = false,
+  languages,
 }: MetadataProps): Metadata {
   const url = `${siteConfig.url}${path}`;
 
@@ -26,6 +34,16 @@ export function constructMetadata({
     metadataBase: new URL(siteConfig.url),
     alternates: {
       canonical: url,
+      ...(languages
+        ? {
+            languages: Object.fromEntries(
+              Object.entries(languages).map(([locale, href]) => [
+                locale,
+                `${siteConfig.url}${href}`,
+              ]),
+            ),
+          }
+        : {}),
     },
     openGraph: {
       title,

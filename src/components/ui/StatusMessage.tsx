@@ -8,11 +8,13 @@ interface StatusMessageProps {
 }
 
 export function StatusMessage({ type, message, className = '', id }: StatusMessageProps) {
+  // `dark:` utilities emit nothing here (no @custom-variant dark), so each style
+  // carries both light and dark values directly.
   const styles = {
-    success: 'bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400',
-    warning: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-400',
-    error: 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400',
-    info: 'bg-primary/10 border-primary/30 text-primary dark:text-primary-foreground/90',
+    success: 'bg-green-500/10 border-green-500/30 text-green-300',
+    warning: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300',
+    error: 'bg-red-500/10 border-red-500/30 text-red-300',
+    info: 'bg-white/[0.06] border-white/15 text-foreground/90',
   };
 
   const icons = {
@@ -38,13 +40,19 @@ export function StatusMessage({ type, message, className = '', id }: StatusMessa
     ),
   };
 
-  const role = type === 'error' || type === 'warning' ? 'alert' : 'status';
+  // Errors and warnings must interrupt; info and success wait their turn.
+  // `role="alert"` already implies assertive, so aria-live is only set
+  // explicitly for the polite cases — setting it to "polite" on an alert would
+  // silently downgrade it and make failures easy to miss.
+  const isUrgent = type === 'error' || type === 'warning';
+  const role = isUrgent ? 'alert' : 'status';
 
   return (
     <div
       id={id}
       role={role}
-      aria-live="polite"
+      aria-live={isUrgent ? undefined : 'polite'}
+      aria-atomic="true"
       className={`flex items-start gap-3 p-4 border rounded-xl text-sm leading-relaxed ${styles[type]} ${className}`}
     >
       {icons[type]}

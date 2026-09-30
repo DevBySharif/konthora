@@ -1,7 +1,11 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
+import { SpeakableSummary } from '@/components/tools/SpeakableSummary';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -13,6 +17,14 @@ import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/to
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { FileAudio, Volume2, Gauge, Mic, Music2, Globe } from 'lucide-react';
+
+
+/**
+ * Concise factual summary quoted verbatim by voice assistants and AI answer
+ * engines via Speakable schema. Keep it consistent with the visible copy.
+ */
+const SPEAKABLE_TEXT_TO_MP3 =
+  'Konthora converts text into MP3 audio for free in the browser. Scripts of up to 2,000 characters can be synthesized with 41 neural voices across 6 languages, with adjustable speed, and downloaded as a compact MP3 file for narration and sharing.';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Text to MP3 Converter Online Free | Konthora Narrator',
@@ -28,6 +40,11 @@ export default function TextToMp3Page() {
     name: 'Konthora Text to MP3 Converter',
     url: pageUrl,
   });
+
+  const speakableSchema = constructSpeakableSchema(
+    `${siteConfig.url}/text-to-mp3`,
+    SPEAKABLE_TEXT_TO_MP3,
+  );
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -140,6 +157,10 @@ export default function TextToMp3Page() {
   return (
     <>
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={speakableSchema} />
+      <SpeakableSummary id="speakable-summary">
+        {SPEAKABLE_TEXT_TO_MP3}
+      </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 

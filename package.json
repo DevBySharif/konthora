@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src tests scripts",
+    "typecheck": "tsc --noEmit",
     "test:frontend": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/frontend/*.test.mjs",
     "indexnow": "node scripts/submit-indexnow.mjs",
     "indexnow:all": "node scripts/submit-indexnow.mjs --all",
@@ -14,10 +15,11 @@
     "postbuild": "node scripts/pingSitemaps.mjs",
     "gsc:index": "node scripts/gscIndexing.mjs"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@next/third-parties": "^16.3.0",
-    "@radix-ui/react-dialog": "^1.1.23",
-    "@radix-ui/react-popover": "^1.1.23",
     "framer-motion": "^13.0.0",
     "lucide-react": "^1.28.0",
     "next": "16.3.0",

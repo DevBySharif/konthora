@@ -675,3 +675,19 @@ class KokoroService:
                         continue
             except (ImportError, OSError):
                 pass
+
+    def tts_to_bytes(self, text: str, voice: str = "af_heart", speed: float = 1.0) -> bytes:
+        """Synthesizes text directly into 24kHz PCM_16 WAV bytes."""
+        import io
+        import soundfile as sf
+        if not text or not text.strip():
+            return b""
+        audio_array = self.synthesize_chunk(text, voice_id=voice, speed=speed)
+        if len(audio_array) == 0:
+            return b""
+        byte_io = io.BytesIO()
+        sf.write(byte_io, audio_array, 24000, format='WAV', subtype='PCM_16')
+        return byte_io.getvalue()
+
+kokoro_service = KokoroService()
+

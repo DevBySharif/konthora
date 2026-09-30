@@ -29,8 +29,8 @@ export function OgImage({ logoSrc }: OgImageProps) {
         flexDirection: 'column',
         justifyContent: 'center',
         padding: '80px',
-        backgroundColor: '#0f0f23',
-        backgroundImage: 'linear-gradient(135deg, #0f0f23 0%, #1e1b4b 55%, #312e81 100%)',
+        backgroundColor: '#000000',
+        backgroundImage: 'linear-gradient(135deg, #000000 0%, #0a0a0a 55%, #141414 100%)',
         color: '#ffffff',
       }}
     >
@@ -55,7 +55,7 @@ export function OgImage({ logoSrc }: OgImageProps) {
           <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.02em' }}>
             {siteConfig.name}
           </span>
-          <span style={{ fontSize: '26px', color: '#a5b4fc', marginTop: '4px' }}>
+          <span style={{ fontSize: '26px', color: '#9a9a9a', marginTop: '4px' }}>
             {siteConfig.tagline}
           </span>
         </div>
@@ -82,8 +82,8 @@ export function OgImage({ logoSrc }: OgImageProps) {
             padding: '16px 28px',
             fontSize: '28px',
             fontWeight: 600,
-            backgroundColor: '#4f46e5',
-            color: '#ffffff',
+            backgroundColor: '#ffffff',
+            color: '#111111',
           }}
         >
           Natural Voices
@@ -94,8 +94,8 @@ export function OgImage({ logoSrc }: OgImageProps) {
             padding: '16px 28px',
             fontSize: '28px',
             fontWeight: 600,
-            border: '2px solid #6366f1',
-            color: '#c7d2fe',
+            border: '2px solid rgba(198,198,198,0.55)',
+            color: '#f3f3f3',
           }}
         >
           SRT · VTT · Word Timestamps

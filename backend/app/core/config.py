@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     # Comma-separated list of allowed browser origins (no wildcards in production).
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://konthora.dev.bd"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://konthora.dev.bd"
     # Set to true ONLY when running behind a trusted reverse proxy (Nginx) so that
     # X-Forwarded-For / X-Forwarded-Proto headers are honored for rate limiting and
     # URL building. Never enable when the API is directly reachable by clients.

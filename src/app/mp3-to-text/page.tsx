@@ -1,7 +1,11 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { constructMetadata } from '@/lib/metadata';
-import { constructSoftwareAppSchema } from '@/lib/schema';
+import {
+  constructSoftwareAppSchema,
+  constructSpeakableSchema,
+} from '@/lib/schema';
+import { SpeakableSummary } from '@/components/tools/SpeakableSummary';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -13,6 +17,14 @@ import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/to
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { FileAudio, Clock, Languages, FileDown, Mic } from 'lucide-react';
+
+
+/**
+ * Concise factual summary quoted verbatim by voice assistants and AI answer
+ * engines via Speakable schema. Keep it consistent with the visible copy.
+ */
+const SPEAKABLE_MP3_TO_TEXT =
+  'Konthora converts MP3 audio into text for free in the browser, with sentence, paragraph, or word-level timestamps, and exports the transcript as TXT, SRT, VTT, or JSON. Files up to 100 megabytes and 10 minutes long are supported.';
 
 export const metadata: Metadata = constructMetadata({
   title: 'MP3 to Text Converter Online Free | Konthora Transcriber',
@@ -28,6 +40,11 @@ export default function Mp3ToTextPage() {
     name: 'Konthora MP3 to Text Converter',
     url: pageUrl,
   });
+
+  const speakableSchema = constructSpeakableSchema(
+    `${siteConfig.url}/mp3-to-text`,
+    SPEAKABLE_MP3_TO_TEXT,
+  );
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -140,6 +157,10 @@ export default function Mp3ToTextPage() {
   return (
     <>
       <JsonLd schema={webAppSchema} />
+      <JsonLd schema={speakableSchema} />
+      <SpeakableSummary id="speakable-summary">
+        {SPEAKABLE_MP3_TO_TEXT}
+      </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
 

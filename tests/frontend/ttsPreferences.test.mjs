@@ -11,7 +11,6 @@ import {
   getDefaultTtsPreferences,
   parseTtsPreferences,
 } from '../../src/lib/ttsPreferences.ts';
-import { getVoicePreviewSource } from '../../src/lib/voicePreview.ts';
 import { createTtsJob } from '../../src/lib/api.ts';
 
 test('speed presets and reset defaults match the production control values', () => {
@@ -23,14 +22,6 @@ test('speed presets and reset defaults match the production control values', () 
   assert.equal(reset.paragraphPauseMs, 500);
   assert.equal((reset.sentencePauseMs - TTS_SENTENCE_PAUSE_CONTROL.min) % TTS_SENTENCE_PAUSE_CONTROL.step, 0);
   assert.equal((reset.paragraphPauseMs - TTS_PARAGRAPH_PAUSE_CONTROL.min) % TTS_PARAGRAPH_PAUSE_CONTROL.step, 0);
-});
-
-test('voice preview source depends on the selected voice, not editor or export state', () => {
-  assert.equal(getVoicePreviewSource('af_heart'), '/audio/voice-previews/af_heart.mp3');
-  assert.equal(
-    getVoicePreviewSource('bf_emma', 'https://cdn.example.test/emma.mp3'),
-    'https://cdn.example.test/emma.mp3',
-  );
 });
 
 test('TTS preferences accept only the current bounded version', () => {

@@ -69,6 +69,57 @@ function getLanguageLabel(language: string): string {
   }
 }
 
+/**
+ * Hard ceiling on generated `<title>` and `description` lengths.
+ *
+ * Google truncates SERP titles around 580px and descriptions around 920px.
+ * The previous generator pasted a whole use-case sentence into the title,
+ * producing 116–130 character titles across all 41 voice pages, so the
+ * differentiating terms were never actually shown.
+ */
+const TITLE_MAX = 65;
+const TITLE_SUFFIX = ' | Konthora';
+const DESCRIPTION_MAX = 155;
+
+/**
+ * Truncates on a word boundary without leaving a dangling article, conjunction,
+ * or trailing punctuation.
+ */
+function clamp(text: string, max: number): string {
+  const trimmed = text.trim().replace(/[\s,;:.\-–—]+$/, '');
+  if (trimmed.length <= max) return trimmed;
+
+  const hardCut = trimmed.slice(0, max);
+  const lastSpace = hardCut.lastIndexOf(' ');
+  const cut = lastSpace > max * 0.6 ? hardCut.slice(0, lastSpace) : hardCut;
+
+  return cut
+    .replace(/[\s,;:.\-–—]+$/, '')
+    .replace(/\b(a|an|the|and|or|for|with|to|of|in|on)$/i, '')
+    .trim();
+}
+
+/**
+ * Reduces a full use-case sentence to a compact phrase for the title,
+ * e.g. "Hindi narration for YouTube videos and social content ..." becomes
+ * "Hindi narration". Trailing connectives are stripped so the phrase never
+ * reads as "narration for" or "voiceovers and".
+ */
+function shortUseCase(useCase: string): string {
+  const firstClause = useCase.split(',')[0].replace(/\.$/, '').trim();
+  let phrase = firstClause.split(/\s+/).slice(0, 3).join(' ');
+
+  // Drop dangling connectives.
+  const TRAILING = /\s+(for|and|or|with|to|of|in|on|that|which)$/i;
+  let previous;
+  do {
+    previous = phrase;
+    phrase = phrase.replace(TRAILING, '').trim();
+  } while (phrase !== previous);
+
+  return phrase;
+}
+
 export function buildVoice(
   config: ApiVoice,
   content: {
@@ -83,11 +134,35 @@ export function buildVoice(
   const languageLabel = getLanguageLabel(config.language);
   const genderWord = config.gender === 'female' ? 'Female' : 'Male';
   const heading = content.heading || `${name} ${genderWord} ${languageLabel} AI Voice`;
-  const rawUseCase = content.useCases[0] || 'video voiceovers and narration';
-  const useCaseShort = rawUseCase.split(',')[0].replace(/\.$/, '').trim();
-  const title = `${name} (${genderWord}, ${config.accent}) AI Voice for ${useCaseShort} | Konthora`;
+
+  // Identity (name + gender + accent) is the high-intent part and always wins.
+  // The use case fills the remaining budget only when it adds new information —
+  // repeating the language already in the accent ("Hindi ... Hindi narration")
+  // wastes the characters that matter.
+  const identity = `${name} (${genderWord}, ${config.accent}) AI Voice`;
+  let useCase = shortUseCase(content.useCases[0] ?? 'video narration');
+
+  /**
+   * Skip the use case only when it merely restates the accent already in the
+   * title, e.g. "Hindi ... AI Voice for Hindi narration". Compared against the
+   * accent rather than the language label, because every en-US voice's language
+   * label is "English" and checking that would strip the use case everywhere.
+   */
+  if (useCase.toLowerCase().includes(config.accent.toLowerCase())) {
+    useCase = '';
+  }
+
+  const candidate = useCase ? `${identity} for ${useCase}` : identity;
+  const title =
+    candidate.length + TITLE_SUFFIX.length <= TITLE_MAX
+      ? `${candidate}${TITLE_SUFFIX}`
+      : `${identity}${TITLE_SUFFIX}`;
+
   const accentArticle = /^[aeiou]/i.test(config.accent) ? 'an' : 'a';
-  const description = `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with ${accentArticle} ${config.accent} accent, ideal for ${rawUseCase.toLowerCase().replace(/\.$/, '')}. Preview audio and generate speech in Konthora.`;
+  const description = clamp(
+    `${name} is a ${genderWord.toLowerCase()} ${languageLabel} AI voice with ${accentArticle} ${config.accent} accent, for video voiceovers, e-learning, and narration. Generate speech in Konthora.`,
+    DESCRIPTION_MAX,
+  );
 
   return {
     ...config,

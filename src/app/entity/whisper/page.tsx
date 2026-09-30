@@ -22,7 +22,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'Whisper ASR: Open-Source Speech Recognition Model | Konthora',
   description:
-    'Whisper is an open-source automatic speech recognition (ASR) system developed by OpenAI. Learn how this transformer-based model handles audio transcription.',
+    'Whisper is an open-source automatic speech recognition system from OpenAI. See how this transformer-based model handles audio transcription.',
   path: '/entity/whisper',
 });
 

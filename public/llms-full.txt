@@ -1,0 +1,125 @@
+# Konthora — extended reference
+
+> Expanded companion to [llms.txt](/llms.txt). Contains the complete voice
+> catalogue, format details, limits, and per-language breakdowns.
+> Konthora is a free browser-based AI audio studio: text-to-speech with 41
+> neural voices across 6 languages, plus audio/video transcription with
+> sentence, paragraph, or word-level timestamps.
+
+## Core facts
+
+| Item | Value |
+| --- | --- |
+| Pricing | Free, no account required |
+| Text limit | 2,000 characters per synthesis job |
+| Upload limit | 100 MB and 10 minutes per transcription job |
+| Speech output | MP3, WAV |
+| Transcript output | TXT, SRT, VTT, JSON |
+| Speech speed range | 0.75x to 1.25x, default 1.0x |
+| Sentence pause | Configurable, default 220 ms |
+| Paragraph pause | Configurable, default 500 ms |
+| Transcription language | English |
+| Transcription timestamp modes | sentence, paragraph, word |
+| Accepted upload formats | MP3, WAV, M4A, AAC, MP4, WebM, MOV |
+| Voices | 41 total across 6 languages |
+| Retention | Scripts wiped after synthesis; uploads and transcripts deleted after 60 minutes |
+
+## Voice catalogue (41)
+
+Voice IDs are stable and usable directly in the workspace. Recommended voices
+are the default pick for their language.
+
+### English (28)
+
+American English (14): af_heart (Heart, female, recommended), af_alloy (Alloy,
+female), af_aoede (Aoede, female), af_nicole (Nicole, female), af_nova (Nova,
+female), af_river (River, female), af_sarah (Sarah, female), af_sky (Sky,
+female), am_adam (Adam, male, recommended), am_echo (Echo, male), am_eric (Eric,
+male), am_fenrir (Fenrir, male), am_liam (Liam, male), am_onyx (Onyx, male),
+am_puck (Puck, male), am_santa (Santa, male).
+
+British English (5): bf_emma (Emma, female, recommended), bf_alice (Alice,
+female), bf_isabella (Isabella, female), bf_lily (Lily, female), bm_lewis
+(Lewis, male, recommended).
+
+### Spanish (3)
+
+ef_dora (Dora, female), em_alex (Alex, male), em_santa (Santa, male).
+
+### Portuguese, Brazilian (3)
+
+pf_dora (Dora, female), pm_alex (Alex, male), pm_santa (Santa, male).
+
+### Hindi (4)
+
+hf_alpha (Alpha, female), hf_beta (Beta, female), hm_omega (Omega, male),
+hm_psi (Psi, male).
+
+### French (1)
+
+ff_siwis (Siwis, female) — the only native French voice.
+
+### Italian (2)
+
+if_sara (Sara, female), im_nicola (Nicola, male).
+
+Per-voice detail pages live at `https://konthora.dev.bd/voices/{voice-id}` where
+`{voice-id}` is the ID with the underscore replaced by a hyphen, for example
+`af_heart` -> https://konthora.dev.bd/voices/af-heart.
+
+## Tools
+
+### Text to Speech — https://konthora.dev.bd/text-to-speech
+
+1. Select a language, then a voice.
+2. Paste up to 2,000 characters of script.
+3. Optionally adjust speed (0.75x-1.25x), sentence/paragraph pauses, and text
+   normalization.
+4. Generate, then download as MP3 or WAV.
+
+Language-specific entry points: `/text-to-speech/spanish`, `/hindi`,
+`/french`, `/italian`, `/portuguese`.
+
+### Audio to Text — https://konthora.dev.bd/audio-to-text
+
+1. Upload audio or video (100 MB / 10 minutes max).
+2. Choose sentence, paragraph, or word-level timestamps.
+3. Transcribe, review and edit inline with undo.
+4. Export as TXT, SRT, VTT, or JSON, individually or bundled as a ZIP.
+
+Format-specific entry points: `/mp3-to-text`, `/video-to-text`.
+
+### Text to MP3 — https://konthora.dev.bd/text-to-mp3
+
+Compact MP3 export for narration and sharing.
+
+## Models
+
+- Kokoro — the open-weight TTS model behind speech generation:
+  https://konthora.dev.bd/entity/kokoro
+- Whisper (faster-whisper `small.en`, CPU int8) — the transcription model:
+  https://konthora.dev.bd/entity/whisper
+
+## Reference guides
+
+- How text to speech works: https://konthora.dev.bd/text-to-speech/how-does-text-to-speech-work
+- How to transcribe audio: https://konthora.dev.bd/speech-to-text/how-to-transcribe-audio
+- Transcription accuracy: https://konthora.dev.bd/speech-to-text/audio-transcription-accuracy
+- Timestamp modes: https://konthora.dev.bd/speech-to-text/timestamps
+- Subtitle formats: https://konthora.dev.bd/captions/subtitle-formats
+- MP3 vs WAV: https://konthora.dev.bd/formats/mp3-vs-wav
+- TTS vs screen readers: https://konthora.dev.bd/accessibility/tts-vs-screen-reader
+
+## Voice directory
+
+- All voices: https://konthora.dev.bd/voices
+- American English: https://konthora.dev.bd/voices/american-english-voices
+- British English: https://konthora.dev.bd/voices/british-english-voices
+
+## Company
+
+- About: https://konthora.dev.bd/about
+- Contact: https://konthora.dev.bd/contact
+- Privacy Policy: https://konthora.dev.bd/privacy-policy
+- Terms of Service: https://konthora.dev.bd/terms
+- Copyright and removal: https://konthora.dev.bd/copyright

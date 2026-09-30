@@ -1,0 +1,57 @@
+# Konthora
+
+> Konthora is a browser-based AI audio studio. It converts text into natural
+> speech with 41 neural voices across 6 languages, and converts audio and video
+> into transcripts with sentence, paragraph, or word-level timestamps.
+> Everything runs through a FastAPI backend that models are served from locally.
+
+## Tools
+
+- [Text to Speech](https://konthora.dev.bd/text-to-speech): Convert up to 2,000 characters of text to MP3 or WAV. Adjustable speed (0.75x–1.25x), configurable sentence and paragraph pauses, optional text normalization. 41 voices, 6 languages (English, Hindi, Spanish, French, Italian, Portuguese).
+- [Audio to Text](https://konthora.dev.bd/audio-to-text): Upload audio or video up to 100 MB / 10 minutes. Choose sentence, paragraph, or word-level timestamps. Export as TXT, SRT, VTT, or JSON.
+- [MP3 to Text](https://konthora.dev.bd/mp3-to-text): MP3-specific transcription entry point.
+- [Video to Text](https://konthora.dev.bd/video-to-text): Transcribe MP4, WebM, and MOV files.
+- [Text to MP3](https://konthora.dev.bd/text-to-mp3): MP3 export entry point for narration.
+
+## Voice catalogue
+
+- [All AI Voices](https://konthora.dev.bd/voices): Full directory of every voice with accent, gender, language, and supported speed range.
+- [American English Voices](https://konthora.dev.bd/voices/american-english-voices)
+- [British English Voices](https://konthora.dev.bd/voices/british-english-voices)
+
+Each individual voice has a page at `/voices/{slug}` with specifications and supported speeds.
+
+## Reference and guides
+
+- [How text to speech works](https://konthora.dev.bd/text-to-speech/how-does-text-to-speech-work)
+- [How to transcribe audio](https://konthora.dev.bd/speech-to-text/how-to-transcribe-audio)
+- [Audio transcription accuracy](https://konthora.dev.bd/speech-to-text/audio-transcription-accuracy)
+- [Timestamps](https://konthora.dev.bd/speech-to-text/timestamps)
+- [Subtitle formats](https://konthora.dev.bd/captions/subtitle-formats)
+- [MP3 vs WAV](https://konthora.dev.bd/formats/mp3-vs-wav)
+- [Kokoro (TTS model)](https://konthora.dev.bd/entity/kokoro)
+- [Whisper (transcription model)](https://konthora.dev.bd/entity/whisper)
+
+## Facts
+
+- Pricing: free, no account required.
+- Text limit: 2,000 characters per synthesis job.
+- Upload limit: 100 MB and 10 minutes per transcription job.
+- Accepted upload formats: MP3, WAV, M4A, AAC, MP4, WebM, MOV.
+- Output formats: MP3, WAV (speech); TXT, SRT, VTT, JSON (transcripts).
+- Transcription language support: English.
+- Privacy: scripts are processed in memory and wiped after synthesis. Uploaded
+  media and transcripts are deleted automatically after 60 minutes.
+
+## Company
+
+- [About](https://konthora.dev.bd/about)
+- [Contact](https://konthora.dev.bd/contact)
+- [Privacy Policy](https://konthora.dev.bd/privacy-policy)
+- [Terms of Service](https://konthora.dev.bd/terms)
+- [Copyright & Removal](https://konthora.dev.bd/copyright)
+
+## Optional
+
+- [llms-full.txt](/llms-full.txt): Expanded reference with the full voice table,
+  format details, and per-language breakdowns.
