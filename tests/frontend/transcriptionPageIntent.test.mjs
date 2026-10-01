@@ -4,114 +4,114 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { getToolPage } from '../../src/config/toolPages.ts';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..', '..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
-const audioToText = read('src/app/audio-to-text/page.tsx');
-const speechToText = read('src/app/speech-to-text/page.tsx');
-const howToAudio = read('src/app/speech-to-text/how-to-transcribe-audio/page.tsx');
+const RENDERER = 'src/components/tools/ToolPage.tsx';
 
-test('the two transcription pages target different search intents', () => {
-  // /speech-to-text was listed as "Crawled - currently not indexed" while
-  // /audio-to-text carried the same 1,118 tokens. A near-duplicate pair competes
-  // with itself, so each page must lead with its own intent.
+/**
+ * /audio-to-text, /video-to-text and /mp3-to-text are now thin wrappers around a
+ * shared renderer, so assertions about intent have to follow the delegation
+ * rather than grep a page that no longer contains the copy.
+ */
+const video = getToolPage('video-to-text');
+const mp3 = getToolPage('mp3-to-text');
+const audio = getToolPage('audio-to-text');
+const renderer = read(RENDERER);
+
+test('each transcription tool page targets a distinct search intent', () => {
+  // These three were 90% duplicates of each other, which left /video-to-text at
+  // position 86 on 478 impressions because three pages competed for one intent.
   assert.match(
-    audioToText,
-    /title: 'Audio to Text Converter/u,
-    '/audio-to-text must lead with the converter intent',
+    audio.heading,
+    /^Audio to Text/u,
+    '/audio-to-text should lead with the general converter intent'
   );
   assert.match(
-    speechToText,
-    /title: 'What Is Speech to Text\?/u,
-    '/speech-to-text must lead with the explanatory intent',
+    video.heading,
+    /^Video to Text/u,
+    '/video-to-text should lead with the video intent'
+  );
+  assert.match(
+    mp3.heading,
+    /^MP3 to Text/u,
+    '/mp3-to-text should lead with the mp3 intent'
   );
 });
 
-test('only the tool page embeds the transcription workspace', () => {
-  assert.match(
-    audioToText,
-    /<TranscriptionWorkspace \/>/u,
-    'the converter page must offer the tool itself',
-  );
+test('every tool page embeds the transcription workspace via the renderer', () => {
+  assert.match(renderer, /<TranscriptionWorkspace \/>/u, 'the renderer must embed the tool');
+  for (const slug of ['audio-to-text', 'video-to-text', 'mp3-to-text']) {
+    assert.match(
+      read(`src/app/${slug}/page.tsx`),
+      /ToolPage/u,
+      `${slug} must delegate to the renderer that embeds the workspace`
+    );
+  }
+});
+
+test('the tool pages declare the right schema through the renderer', () => {
+  // SoftwareApplication belongs on all three product pages. The explainer page
+  // (/speech-to-text) is the one carrying TechArticle instead.
+  assert.match(renderer, /constructSoftwareAppSchema/u, 'the renderer must declare SoftwareApplication');
+  assert.match(renderer, /constructSpeakableSchema/u, 'the renderer must declare Speakable schema');
+
+  const explainer = read('src/app/speech-to-text/page.tsx');
+  assert.match(explainer, /'@type': 'TechArticle'/u, 'the explainer must stay a TechArticle');
   assert.doesNotMatch(
-    speechToText,
+    explainer,
     /<TranscriptionWorkspace \/>/u,
-    'the explainer must not embed the tool; that is the tool page\'s job',
+    'the explainer must not embed the tool; that is the tool pages\' job'
   );
 });
 
-test('schema types match each page role', () => {
-  // SoftwareApplication belongs to the product page, TechArticle to the
-  // explainer. Both pages previously claimed Article-style product schema.
-  assert.match(
-    audioToText,
-    /constructSoftwareAppSchema/u,
-    'the tool page must declare SoftwareApplication schema',
-  );
-  assert.match(
-    speechToText,
-    /'@type': 'TechArticle'/u,
-    'the explainer must declare TechArticle schema',
-  );
-});
-
-test('the HowTo for transcribing lives on exactly one page', () => {
-  // Three pages carried the same four-step HowTo. The dedicated how-to page
-  // owns that intent; the other two must not compete for it.
-  assert.doesNotMatch(
-    speechToText,
-    /'@type': 'HowTo'/u,
-    'the explainer must not declare HowTo; the how-to page owns it',
-  );
-  assert.match(
-    howToAudio,
-    /'@type': 'HowTo'/u,
-    'the dedicated how-to page must keep the HowTo schema',
-  );
-});
-
-test('the explainer hands the transaction to the tool page', () => {
-  // Explicit intent routing. A reader who wants to transcribe a file should not
-  // have to infer that a different page runs the tool.
-  assert.match(
-    speechToText,
-    /audio-to-text converter/u,
-    'the explainer must name the tool page in its opening',
-  );
-  assert.match(
-    speechToText,
-    /href="\/audio-to-text"/u,
-    'the explainer must link to the tool page',
-  );
+test('the explainer still hands the transaction to the tool', () => {
+  const explainer = read('src/app/speech-to-text/page.tsx');
+  assert.match(explainer, /audio-to-text converter/u, 'the explainer must name the tool page');
+  assert.match(explainer, /href="\/audio-to-text"/u, 'the explainer must link to the tool page');
 });
 
 test('the explainer answers concept questions rather than product steps', () => {
-  // The old FAQ was six product FAQs identical in intent to the tool page. An
-  // explainer should answer what the technology is and why results vary.
+  const explainer = read('src/app/speech-to-text/page.tsx');
   assert.match(
-    speechToText,
+    explainer,
     /What does automatic speech recognition actually do\?/u,
-    'the explainer must answer how ASR works',
+    'the explainer must answer how ASR works'
   );
   assert.match(
-    speechToText,
+    explainer,
     /Why do some recordings transcribe badly/u,
-    'the explainer must cover what drives accuracy',
+    'the explainer must cover what drives accuracy'
   );
   assert.doesNotMatch(
-    speechToText,
+    explainer,
     /What is the maximum upload file size\?/u,
-    'file limits belong on the tool page, not the explainer',
+    'file limits belong on the tool pages now'
   );
-  assert.doesNotMatch(
-    speechToText,
-    /Which file formats are supported for transcription\?/u,
-    'format lists belong on the tool page',
+  assert.doesNotMatch(explainer, /Which file formats are supported for transcription\?/u);
+});
+
+test('the explainer does not compete for the HowTo intent', () => {
+  // The same four steps appeared on three pages. The dedicated how-to page owns it.
+  const explainer = read('src/app/speech-to-text/page.tsx');
+  assert.doesNotMatch(explainer, /'@type': 'HowTo'/u);
+  assert.match(
+    read('src/app/speech-to-text/how-to-transcribe-audio/page.tsx'),
+    /'@type': 'HowTo'/u,
+    'the dedicated how-to page must keep the HowTo schema'
   );
 });
 
-test('both pages keep a self-referencing canonical path', () => {
-  assert.match(audioToText, /path: '\/audio-to-text'/u);
-  assert.match(speechToText, /path: '\/speech-to-text'/u);
+test('all tool pages keep a self-referencing canonical path', () => {
+  for (const slug of ['audio-to-text', 'video-to-text', 'mp3-to-text']) {
+    assert.match(
+      read(`src/app/${slug}/page.tsx`),
+      new RegExp(`path: '/${slug}'`, 'u'),
+      `${slug} must declare its literal canonical path`
+    );
+  }
+  assert.match(read('src/app/speech-to-text/page.tsx'), /path: '\/speech-to-text'/u);
 });

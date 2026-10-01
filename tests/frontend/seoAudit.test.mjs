@@ -93,6 +93,9 @@ const SCHEMA_DELEGATING_ROUTES = {
   '/text-to-speech-for-elearning': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
   '/text-to-speech-for-social-media': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
   '/text-to-speech-for-audiobooks': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/audio-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
+  '/video-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
+  '/mp3-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
 };
 
 function readWithDelegatedSchema(page) {
@@ -150,7 +153,15 @@ test('Schema-delegating wrappers still render the shared guide schema', () => {
 
   for (const rendererPath of renderers) {
     const renderer = fs.readFileSync(path.join(rootDir, rendererPath), 'utf8');
-    for (const type of ['BreadcrumbList', 'HowTo', 'FAQPage']) {
+    // BreadcrumbList and FAQPage are required everywhere. HowTo is only emitted
+    // by the guide renderers; the tool pages use a shared StepsSection and do
+    // not declare HowTo, which is correct because the dedicated how-to page and
+    // the use-case guides own that intent.
+    const required = ['BreadcrumbList', 'FAQPage'];
+    if (rendererPath.includes('guides/')) {
+      required.push('HowTo');
+    }
+    for (const type of required) {
       assert.ok(
         renderer.includes(type),
         `${rendererPath} must emit ${type} schema for the pages that delegate to it`
