@@ -20,9 +20,17 @@ import {
 } from '../../scripts/pingSitemaps.mjs';
 
 test('loadServiceAccountCredentials returns null when input is empty or unset', () => {
-  assert.equal(loadServiceAccountCredentials(''), null);
-  assert.equal(loadServiceAccountCredentials('   '), null);
-  assert.equal(loadServiceAccountCredentials(undefined), null);
+  // The no-argument form falls back to GSC_SERVICE_ACCOUNT_JSON, so an ambient
+  // value in the environment (CI defines one) made this assert fail.
+  const previous = process.env.GSC_SERVICE_ACCOUNT_JSON;
+  delete process.env.GSC_SERVICE_ACCOUNT_JSON;
+  try {
+    assert.equal(loadServiceAccountCredentials(''), null);
+    assert.equal(loadServiceAccountCredentials('   '), null);
+    assert.equal(loadServiceAccountCredentials(undefined), null);
+  } finally {
+    if (previous !== undefined) process.env.GSC_SERVICE_ACCOUNT_JSON = previous;
+  }
 });
 
 test('loadServiceAccountCredentials parses valid JSON credentials string', () => {
@@ -257,13 +265,42 @@ test('the local build artifact exposes a non-empty URL list', () => {
   assert.ok(result.urlCount > 0);
 });
 
+test('postbuild never submits to the Indexing API without credentials', async () => {
+  // A test process that happens to have the credential set must not be able to
+  // fire a real Google request from the build pipeline.
+  const previous = process.env.GSC_SERVICE_ACCOUNT_JSON;
+  delete process.env.GSC_SERVICE_ACCOUNT_JSON;
+  try {
+    const result = await submitToGoogleIndexing(async () => {
+      throw new Error('no network call should be attempted without credentials');
+    });
+    assert.equal(result.skipped, true);
+    assert.equal(result.submitted, 0);
+  } finally {
+    if (previous !== undefined) process.env.GSC_SERVICE_ACCOUNT_JSON = previous;
+  }
+});
+
+// runPostBuildChecks reaches the Google Indexing API whenever credentials are
+// present, so these two tests must not inherit an ambient credential. CI can
+// define one, which sent a real OAuth token exchange out to Google.
+async function withoutGscCredentials(fn) {
+  const previous = process.env.GSC_SERVICE_ACCOUNT_JSON;
+  delete process.env.GSC_SERVICE_ACCOUNT_JSON;
+  try {
+    return await fn();
+  } finally {
+    if (previous !== undefined) process.env.GSC_SERVICE_ACCOUNT_JSON = previous;
+  }
+}
+
 test('runPostBuildChecks gates on the live sitemap, not on deprecated pings', async () => {
   const calls = [];
-  const result = await runPostBuildChecks(async (url) => {
+  const result = await withoutGscCredentials(() => runPostBuildChecks(async (url) => {
     calls.push(url);
     if (url === SITEMAP_URL) return xmlResponse();
     return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
-  });
+  }));
 
   assert.equal(result.ok, true);
   assert.equal(result.live.success, true);
@@ -279,10 +316,10 @@ test('runPostBuildChecks gates on the live sitemap, not on deprecated pings', as
 });
 
 test('runPostBuildChecks reports failure when the live sitemap is broken', async () => {
-  const result = await runPostBuildChecks(async (url) => {
+  const result = await withoutGscCredentials(() => runPostBuildChecks(async (url) => {
     if (url === SITEMAP_URL) return xmlResponse('Not found', 404);
     return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
-  });
+  }));
   assert.equal(result.ok, false);
   assert.equal(result.live.success, false);
   assert.equal(result.live.status, 404);
