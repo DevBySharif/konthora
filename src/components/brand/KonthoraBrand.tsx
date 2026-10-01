@@ -24,12 +24,18 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
       <span
         className={`relative inline-flex shrink-0 transition-transform duration-200 group-hover:scale-105 ${containerClass}`}
       >
+        {/* The wordmark beside this is the accessible name ("Konthora" via the
+            link label), so the mark itself stays decorative with alt="".
+            loading="eager" and priority: the logo is in the header on every
+            page and lazy-loading it delayed first paint. */}
         <Image
           src="/brand/konthora-logo-light.svg"
           alt=""
           fill
           sizes={imageSize}
           unoptimized
+          priority={isHeader}
+          loading={isHeader ? 'eager' : 'lazy'}
           className="konthora-logo konthora-logo--light object-contain"
         />
         <Image
