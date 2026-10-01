@@ -96,6 +96,12 @@ const SCHEMA_DELEGATING_ROUTES = {
   '/audio-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
   '/video-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
   '/mp3-to-text': ['ToolPage', 'src/components/tools/ToolPage.tsx'],
+  '/ai-voice-sounds-robotic': ['AnswerPage', 'src/components/guides/AnswerPage.tsx'],
+  '/text-to-speech-timestamps-explained': ['AnswerPage', 'src/components/guides/AnswerPage.tsx'],
+  '/speech-to-text/transcription-accuracy-checklist': [
+    'AnswerPage',
+    'src/components/guides/AnswerPage.tsx',
+  ],
 };
 
 function readWithDelegatedSchema(page) {
@@ -357,7 +363,9 @@ test('Landing pages and voice profiles have high-intent titles and synchronized 
   // because Next HTML-escapes it and the assertion would need both forms.
   const sttHtml = fs.readFileSync(path.join(htmlDir, 'audio-to-text.html'), 'utf8');
   assert.ok(
-    sttHtml.includes('<title>Audio to Text Converter: Free MP3 to Text | Konthora</title>'),
+    sttHtml.includes(
+      '<title>Audio to Text Converter with Timestamps | Konthora</title>'
+    ),
     '/audio-to-text must have targeted title'
   );
   // The two transcription pages must not share a title or og:title.

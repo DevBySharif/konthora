@@ -39,6 +39,14 @@ const RECENTLY_UPDATED: Record<string, string> = {
   '/text-to-speech-for-elearning': '2026-10-01',
   '/text-to-speech-for-social-media': '2026-10-01',
   '/text-to-speech-for-audiobooks': '2026-10-01',
+
+  // Differentiated transcription tool pages, and the three answer-shaped
+  // reference pages added to target question queries.
+  '/video-to-text': '2026-10-01',
+  '/mp3-to-text': '2026-10-01',
+  '/speech-to-text/transcription-accuracy-checklist': '2026-10-01',
+  '/text-to-speech-timestamps-explained': '2026-10-01',
+  '/ai-voice-sounds-robotic': '2026-10-01',
 };
 
 /** Legal and policy pages change rarely, so they carry an older stamp. */
