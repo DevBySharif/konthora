@@ -22,7 +22,8 @@ from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.media_service import MediaService
 from app.services.transcript_formatter import TranscriptFormatter
 from app.utils.file_validation import validate_uploaded_file, SUPPORTED_EXTENSIONS
-from app.utils.storage import resolve_secure_path
+from app.core.exceptions import InsufficientDiskSpaceException
+from app.utils.storage import resolve_secure_path, ensure_sufficient_disk_space
 from app.schemas.transcription import (
     TranscriptionCapabilitiesResponse,
     TranscriptionJobCreateResponse,
@@ -111,6 +112,11 @@ async def create_transcription_job(
         raise InvalidRequestException("TIMESTAMP_MODE_INVALID", f"Timestamp mode '{timestampMode}' is invalid.")
     if exportFormat not in ["txt", "srt", "vtt", "json"]:
         raise InvalidRequestException("EXPORT_FORMAT_INVALID", f"Export format '{exportFormat}' is invalid.")
+
+    # 0. Refuse early when the disk is nearly full. The upload itself, the
+    # extracted WAV and the result all land on the same filesystem, so
+    # starting a job with too little space fails partway through with ENOSPC.
+    ensure_sufficient_disk_space(settings.TRANSCRIPTION_MAX_FILE_SIZE_MB * 1024 * 1024 * 2)
 
     rate_limiter = RateLimitService()
     job_service = TranscriptionJobService()

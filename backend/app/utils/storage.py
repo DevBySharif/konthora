@@ -1,15 +1,57 @@
 import os
+import shutil
 from pathlib import Path
 from loguru import logger
 from app.core.config import settings
-from app.core.exceptions import InvalidRequestException
+from app.core.exceptions import (
+    InsufficientDiskSpaceException,
+    InvalidRequestException,
+)
 
 def get_resolved_storage_root() -> Path:
     return Path(settings.TTS_STORAGE_ROOT).resolve()
 
+def get_free_space_bytes(path: Path) -> int:
+    """Free bytes on the filesystem holding ``path``, or -1 when unknown."""
+    probe = path
+    while not probe.exists() and probe.parent != probe:
+        probe = probe.parent
+    try:
+        return shutil.disk_usage(probe).free
+    except (OSError, ValueError):
+        return -1
+
 def ensure_storage_exists():
     root = get_resolved_storage_root()
     root.mkdir(parents=True, exist_ok=True)
+
+def ensure_sufficient_disk_space(required_bytes: int) -> None:
+    """
+    Refuse new uploads before they start when free space is already low.
+
+    The Hugging Face free Space has 50GB of non-persistent disk holding the
+    model cache, the storage root and every in-flight upload. Without this
+    guard an upload can fill the disk mid-write, and the resulting ENOSPC
+    surfaces as an opaque 500 partway through a job the user already paid for
+    in time. Failing fast with a retryable 503 is far cheaper.
+    """
+    ensure_storage_exists()
+    root = get_resolved_storage_root()
+
+    free = get_free_space_bytes(root)
+    if free < 0:
+        # Could not measure. Do not block real uploads on an unknown value.
+        return
+
+    # Never admit work that cannot fit even on its own, and keep a reserve so
+    # cleanup and result writing still have room to run.
+    threshold = max(required_bytes, settings.TRANSCRIPTION_MIN_FREE_DISK_MB * 1024 * 1024)
+    if free < threshold:
+        logger.error(
+            f"Rejecting request: {free // (1024 * 1024)}MB free, "
+            f"{threshold // (1024 * 1024)}MB required"
+        )
+        raise InsufficientDiskSpaceException()
 
 def resolve_secure_path(filename: str) -> Path:
     """

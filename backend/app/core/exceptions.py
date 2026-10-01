@@ -55,6 +55,11 @@ class AudioStreamMissingException(TtsException):
     def __init__(self, message: str = "No audio track detected in the uploaded file."):
         super().__init__(code="AUDIO_STREAM_MISSING", message=message, status_code=400)
 
+class InsufficientDiskSpaceException(TtsException):
+    """Raised before accepting an upload that would fill the storage filesystem."""
+    def __init__(self, message: str = "The service is temporarily out of storage. Please try again later."):
+        super().__init__(code="STORAGE_UNAVAILABLE", message=message, status_code=503)
+
 class MediaTooLongException(TtsException):
     def __init__(self, message: str = "Media file duration exceeds the maximum permitted limit."):
         super().__init__(code="MEDIA_TOO_LONG", message=message, status_code=400)

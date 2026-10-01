@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     TRANSCRIPTION_DEVICE: str = "cpu"
     TRANSCRIPTION_COMPUTE_TYPE: str = "int8"
     TRANSCRIPTION_MAX_FILE_SIZE_MB: int = 100
+    # Free space that must remain available before a new upload is accepted.
+    # The HF free Space has 50GB of non-persistent disk shared by the model
+    # cache (~1.4GB), stored results and in-flight uploads. 500MB leaves room
+    # for the extracted WAV, which is roughly 10x the compressed audio size.
+    TRANSCRIPTION_MIN_FREE_DISK_MB: int = 500
     TRANSCRIPTION_MAX_DURATION_SECONDS: int = 600
     TRANSCRIPTION_MAX_QUEUE_SIZE: int = 5
     TRANSCRIPTION_WORKER_COUNT: int = 1
