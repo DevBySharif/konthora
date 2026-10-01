@@ -322,13 +322,33 @@ export default function WhisperEntityPage() {
                 </p>
               </div>
 
-              <Link
-                href="/audio-to-text"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <AudioLines className="h-4 w-4" aria-hidden="true" />
-                Try the Audio-to-Text Tool
-              </Link>
+              {/* Both product paths. Whisper powers transcription, but an
+                  entity page that converts only one product is leaving half
+                  the topical authority on the table: a reader researching
+                  speech recognition is also a likely text-to-speech buyer. */}
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/audio-to-text"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <AudioLines className="h-4 w-4" aria-hidden="true" />
+                  Try the Audio-to-Text Tool
+                </Link>
+                <Link
+                  href="/speech-to-text"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-secondary/40 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  How speech-to-text works
+                </Link>
+                <Link
+                  href="/transcribe-video"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-secondary/40 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <FileText className="h-4 w-4" aria-hidden="true" />
+                  Whisper subtitles for video
+                </Link>
+              </div>
             </section>
 
             <hr className="border-border/40" />

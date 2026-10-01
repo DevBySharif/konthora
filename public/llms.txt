@@ -32,6 +32,58 @@ Each individual voice has a page at `/voices/{slug}` with specifications and sup
 - [Kokoro (TTS model)](https://konthora.dev.bd/entity/kokoro)
 - [Whisper (transcription model)](https://konthora.dev.bd/entity/whisper)
 
+## Transcription use cases
+
+Task-specific guides. Each covers the workflow, the export format that suits
+the use case, and how to handle media longer than the 10-minute limit.
+
+- [Transcribe a podcast](https://konthora.dev.bd/transcribe-podcast): Episode
+  transcripts for show notes, accessibility and content repurposing. Covers
+  splitting long episodes and two-host audio.
+- [Transcribe an interview](https://konthora.dev.bd/transcribe-interview):
+  Pulling verifiable quotes. Covers two speakers on one track, accuracy limits,
+  and recording consent.
+- [Transcribe a meeting](https://konthora.dev.bd/transcribe-meeting): Extracting
+  decisions and action items. Covers multi-speaker calls and writing notes people
+  actually read.
+- [Transcribe a lecture](https://konthora.dev.bd/transcribe-lecture): Accessible
+  notes and captions. Covers splitting a long class recording and correcting
+  technical vocabulary.
+- [Transcribe video into subtitles](https://konthora.dev.bd/transcribe-video):
+  Subtitle timing standards, word-level timestamps for caption sync, and why
+  burned-in captions are not transcribed.
+- [Transcribe a voice memo](https://konthora.dev.bd/transcribe-voice-memo):
+  Getting an iPhone or Android memo off the device and turning a rough recording
+  into usable notes.
+- [Transcribe a webinar](https://konthora.dev.bd/transcribe-webinar): Splitting a
+  presentation from its Q&A, and writing a follow-up registrants will read.
+
+## Text-to-speech use cases
+
+- [Text to speech for podcasts](https://konthora.dev.bd/text-to-speech-for-podcasts):
+  Narration for podcast segments and show intros.
+- [Text to speech for YouTube videos](https://konthora.dev.bd/text-to-speech-for-youtube-videos):
+  Voiceover for explainer and tutorial videos.
+- [Text to speech for presentations](https://konthora.dev.bd/text-to-speech-for-presentations):
+  Narration for slide decks and product walkthroughs.
+- [Text to speech for e-learning](https://konthora.dev.bd/text-to-speech-for-elearning):
+  Narration for course modules and lessons.
+- [Text to speech for social media](https://konthora.dev.bd/text-to-speech-for-social-media):
+  Short-form narration for posts and ads.
+- [Text to speech for audiobooks](https://konthora.dev.bd/text-to-speech-for-audiobooks):
+  Long-form narration, and the 2,000-character per-job limit when reading a
+  chapter in parts.
+
+## Language pages
+
+Each language page lists the voices available in that language.
+
+- [Hindi voices](https://konthora.dev.bd/text-to-speech/hindi)
+- [Spanish voices](https://konthora.dev.bd/text-to-speech/spanish)
+- [French voices](https://konthora.dev.bd/text-to-speech/french)
+- [Italian voices](https://konthora.dev.bd/text-to-speech/italian)
+- [Portuguese voices](https://konthora.dev.bd/text-to-speech/portuguese)
+
 ## Facts
 
 - Pricing: free, no account required.

@@ -329,13 +329,33 @@ export default function KokoroEntityPage() {
                 </p>
               </div>
 
-              <Link
-                href="/text-to-speech"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Volume2 className="h-4 w-4" aria-hidden="true" />
-                Try the Text-to-Speech Tool
-              </Link>
+              {/* Both product paths. Kokoro powers speech synthesis, but the
+                  page previously converted only text-to-speech, leaving the
+                  transcription tool unlinked from the site's second-strongest
+                  topical entity page. */}
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/text-to-speech"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Volume2 className="h-4 w-4" aria-hidden="true" />
+                  Try the Text-to-Speech Tool
+                </Link>
+                <Link
+                  href="/voices"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-secondary/40 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Volume2 className="h-4 w-4" aria-hidden="true" />
+                  Browse the 41 Kokoro voices
+                </Link>
+                <Link
+                  href="/text-to-speech-for-audiobooks"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-secondary/40 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Volume2 className="h-4 w-4" aria-hidden="true" />
+                  Narration for audiobooks
+                </Link>
+              </div>
             </section>
 
             <hr className="border-border/40" />
