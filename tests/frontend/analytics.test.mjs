@@ -45,8 +45,36 @@ test('the CSP permits exactly the analytics hosts the tags contact', () => {
   // looks healthy, which is the same failure mode as a missing id.
   const csp = read('next.config.ts');
   assert.match(csp, /googletagmanager\.com/u, 'CSP must allow googletagmanager for GA4');
-  assert.match(csp, /clarity\.ms/u, 'CSP must allow clarity.ms for Clarity');
   assert.match(csp, /google-analytics\.com/u, 'CSP must allow GA4 collection');
+});
+
+test('the CSP allows every Clarity host the tag actually uses', () => {
+  // The www.clarity.ms/tag/<id> bootstrap is only a redirect: the real
+  // clarity.js payload is served from scripts.clarity.ms, collection pixels
+  // from c.clarity.ms, and queued user data from u.clarity.ms. Allowlisting
+  // only "www" made every Clarity request fail with "(blocked:csp)", which
+  // reads as a broken tag rather than a policy problem.
+  const csp = read('next.config.ts');
+  assert.match(
+    csp,
+    /script-src[^\n]*https:\/\/\*\.clarity\.ms/u,
+    'script-src must wildcard clarity.ms, not just www.clarity.ms'
+  );
+  assert.doesNotMatch(
+    csp,
+    /script-src[^\n]*https:\/\/www\.clarity\.ms/u,
+    'the exact www host is not where clarity.js is served from'
+  );
+  // The bootstrap document itself is fetched from www, and the component is what
+  // asks for it.
+  assert.match(
+    read('src/components/analytics/ClarityAnalytics.tsx'),
+    /SCRIPT_BASE = 'https:\/\/www\.clarity\.ms\/tag\//u,
+    'the component should load the bootstrap from www.clarity.ms'
+  );
+  // Collection endpoints were already wildcarded; keep them that way.
+  assert.match(csp, /connect-src[^\n]*https:\/\/\*\.clarity\.ms/u);
+  assert.match(csp, /connect-src[^\n]*https:\/\/c\.clarity\.ms/u);
 });
 
 test('the deploy script fails the build when a configured id is not emitted', () => {

@@ -40,7 +40,12 @@ const csp = [
   // React only calls eval() in development (for call-stack reconstruction and
   // the dev overlay) and never in production, so 'unsafe-eval' is granted only
   // for a local/dev configuration. The production policy stays strict.
-  `script-src 'self' 'unsafe-inline'${isLocalApi ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.clarity.ms`,
+  // The www.clarity.ms/tag/<id> bootstrap only redirects the browser to
+  // scripts.clarity.ms for the actual clarity.js payload. Allowlisting just
+  // www made every Clarity request fail with "(blocked:csp)", which looks like
+  // a broken tag rather than a policy problem. c.clarity.ms serves the
+  // collection pixel and u.clarity.ms the queued user data.
+  `script-src 'self' 'unsafe-inline'${isLocalApi ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://*.clarity.ms`,
   "style-src 'self' 'unsafe-inline'",
   // Fonts: next/font self-hosts, Google Fonts is the fallback, data: covers inline.
   "font-src 'self' data: https://fonts.gstatic.com",
