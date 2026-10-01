@@ -158,6 +158,45 @@ set -a
 source "$WEB_ENV_FILE"
 set +a
 (cd "$REPO_DIR" && npm run build)
+
+# NEXT_PUBLIC_* values are inlined into the client bundle at build time, so a
+# value that is absent from the env file is silently absent from production. The
+# site then serves pages with no analytics at all and nothing in the build log
+# says so. Verify the ids actually reached the emitted HTML, and fail loudly
+# rather than shipping a build that cannot be measured.
+GA_ID="${NEXT_PUBLIC_GA_MEASUREMENT_ID:-}"
+CLARITY_ID="${NEXT_PUBLIC_CLARITY_PROJECT_ID:-}"
+if [ -n "$GA_ID" ] || [ -n "$CLARITY_ID" ]; then
+  # GA4 is inlined into the prerendered HTML. Clarity is injected from a client
+  # effect, so its id lands in the JS chunks instead. Check each id where it
+  # actually ends up, or a correct build would look like a failed one.
+  HOMEPAGE_HTML="$REPO_DIR/.next/server/app/index.html"
+  if [ -n "$GA_ID" ]; then
+    if [ ! -f "$HOMEPAGE_HTML" ]; then
+      log "WARN: $HOMEPAGE_HTML not found; skipping the GA4 build check."
+    elif ! grep -qF "$GA_ID" "$HOMEPAGE_HTML"; then
+      log "ERROR: NEXT_PUBLIC_GA_MEASUREMENT_ID is set to '$GA_ID' but that id is"
+      log "       absent from the built homepage. Analytics would be dead in"
+      log "       production. Check \$WEB_ENV_FILE, then re-run the deploy."
+      exit 1
+    else
+      log "GA4 id confirmed in the built homepage."
+    fi
+  fi
+  if [ -n "$CLARITY_ID" ]; then
+    if ! grep -rqF "$CLARITY_ID" "$REPO_DIR/.next/static" 2>/dev/null; then
+      log "ERROR: NEXT_PUBLIC_CLARITY_PROJECT_ID is set to '$CLARITY_ID' but that"
+      log "       id is absent from the built client chunks. Fix \$WEB_ENV_FILE,"
+      log "       then re-run the deploy."
+      exit 1
+    fi
+    log "Clarity id confirmed in the built client chunks."
+  fi
+else
+  log "WARN: no analytics ids in \$WEB_ENV_FILE. The site will build and serve"
+  log "      without GA4 or Clarity, so traffic cannot be measured."
+fi
+
 # The .next output and node_modules must be readable/writable by konthora at
 # runtime (ISR revalidation writes back to .next). The repo was re-owned in
 # step 3, but the build just wrote root-owned files; re-own .next + the cache.
