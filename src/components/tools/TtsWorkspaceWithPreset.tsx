@@ -19,6 +19,11 @@ function TtsWorkspaceFallback() {
  * `voice` query parameter (e.g. /text-to-speech?voice=af_heart).
  * The inner component reads useSearchParams inside a Suspense boundary so it
  * can be embedded on statically prerendered pages without breaking the build.
+ *
+ * Support for the parameter stays: a visitor arriving from a shared link still
+ * gets the voice selected. Nothing in the site's own navigation emits it, since
+ * every ?voice= URL duplicates the language page and was showing up in Search
+ * Console as crawled-but-not-indexed.
  */
 export function TtsWorkspaceWithPreset() {
   return (

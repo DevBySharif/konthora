@@ -59,7 +59,13 @@ export default async function VoicePage({ params }: VoicePageProps) {
   const pageUrl = `${siteConfig.url}${getVoiceUrl(voice.slug)}`;
   const related = getRelatedVoices(voice);
   const languagePage = getLanguagePage(voice.language);
-  const generateSlug = `${languagePage}?voice=${voice.id}`;
+  // Internal links must not carry ?voice=. Every such URL is a duplicate of the
+  // language page, so Search Console classified them as "alternate page with
+  // proper canonical tag" and reported them as crawled-but-not-indexed: 12 of
+  // them burned crawl budget re-confirming a duplicate the canonical already
+  // covered. The query still works for a visitor arriving from a shared link,
+  // it is just never emitted by our own navigation.
+  const generateSlug = languagePage;
   const homeUrl = siteConfig.url;
   const voicesUrl = `${siteConfig.url}/voices`;
 
