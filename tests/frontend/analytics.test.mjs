@@ -103,31 +103,52 @@ test('a build carries both analytics ids where each one actually lands', () => {
   // injected from a client-side effect, so its id only ever appears in the JS
   // chunks. Asserting the Clarity id is in the HTML is wrong and made this
   // suite fail against a perfectly good build.
+  //
+  // Both ids come from .env.local / web.env, which is gitignored. A clean CI
+  // checkout has neither, so the build there has no analytics at all and there
+  // is nothing to assert. The deploy-time check in deploy/scripts/deploy.sh is
+  // what guards production; this test only verifies the split when the ids
+  // happen to be present.
   const htmlPath = path.join(root, '.next', 'server', 'app', 'index.html');
   if (!fs.existsSync(htmlPath)) {
     return;
   }
-  const html = fs.readFileSync(htmlPath, 'utf8');
+
   const ga = envTemplate.match(/^NEXT_PUBLIC_GA_MEASUREMENT_ID=(.*)$/mu)[1].trim();
   const clarity = envTemplate.match(/^NEXT_PUBLIC_CLARITY_PROJECT_ID=(.*)$/mu)[1].trim();
+  const html = fs.readFileSync(htmlPath, 'utf8');
+
+  // Did this build actually receive the ids?
+  const htmlHasGa = html.includes(ga);
+  const chunksDir = path.join(root, '.next', 'static', 'chunks');
+  const chunks = fs.existsSync(chunksDir)
+    ? fs
+        .readdirSync(chunksDir, { recursive: true })
+        .filter((entry) => typeof entry === 'string' && entry.endsWith('.js'))
+        .map((entry) => path.join(chunksDir, entry))
+    : [];
+  const chunksHaveClarity = chunks.some((file) => fs.readFileSync(file, 'utf8').includes(clarity));
+
+  if (!htmlHasGa && !chunksHaveClarity) {
+    // No ids were available at build time. Nothing to verify, and nothing wrong.
+    assert.ok(
+      !html.includes(clarity),
+      'Clarity is client-injected, so its id must never be inlined into the HTML',
+    );
+    return;
+  }
 
   assert.ok(
-    html.includes(ga),
-    'the GA4 id is missing from the built homepage, so production would have no analytics',
+    htmlHasGa,
+    'the GA4 id reached the client chunks but not the prerendered HTML; ' +
+      '@next/third-parties inlines it into the HTML, so this means the renderer changed',
   );
   assert.ok(
     !html.includes(clarity),
     'Clarity is client-injected, so its id should not be inlined into the HTML',
   );
-
-  const chunkDir = path.join(root, '.next', 'static', 'chunks');
-  const chunks = fs
-    .readdirSync(chunkDir, { recursive: true })
-    .filter((entry) => typeof entry === 'string' && entry.endsWith('.js'))
-    .map((entry) => path.join(chunkDir, entry));
-  const inChunks = chunks.some((file) => fs.readFileSync(file, 'utf8').includes(clarity));
   assert.ok(
-    inChunks,
+    chunksHaveClarity,
     'the Clarity id is missing from every built client chunk, so production would have no heatmaps or session replay',
   );
 });
