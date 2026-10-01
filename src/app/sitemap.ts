@@ -1,10 +1,7 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { getAllVoices, getVoiceUrl } from '@/config/voices';
-
-// Represents the date of the last major content update across the site,
-// specifically the completion of the voice catalogue and tool descriptions.
-const CONTENT_LAST_MODIFIED = new Date('2026-08-01');
+import { getLastModifiedDate } from '@/config/freshness';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = (
@@ -117,7 +114,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     return {
       url: `${baseUrl}${route}`,
-      lastModified: CONTENT_LAST_MODIFIED,
+      lastModified: getLastModifiedDate(route),
       changeFrequency,
       priority,
     };

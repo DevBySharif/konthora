@@ -4,6 +4,9 @@ import './globals.css';
 import Analytics from '@/components/analytics/Analytics';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { JsonLd } from '@/components/JsonLd';
+import { constructOrganizationSchema } from '@/lib/schema';
+import { getLastModified } from '@/config/freshness';
 import { siteConfig } from '@/config/site';
 
 const inter = Inter({
@@ -54,6 +57,23 @@ export const metadata: Metadata = {
   },
 };
 
+// Declared once here rather than per page. Organization schema was previously
+// emitted only by the homepage and two entity pages, so on 88 of 91 URLs an AI
+// answer engine had no entity markup to resolve "Konthora" against. Emitting it
+// site-wide makes the entity consistent everywhere it is crawled.
+//
+// The homepage also declares its own; a duplicate Organization node is harmless
+// and keeps that page self-describing.
+const organizationSchema = {
+  ...constructOrganizationSchema(
+    siteConfig.name,
+    siteConfig.url,
+    `${siteConfig.url}/icon.png`
+  ),
+  // Freshness the homepage previously carried only via WebSite schema.
+  dateModified: getLastModified(''),
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -64,6 +84,9 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
+      <head>
+        <JsonLd schema={organizationSchema} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <a href="#main-content" className="skip-to-content">
           Skip to main content
