@@ -75,12 +75,43 @@ test('Every page exports accurate metadata with matching path', () => {
   }
 });
 
+// Pages that delegate their schema to a shared renderer. The /transcribe-*
+// guides are thin wrappers around TranscribeGuidePage, which declares the
+// BreadcrumbList, HowTo and FAQPage schema. Grepping the wrapper would report
+// a false failure, so the check follows the delegation.
+const SCHEMA_DELEGATING_ROUTES = {
+  '/transcribe-podcast': 'TranscribeGuidePage',
+  '/transcribe-interview': 'TranscribeGuidePage',
+  '/transcribe-meeting': 'TranscribeGuidePage',
+  '/transcribe-lecture': 'TranscribeGuidePage',
+  '/transcribe-video': 'TranscribeGuidePage',
+  '/transcribe-voice-memo': 'TranscribeGuidePage',
+  '/transcribe-webinar': 'TranscribeGuidePage',
+};
+
+function readWithDelegatedSchema(page) {
+  const own = fs.readFileSync(page.fullPath, 'utf8');
+  const componentName = SCHEMA_DELEGATING_ROUTES[page.route];
+  if (!componentName) return own;
+
+  // Confirm the wrapper really does render the shared component, so this
+  // exemption cannot quietly outlive the refactor.
+  assert.ok(
+    own.includes(componentName),
+    `${page.route} is registered as schema-delegating but does not render ${componentName}`
+  );
+  return `${own}\n${fs.readFileSync(
+    path.join(rootDir, 'src/components/guides/TranscribeGuidePage.tsx'),
+    'utf8'
+  )}`;
+}
+
 test('All subpages have BreadcrumbList schema with Home root', () => {
   const pages = getPages(path.join(rootDir, 'src/app'));
 
   for (const page of pages) {
     if (page.route === '/') continue; // Homepage does not need breadcrumbs
-    const content = fs.readFileSync(page.fullPath, 'utf8');
+    const content = readWithDelegatedSchema(page);
 
     assert.ok(
       content.includes("'@type': 'BreadcrumbList'") || content.includes('"@type": "BreadcrumbList"'),
@@ -90,6 +121,30 @@ test('All subpages have BreadcrumbList schema with Home root', () => {
     assert.ok(
       content.includes('breadcrumbSchema') || content.includes('breadcrumbs'),
       `Subpage ${page.route} must render breadcrumb schema in JsonLd component`
+    );
+  }
+});
+
+test('Schema-delegating wrappers still render the shared guide schema', () => {
+  for (const [route, componentName] of Object.entries(SCHEMA_DELEGATING_ROUTES)) {
+    const wrapper = fs.readFileSync(
+      path.join(rootDir, 'src/app', route.slice(1), 'page.tsx'),
+      'utf8'
+    );
+    assert.ok(
+      wrapper.includes(`<${componentName} guide={guide} />`),
+      `${route} must pass its guide into ${componentName}`
+    );
+  }
+
+  const renderer = fs.readFileSync(
+    path.join(rootDir, 'src/components/guides/TranscribeGuidePage.tsx'),
+    'utf8'
+  );
+  for (const type of ['BreadcrumbList', 'HowTo', 'FAQPage']) {
+    assert.ok(
+      renderer.includes(type),
+      `the shared guide renderer must emit ${type} schema for all 7 pages`
     );
   }
 });
@@ -276,12 +331,20 @@ test('Landing pages and voice profiles have high-intent titles and synchronized 
     'Homepage and /text-to-speech must have distinct og:title values'
   );
 
-  // Verify /audio-to-text
+  // Verify /audio-to-text. The title targets the converter intent specifically
+  // so it stops competing with /speech-to-text for the same query. No ampersand,
+  // because Next HTML-escapes it and the assertion would need both forms.
   const sttHtml = fs.readFileSync(path.join(htmlDir, 'audio-to-text.html'), 'utf8');
   assert.ok(
-    sttHtml.includes('<title>Free Audio to Text Converter | Timestamps &amp; SRT Export</title>') ||
-      sttHtml.includes('<title>Free Audio to Text Converter | Timestamps & SRT Export</title>'),
+    sttHtml.includes('<title>Audio to Text Converter: Free MP3 to Text | Konthora</title>'),
     '/audio-to-text must have targeted title'
+  );
+  // The two transcription pages must not share a title or og:title.
+  const explainerHtml = fs.readFileSync(path.join(htmlDir, 'speech-to-text.html'), 'utf8');
+  assert.notEqual(
+    getMetaContent(sttHtml, 'property', 'og:title'),
+    getMetaContent(explainerHtml, 'property', 'og:title'),
+    '/audio-to-text and /speech-to-text must have distinct og:title values'
   );
 
   // Verify /voices

@@ -27,10 +27,21 @@ import { FileAudio, Upload, Clock, Languages, FileDown, ShieldCheck } from 'luci
 const SPEAKABLE_AUDIO_TO_TEXT =
   'Konthora converts audio and video into accurate transcripts for free in the browser. You can upload files up to 100 megabytes and 10 minutes long, choose sentence, paragraph, or word-level timestamps, edit the result, and export as TXT, SRT, VTT, or JSON. Transcripts are deleted automatically after 60 minutes.';
 
+// Intent split with /speech-to-text, which is the explanatory article.
+//
+//   /audio-to-text   "convert my file"   -> embeds the workspace, carries the
+//                                            SoftwareApplication and Speakable
+//                                            schema, priced in a feature list
+//   /speech-to-text  "how does this work" -> TechArticle, no workspace
+//
+// The two previously shared 1,118 tokens, and Search Console reported this one
+// as crawled-but-not-indexed while listing the other as a duplicate. The title
+// now targets the converter intent specifically, stays inside the 65-character
+// SERP budget, and avoids an ampersand so the tag is not HTML-escaped.
 export const metadata: Metadata = constructMetadata({
-  title: 'Free Audio to Text Converter | Timestamps & SRT Export',
+  title: 'Audio to Text Converter: Free MP3 to Text | Konthora',
   description:
-    'Convert audio and video to text with accurate timestamps. Export to TXT, SRT, VTT, or JSON with sentence, paragraph, or word-level sync.',
+    'Convert MP3, WAV, M4A, MP4 and MOV files to text. Choose sentence, paragraph or word-level timestamps and export TXT, SRT, VTT or JSON.',
   path: '/audio-to-text',
 });
 

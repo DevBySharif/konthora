@@ -21,10 +21,23 @@ import {
 /* ─────────────────────────────────────────────
    Metadata — title unique across site, canonical set
 ───────────────────────────────────────────── */
+// Intent split with /audio-to-text, which is the transactional tool page.
+//
+//   /audio-to-text   "convert my file"   -> embeds the workspace, schema
+//                                            SoftwareApplication, priced in a
+//                                            feature list
+//   /speech-to-text  "how does this work" -> explanatory article, schema
+//                                            TechArticle, no workspace
+//
+// These two overlapped heavily (1,118 shared tokens) and Search Console listed
+// this page as "Crawled - currently not indexed", because it read as a second
+// attempt at the same query. It is now written as an explainer that teaches the
+// concept and hands the transaction off to the tool page, and it says so in the
+// opening paragraph rather than competing for the same terms.
 export const metadata: Metadata = constructMetadata({
-  title: 'Speech to Text: How Audio Transcription Works | Konthora',
+  title: 'What Is Speech to Text? How Audio Transcription Works | Konthora',
   description:
-    'Learn how speech-to-text converts audio into written text, what affects accuracy, and how to transcribe English audio free with Konthora.',
+    'An explainer on how speech-to-text turns audio into text: what automatic speech recognition does, what affects accuracy, and how to pick a timestamp mode.',
   path: '/speech-to-text',
 });
 
@@ -44,13 +57,16 @@ export default function SpeechToTextPage() {
     ],
   };
 
-  /* ── Schema: Article ── */
+  /* ── Schema: TechArticle ──
+     Declared as a TechArticle rather than a generic Article because this page
+     is an explainer, not a product listing. The tool page carries the
+     SoftwareApplication schema. */
   const articleSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: 'Speech to Text: How Audio Transcription Works',
+    '@type': 'TechArticle',
+    headline: 'What Is Speech to Text? How Audio Transcription Works',
     description:
-      'Speech-to-text converts spoken audio into written text using automatic speech recognition software. This guide explains how it works, what accuracy to expect, and how to transcribe audio free.',
+      'An explanation of how automatic speech recognition turns audio into text: what the model does, what determines accuracy, and how to choose between sentence, paragraph and word-level timestamps.',
     url: pageUrl,
     publisher: {
       '@type': 'Organization',
@@ -60,75 +76,45 @@ export default function SpeechToTextPage() {
     mainEntityOfPage: pageUrl,
   };
 
-  /* ── Schema: HowTo — "How to Transcribe Audio with Konthora" ── */
-  const howToSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name: 'How to Transcribe Audio with Konthora',
-    description:
-      'Transcribe audio or video to text with timestamps in four steps using Konthora — free, no account required.',
-    step: [
-      {
-        '@type': 'HowToStep',
-        position: 1,
-        name: 'Upload your audio or video file',
-        text: "Go to Konthora\u2019s audio-to-text tool and upload a file in MP3, WAV, M4A, AAC, MP4, WebM, or MOV format. Files up to 100 MB and 10 minutes long are accepted.",
-      },
-      {
-        '@type': 'HowToStep',
-        position: 2,
-        name: 'Select your timestamp grouping',
-        text: 'Choose sentence-level, paragraph-level, or word-level timestamp grouping for your transcript.',
-      },
-      {
-        '@type': 'HowToStep',
-        position: 3,
-        name: 'Transcribe',
-        text: 'Click Transcribe Audio. Konthora processes your file using the Whisper speech recognition model and returns a complete transcript.',
-      },
-      {
-        '@type': 'HowToStep',
-        position: 4,
-        name: 'Download or copy your transcript',
-        text: 'Export your transcript as plain TXT, SRT subtitle format, VTT caption format, or structured JSON. No account is required.',
-      },
-    ],
-  };
+  /* No HowTo schema here on purpose. The same four steps appear on
+     /speech-to-text/how-to-transcribe-audio and on the /audio-to-text tool
+     page, and three pages competing for one "how to transcribe" query is part
+     of why this page was not indexed. The dedicated how-to page owns that
+     intent; this page explains the concept. */
 
-  /* ── Schema: FAQPage ── */
+  /* ── Schema: FAQPage — concept questions, not product steps ── */
   const faqs: FAQItem[] = [
     {
-      question: "Is speech-to-text free?",
+      question: "What does automatic speech recognition actually do?",
       answer:
-        "Yes. Konthora\u2019s audio-to-text tool is free to use with no account or subscription required. Upload an audio or video file, transcribe it, and download the result \u2014 at no cost.",
+        "It converts a waveform into text by inferring which words the sound represents. A trained neural model has learned the relationship between acoustic patterns and language from a very large number of transcribed recordings, so it is predicting plausible words from sound rather than looking them up in a dictionary.",
     },
     {
-      question: "How accurate is free speech-to-text?",
+      question: "Why do some recordings transcribe badly and others do not?",
       answer:
-        "Accuracy depends on audio quality, background noise, the speaker\u2019s accent, and speaking clarity. Konthora uses the Whisper speech recognition model, which produces reliable results for clearly recorded English speech. Transcription accuracy is not guaranteed and varies with audio conditions.",
-    },
-    {
-      question: "What audio formats can be transcribed?",
-      answer:
-        "Konthora accepts MP3, WAV, M4A, AAC, MP4, WebM, and MOV files. The maximum file size is 100 MB and the maximum recording duration is 10 minutes.",
-    },
-    {
-      question: "Can speech-to-text add timestamps?",
-      answer:
-        "Yes. Konthora offers three timestamp modes: sentence-level (one timestamp per sentence), paragraph-level (grouped by natural speech pauses), and word-level (individual timestamp for every word). You choose the mode before transcribing.",
-    },
-    {
-      question: "Does speech-to-text work for video files?",
-      answer:
-        "Yes. Konthora accepts MP4, WebM, and MOV video files. The audio track is extracted automatically and transcribed. The same 100 MB file size and 10-minute duration limits apply.",
+        "The model is guessing from audio, so anything that obscures the speech makes it guess wrong. Background noise, overlapping speakers, low volume, unusual accents, and technical vocabulary are the usual causes. A single microphone near the speaker reliably beats several spread around a room, and trimming silence before upload removes a large share of errors.",
     },
     {
       question: "What is the difference between speech-to-text and voice recognition?",
       answer:
-        "Speech-to-text (also called audio transcription) converts spoken audio into a written text file. Voice recognition is a broader term that also covers speaker identification, voice commands, and authentication. Konthora provides speech-to-text transcription only \u2014 it does not identify speakers or respond to voice commands.",
+        "Voice recognition is the broader category and covers speaker identification, voice commands and authentication. Speech-to-text is transcription: turning speech into a written document. The distinction matters because many voice recognition tools cannot produce a transcript, and many transcription tools do not identify who spoke.",
+    },
+    {
+      question: "What are the three timestamp modes, and which should I use?",
+      answer:
+        "Sentence mode gives one timestamp per sentence and suits reading and finding quotes. Paragraph mode groups related speech into blocks and suits notes. Word mode times every individual word and is what you need for subtitles, because sentence-level cues lag behind the speaker. Choosing well is usually a bigger quality difference than the choice of model.",
+    },
+    {
+      question: "Can speech-to-text handle accents and noisy recordings?",
+      answer:
+        "Modern models such as Whisper are trained on diverse speakers and handle many accents well. Accuracy still depends on how the audio was captured. Under good conditions an accent is rarely a problem; in a noisy recording it compounds whatever else is already difficult.",
+    },
+    {
+      question: "How long does speech-to-text take?",
+      answer:
+        "Processing time tracks the length of the audio, since the model is working through it rather than looking up a stored result. A ten-minute file is the practical ceiling for most tools, which is why longer recordings are usually split before upload.",
     },
   ];
-
 
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -144,7 +130,6 @@ export default function SpeechToTextPage() {
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={articleSchema} />
-      <JsonLd schema={howToSchema} />
       <JsonLd schema={faqSchema} />
 
       {/* ── HERO / INTRO ── */}
@@ -186,28 +171,41 @@ export default function SpeechToTextPage() {
           </p>
 
           {/* H1 */}
-          <h1
-            id="stt-h1"
-            className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight"
-          >
-            Speech to Text:{' '}
-            <span className="text-gradient">How Audio Transcription Works</span>
-          </h1>
-
-          {/* Search promise — delivered before first scroll */}
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Speech-to-text converts spoken audio into written text using{' '}
-            <span className="font-medium text-foreground">automatic speech recognition</span>{' '}
-            (ASR) software. Modern free tools powered by neural models like{' '}
-            <Link
-              href="/entity/whisper"
-              className="font-medium text-foreground hover:underline underline-offset-4 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            <h1
+              id="stt-h1"
+              className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground leading-tight"
             >
-              Whisper
-            </Link>{' '}
-            can transcribe audio files, videos, and voice recordings through a
-            browser — with no software to install and no account required.
-          </p>
+              What Is Speech to Text?{' '}
+              <span className="text-gradient">How It Works</span>
+            </h1>
+
+            {/* Search promise — delivered before first scroll */}
+            <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+              Speech-to-text turns spoken audio into written words using{' '}
+              <span className="font-medium text-foreground">automatic speech recognition</span>{' '}
+              (ASR) — a model that has learned the relationship between sound and
+              language from a very large number of transcribed recordings. This page
+              explains what that actually involves and why results differ between
+              files.
+            </p>
+
+            {/* Intent hand-off. This page teaches; /audio-to-text does the work. */}
+            <div className="mt-6 rounded-xl border border-border/70 bg-card p-5 max-w-2xl">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  Want to transcribe a file now?
+                </span>{' '}
+                The{' '}
+                <Link
+                  href="/audio-to-text"
+                  className="text-primary hover:underline"
+                >
+                  audio-to-text converter
+                </Link>{' '}
+                is the page that runs the transcription. This one is the explanation
+                behind it.
+              </p>
+            </div>
 
           {/* Primary CTA — placement 1 */}
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -217,7 +215,7 @@ export default function SpeechToTextPage() {
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Mic className="h-4 w-4" aria-hidden="true" />
-              Transcribe Audio to Text Free — No Account Needed
+              Open the Audio to Text Converter
             </Link>
           </div>
         </Container>
