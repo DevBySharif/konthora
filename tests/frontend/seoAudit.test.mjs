@@ -76,34 +76,38 @@ test('Every page exports accurate metadata with matching path', () => {
 });
 
 // Pages that delegate their schema to a shared renderer. The /transcribe-*
-// guides are thin wrappers around TranscribeGuidePage, which declares the
-// BreadcrumbList, HowTo and FAQPage schema. Grepping the wrapper would report
-// a false failure, so the check follows the delegation.
+// and /text-to-speech-for-* guides are thin wrappers around a guide renderer
+// that declares the BreadcrumbList, HowTo and FAQPage schema. Grepping the
+// wrapper would report a false failure, so the check follows the delegation.
 const SCHEMA_DELEGATING_ROUTES = {
-  '/transcribe-podcast': 'TranscribeGuidePage',
-  '/transcribe-interview': 'TranscribeGuidePage',
-  '/transcribe-meeting': 'TranscribeGuidePage',
-  '/transcribe-lecture': 'TranscribeGuidePage',
-  '/transcribe-video': 'TranscribeGuidePage',
-  '/transcribe-voice-memo': 'TranscribeGuidePage',
-  '/transcribe-webinar': 'TranscribeGuidePage',
+  '/transcribe-podcast': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-interview': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-meeting': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-lecture': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-video': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-voice-memo': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/transcribe-webinar': ['TranscribeGuidePage', 'src/components/guides/TranscribeGuidePage.tsx'],
+  '/text-to-speech-for-podcasts': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/text-to-speech-for-youtube-videos': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/text-to-speech-for-presentations': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/text-to-speech-for-elearning': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/text-to-speech-for-social-media': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
+  '/text-to-speech-for-audiobooks': ['TtsUseCasePage', 'src/components/guides/TtsUseCasePage.tsx'],
 };
 
 function readWithDelegatedSchema(page) {
   const own = fs.readFileSync(page.fullPath, 'utf8');
-  const componentName = SCHEMA_DELEGATING_ROUTES[page.route];
-  if (!componentName) return own;
+  const entry = SCHEMA_DELEGATING_ROUTES[page.route];
+  if (!entry) return own;
 
+  const [componentName, rendererPath] = entry;
   // Confirm the wrapper really does render the shared component, so this
   // exemption cannot quietly outlive the refactor.
   assert.ok(
     own.includes(componentName),
     `${page.route} is registered as schema-delegating but does not render ${componentName}`
   );
-  return `${own}\n${fs.readFileSync(
-    path.join(rootDir, 'src/components/guides/TranscribeGuidePage.tsx'),
-    'utf8'
-  )}`;
+  return `${own}\n${fs.readFileSync(path.join(rootDir, rendererPath), 'utf8')}`;
 }
 
 test('All subpages have BreadcrumbList schema with Home root', () => {
@@ -126,26 +130,32 @@ test('All subpages have BreadcrumbList schema with Home root', () => {
 });
 
 test('Schema-delegating wrappers still render the shared guide schema', () => {
-  for (const [route, componentName] of Object.entries(SCHEMA_DELEGATING_ROUTES)) {
+  const renderers = new Set();
+  for (const [route, [componentName, rendererPath]] of Object.entries(
+    SCHEMA_DELEGATING_ROUTES
+  )) {
     const wrapper = fs.readFileSync(
       path.join(rootDir, 'src/app', route.slice(1), 'page.tsx'),
       'utf8'
     );
+    // The prop name differs per renderer: guide={guide} for the transcribe
+    // guides, content={content} for the text-to-speech ones.
     assert.ok(
-      wrapper.includes(`<${componentName} guide={guide} />`),
-      `${route} must pass its guide into ${componentName}`
+      wrapper.includes(`<${componentName} guide={guide} />`) ||
+        wrapper.includes(`<${componentName} content={content} />`),
+      `${route} must pass its data into ${componentName}`
     );
+    renderers.add(rendererPath);
   }
 
-  const renderer = fs.readFileSync(
-    path.join(rootDir, 'src/components/guides/TranscribeGuidePage.tsx'),
-    'utf8'
-  );
-  for (const type of ['BreadcrumbList', 'HowTo', 'FAQPage']) {
-    assert.ok(
-      renderer.includes(type),
-      `the shared guide renderer must emit ${type} schema for all 7 pages`
-    );
+  for (const rendererPath of renderers) {
+    const renderer = fs.readFileSync(path.join(rootDir, rendererPath), 'utf8');
+    for (const type of ['BreadcrumbList', 'HowTo', 'FAQPage']) {
+      assert.ok(
+        renderer.includes(type),
+        `${rendererPath} must emit ${type} schema for the pages that delegate to it`
+      );
+    }
   }
 });
 
