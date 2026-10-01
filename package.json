@@ -11,7 +11,7 @@
     "test:frontend": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/frontend/*.test.mjs",
     "indexnow": "node scripts/submit-indexnow.mjs",
     "indexnow:all": "node scripts/submit-indexnow.mjs --all",
-    "ping:sitemap": "node scripts/pingSitemaps.mjs",
+    "sitemap:verify": "node scripts/pingSitemaps.mjs",
     "postbuild": "node scripts/pingSitemaps.mjs",
     "gsc:index": "node scripts/gscIndexing.mjs"
   },

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Optional
 from fastapi import APIRouter, Request, File, Form, UploadFile, Depends
@@ -56,6 +57,41 @@ def get_capabilities():
         wordTimestampsAvailable=settings.TRANSCRIPTION_WORD_TIMESTAMPS
     )
 
+def _append_chunk_sync(path: Path, chunk: bytes) -> None:
+    """Append one upload chunk. Runs in a thread so the event loop keeps serving."""
+    with open(path, "ab") as handle:
+        handle.write(chunk)
+
+
+async def _cleanup_failed_admission(
+    queue_manager: TranscriptionQueueManager,
+    rate_limiter: RateLimitService,
+    client_ip: str,
+    job_id: str,
+    job_dir: Path,
+) -> None:
+    """Release the queue slot, the per-IP slot and the staged files.
+
+    Every step is independent: a failure to remove files must not leave the
+    queue and IP slots reserved, which would eventually reject all uploads.
+    """
+    try:
+        await queue_manager.release_admission_slot()
+    except Exception:
+        logger.exception("Failed to release admission slot for job {}", job_id)
+
+    try:
+        rate_limiter.deregister_transcription_active_job(client_ip, job_id)
+    except Exception:
+        logger.exception("Failed to deregister active job {} for {}", job_id, client_ip)
+
+    if job_dir.exists():
+        try:
+            shutil.rmtree(job_dir, ignore_errors=True)
+        except Exception:
+            logger.exception("Failed to remove job directory {}", job_dir)
+
+
 @router.post("/transcription/jobs", response_model=TranscriptionJobCreateResponse)
 async def create_transcription_job(
     request: Request,
@@ -104,12 +140,20 @@ async def create_transcription_job(
     job_dir = resolve_secure_path(f"transcription/{job_id}")
     job_dir.mkdir(parents=True, exist_ok=True)
 
+    # The suffix is lowercased here, so the file on disk is always
+    # "source.mp3" even for "AUDIO.MP3". The worker looked the source up using
+    # the original casing and failed to find it.
     suffix = Path(file.filename or "media").suffix.lower()
     temp_part_path = job_dir / "upload.part"
     dest_path = job_dir / f"source{suffix}"
 
     total_bytes = 0
     max_bytes = settings.TRANSCRIPTION_MAX_FILE_SIZE_MB * 1024 * 1024
+
+    # Draining the request body is blocking I/O. On the 2 vCPU free Space, one
+    # synchronous write per 1MB chunk stalls the event loop and starves the
+    # polling endpoints, so chunks are handed to a thread.
+    loop = asyncio.get_running_loop()
 
     try:
         # Stream file in 1MB chunks to upload.part
@@ -121,9 +165,13 @@ async def create_transcription_job(
             total_bytes += len(chunk)
             if total_bytes > max_bytes:
                 raise InvalidRequestException("FILE_TOO_LARGE", f"File size exceeds the limit of {settings.TRANSCRIPTION_MAX_FILE_SIZE_MB} MB.")
-            # Sync write chunk
-            with open(temp_part_path, "ab") as f:
-                f.write(chunk)
+            # Off-loop write
+            await loop.run_in_executor(
+                None,
+                _append_chunk_sync,
+                temp_part_path,
+                chunk
+            )
 
         job.file_size_bytes = total_bytes
 
@@ -136,7 +184,6 @@ async def create_transcription_job(
 
         # 6. Authoritative Media Container inspection (FFprobe)
         job.progress_stage = "inspecting_media"
-        loop = asyncio.get_running_loop()
         # Inspect media on thread executor
         info = await loop.run_in_executor(
             None,
@@ -148,25 +195,37 @@ async def create_transcription_job(
         job.media_duration_seconds = info["duration"]
         job.detected_language = "en" # hardcode English under the small.en model
 
-    except Exception as e:
-        # Deregister and cleanup everything upon validation/upload errors
-        await queue_manager.release_admission_slot()
-        rate_limiter.deregister_transcription_active_job(client_ip, job_id)
+    except BaseException as e:
+        # CancelledError derives from BaseException, not Exception, so a client
+        # disconnect used to skip this handler entirely: the queue slot, the IP
+        # active-job slot and the staged file all leaked. Catch BaseException so
+        # cancellation is cleaned up like any other failure, then re-raise
+        # cancellation untouched.
+        if isinstance(e, asyncio.CancelledError):
+            await asyncio.shield(
+                _cleanup_failed_admission(queue_manager, rate_limiter, client_ip, job_id, job_dir)
+            )
+            job.finalize_failure("CLIENT_DISCONNECTED", "Upload was cancelled by the client.")
+            raise
 
-        # Clean folder transcription/<job_id>
-        import shutil
-        if job_dir.exists():
-            try:
-                shutil.rmtree(job_dir)
-            except Exception:
-                pass
-
-        # Register failure
-        job.finalize_failure("VALIDATION_FAILED", str(e))
+        await _cleanup_failed_admission(queue_manager, rate_limiter, client_ip, job_id, job_dir)
 
         if isinstance(e, InvalidRequestException):
+            # These messages are ours (size, extension, MIME) and are safe to show.
+            job.finalize_failure(e.code, e.message)
             raise e
-        raise InvalidRequestException("MEDIA_INSPECTION_FAILED", f"Media file is invalid: {e}")
+
+        # FFprobe and I/O errors embed absolute server paths, so the detail is
+        # logged but the client only sees a generic message.
+        logger.error(f"Upload/inspection failed for job {job_id}: {e}")
+        job.finalize_failure(
+            "MEDIA_INSPECTION_FAILED",
+            "The uploaded file could not be read. Please try a different file.",
+        )
+        raise InvalidRequestException(
+            "MEDIA_INSPECTION_FAILED",
+            "The uploaded file could not be read. Please try a different file.",
+        )
 
     # 7. Queue job for processing
     job.status = "queued"

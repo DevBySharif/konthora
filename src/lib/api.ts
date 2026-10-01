@@ -151,11 +151,28 @@ function withTimeout(timeoutMs: number, signal?: AbortSignal): { signal: AbortSi
   return { signal: timeoutSignal };
 }
 
+/**
+ * True only when the caller aborted the request.
+ *
+ * A `TimeoutError` is deliberately excluded. The request wrapper raises it when
+ * its own deadline fires, and treating that as a caller abort meant the
+ * transcription UI stopped polling on the first slow response and sat on
+ * "Processing…" forever. Timeouts are retryable, so callers should fall through
+ * to their error handling instead of returning silently.
+ */
 export function isAbortError(error: unknown): boolean {
-  return (
-    error instanceof DOMException &&
-    (error.name === 'AbortError' || error.name === 'TimeoutError')
-  ) || (error instanceof Error && error.name === 'AbortError');
+  if (error instanceof DOMException) {
+    return error.name === 'AbortError';
+  }
+  return error instanceof Error && error.name === 'AbortError';
+}
+
+/** True when the failure came from the request deadline rather than the caller. */
+export function isTimeoutError(error: unknown): boolean {
+  if (error instanceof DOMException) {
+    return error.name === 'TimeoutError';
+  }
+  return error instanceof Error && error.name === 'TimeoutError';
 }
 
 /** Reads a `Retry-After` header (delta-seconds or HTTP-date) into seconds. */

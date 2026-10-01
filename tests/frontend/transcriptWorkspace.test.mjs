@@ -117,3 +117,97 @@ test('custom names are sanitized and ZIP contains four local file entries', asyn
   assert.equal(zip.type, 'application/zip');
   assert.ok(zip.size > 100);
 });
+
+test('replace-all treats $ patterns in the replacement as literal text', () => {
+  // A replacement string made "$&", "$1", "$$" and "$`" act as substitution
+  // patterns, so typing them into "Replace with" silently produced garbage.
+  const source = 'start word other';
+  const cases = ['$&', '$1', '$$', '$`', "$'", '$0', '$&-$1-$$'];
+
+  for (const replacement of cases) {
+    const state = createTranscriptWorkspaceState(
+      [{ id: 0, text: source, start: 0, end: 1, words: [] }],
+      'audio.mp3',
+    );
+    const next = transcriptWorkspaceReducer(state, {
+      type: 'replace-all',
+      query: 'word',
+      replacement,
+    });
+    assert.equal(
+      next.segments[0].text,
+      `start ${replacement} other`,
+      `replacement ${replacement} should be inserted literally`,
+    );
+  }
+});
+
+test('replace-all also escapes regex metacharacters in the query', () => {
+  const state = createTranscriptWorkspaceState(
+    [{ id: 0, text: 'a+b and axb and a.b', start: 0, end: 1, words: [] }],
+    'audio.mp3',
+  );
+  const plus = transcriptWorkspaceReducer(state, { type: 'replace-all', query: 'a+b', replacement: 'X' });
+  assert.equal(plus.segments[0].text, 'X and axb and a.b');
+  const dot = transcriptWorkspaceReducer(state, { type: 'replace-all', query: 'a.b', replacement: 'X' });
+  assert.equal(dot.segments[0].text, 'a+b and axb and X');
+});
+
+test('search offsets index the original text so replace-one is lossless', () => {
+  // Lowercasing a copy can change string length, so offsets taken from the
+  // lowercased copy did not line up with the original text. "İzmir then i"
+  // lowercases to 13 code units, which made the old code report a match at
+  // 4..5 for the query "i" (really the letter "r") and 7..11 for "then"
+  // (really "hen "), so replace-one edited the wrong characters.
+  const source = 'İzmir then i';
+
+  const letterMatches = findTranscriptMatches([{ id: 0, text: source, start: 0, end: 1, words: [] }], 'i');
+  for (const match of letterMatches) {
+    assert.equal(source.slice(match.start, match.end), 'i');
+  }
+
+  const [thenMatch] = findTranscriptMatches([{ id: 0, text: source, start: 0, end: 1, words: [] }], 'then');
+  assert.equal(source.slice(thenMatch.start, thenMatch.end), 'then');
+
+  // And the end-to-end result must be exactly what the user asked for.
+  const state = createTranscriptWorkspaceState([{ id: 0, text: source, start: 0, end: 1, words: [] }], 'audio.mp3');
+  const next = transcriptWorkspaceReducer(state, { type: 'replace-one', match: thenMatch, replacement: 'X' });
+  assert.equal(next.segments[0].text, 'İzmir X i');
+});
+
+test('every search match slices back to the query it was found for', () => {
+  const corpus = [
+    { id: 0, text: 'INDEX of the report', start: 0, end: 1, words: [] },
+    { id: 1, text: 'Turkish İstanbul is here', start: 1, end: 2, words: [] },
+    { id: 2, text: 'Straße and STRASSE', start: 2, end: 3, words: [] },
+    { id: 3, text: 'ĲSSELMEER and IJSSELMEER', start: 3, end: 4, words: [] },
+  ];
+
+  for (const segment of corpus) {
+    for (const query of ['index', 'istanbul', 'i', 'ß', 'ss', 'ij', 'MEER']) {
+      for (const match of findTranscriptMatches([segment], query)) {
+        assert.equal(
+          segment.text.slice(match.start, match.end).toLowerCase(),
+          query.toLowerCase(),
+          `offset mismatch for ${JSON.stringify(query)} in ${JSON.stringify(segment.text)}`,
+        );
+      }
+    }
+  }
+});
+
+test('case-insensitive search does not depend on the host locale', () => {
+  const turkishSegments = [{ id: 0, text: 'FILE index', start: 0, end: 1, words: [] }];
+  const previousLocale = process.env.LC_ALL ?? process.env.LANG;
+  try {
+    process.env.LC_ALL = 'tr_TR.UTF-8';
+    assert.equal(findTranscriptMatches(turkishSegments, 'file').length, 1);
+    assert.equal(findTranscriptMatches(turkishSegments, 'index').length, 1);
+  } finally {
+    if (previousLocale === undefined) {
+      delete process.env.LC_ALL;
+    } else {
+      process.env.LC_ALL = previousLocale;
+    }
+  }
+});

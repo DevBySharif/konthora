@@ -139,7 +139,16 @@ class TranscriptionQueueManager:
         job.progress_stage = "inspecting_media"
 
         job_dir = resolve_secure_path(f"transcription/{job_id}")
-        source_path = job_dir / f"source{Path(job.original_filename).suffix}"
+        # The upload endpoint lowercases the suffix when it names the file, so
+        # looking the source up with the original casing ("AUDIO.MP3" -> source.MP3)
+        # missed the file and failed the job on a case-sensitive filesystem.
+        source_path = job_dir / f"source{Path(job.original_filename).suffix.lower()}"
+        if not source_path.exists():
+            # Tolerate a case mismatch rather than failing the whole job.
+            for candidate in sorted(job_dir.glob("source.*")):
+                if candidate.is_file():
+                    source_path = candidate
+                    break
         wav_path = job_dir / "audio.wav"
 
         try:
@@ -208,9 +217,17 @@ class TranscriptionQueueManager:
 
                 empty_export = "No speech was detected."
                 if job.export_format == "srt":
-                    empty_export = ""
+                    # An empty string trips the zero-byte guard in
+                    # write_atomic_result, which raised ValueError and failed the
+                    # entire job. A single well-formed placeholder cue keeps the
+                    # download valid instead.
+                    empty_export = (
+                        "1\n00:00:00,000 --> 00:00:01,000\nNo speech was detected.\n"
+                    )
                 elif job.export_format == "vtt":
-                    empty_export = "WEBVTT\n\n"
+                    empty_export = (
+                        "WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.000\nNo speech was detected.\n"
+                    )
                 elif job.export_format == "json":
                     empty_export = json.dumps(empty_doc, indent=2)
 
@@ -327,8 +344,13 @@ class TranscriptionQueueManager:
             self._cleanup_audio_files(source_path, wav_path)
 
         except Exception as e:
+            # Client-facing text stays generic: `e` can carry absolute storage
+            # paths, which would disclose the server filesystem layout.
             logger.error(f"Error while processing Transcription Job {job_id}: {e}")
-            job.finalize_failure("TRANSCRIPTION_FAILED", f"Job execution failed: {e}")
+            job.finalize_failure(
+                "TRANSCRIPTION_FAILED",
+                "The transcription could not be completed. Please try a different file.",
+            )
 
             # Clean up all media and result paths on failure
             self._cleanup_audio_files(source_path, wav_path)

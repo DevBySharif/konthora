@@ -12,6 +12,65 @@ from app.utils.timestamp_formatter import (
     format_vtt_timestamp,
 )
 
+# Abbreviations that end in a period but do not end a sentence. Splitting on
+# them produced one-word "sentences" such as "Dr." or "e.g.".
+_NON_TERMINAL_ABBREVIATIONS = {
+    "mr", "mrs", "ms", "dr", "prof", "sr", "jr", "st", "mt", "rev",
+    "dr.", "mr.", "mrs.", "ms.", "prof.", "sr.", "jr.", "st.", "mt.", "rev.",
+    "e.g", "i.e", "etc", "vs", "approx", "no", "fig", "vol", "pp",
+    "e.g.", "i.e.", "etc.", "vs.", "approx.", "no.", "fig.", "vol.", "pp.",
+    "inc", "ltd", "co", "corp",
+    "inc.", "ltd.", "co.", "corp.",
+}
+
+
+def _ends_sentence(token: str, prev_token: str = "") -> bool:
+    """True when a token genuinely terminates a sentence.
+
+    Excludes ellipses (Whisper emits `...` as a standalone token, which used to
+    split "Wait ... really" into two fragments) and common abbreviations such as
+    "Dr." and "e.g." which otherwise produced one-word sentences.
+
+    ``prev_token`` matters for a standalone "." — Whisper frequently splits
+    "Dr." into the tokens ``Dr`` and ``.``, so the period on its own is only a
+    terminator when the token before it is not an abbreviation or a lone
+    capital letter.
+    """
+    if not token:
+        return False
+
+    # Strip trailing quotes/brackets that may follow the terminal punctuation.
+    stripped = token.rstrip('"\'”’)]}')
+    if not stripped:
+        return False
+
+    if stripped[-1] not in ".?!":
+        return False
+
+    # An ellipsis is a pause, not an ending.
+    if stripped.endswith("..."):
+        return False
+
+    # A run of four or more periods is an ellipsis-style pause.
+    if len(stripped) > 3 and stripped.endswith(".") and stripped.rstrip(".").endswith("."):
+        return False
+
+    lowered = stripped.lower()
+    if lowered in _NON_TERMINAL_ABBREVIATIONS:
+        return False
+
+    # Standalone "." straight after an abbreviation or a lone capital letter
+    # completes that abbreviation rather than ending the sentence.
+    if stripped == "." and prev_token:
+        prior = prev_token.strip()
+        if prior.lower() in _NON_TERMINAL_ABBREVIATIONS:
+            return False
+        if len(prior) <= 3 and prior[:1].isupper():
+            return False
+
+    return True
+
+
 class TranscriptFormatter:
     def __init__(self):
         # Load formatting thresholds
@@ -130,21 +189,43 @@ class TranscriptFormatter:
         """
         Reconstructs coherent, properly spaced text from a list of word token dictionaries.
         Handles stripped tokens, Whisper leading-space tokens, punctuation, and contractions.
+
+        Quote handling is context aware: the same character is an opening or a
+        closing quote depending on whether the previous token is a word, so the
+        fixed "attach left / attach right" sets alone produced `He said" hello"`
+        and `" hello "`.
         """
         raw_tokens = [w.get("word", "") for w in words if w.get("word", "") is not None]
         cleaned_tokens = [t.strip() for t in raw_tokens if t.strip()]
         if not cleaned_tokens:
             return ""
 
-        # Characters/tokens that should attach directly to the preceding word without a space
+        # Ellipsis, curly quotes/dashes and friends, written as escapes so the
+        # source stays pure ASCII and survives any editor encoding.
+        ELLIPSIS = "\u2026"
+        LDQUO, RDQUO = "\u201c", "\u201d"
+        LSQUO, RSQUO = "\u2018", "\u2019"
+        NDASH, MDASH, MINUS = "\u2013", "\u2014", "\u2212"
+
+        # Binds to the PRECEDING word (no leading space).
         no_pre_space = {
-            ".", ",", "!", "?", ":", ";", "%", "…",
-            ")", "]", "}", "”", "’", '"'
+            ".", ",", "!", "?", ":", ";", "%", ELLIPSIS,
+            ")", "]", "}", RDQUO, RSQUO, '"',
+            # Whisper's BPE emits ellipses and hyphenated fragments separately.
+            "...", "....",
+            "-", NDASH, MDASH, MINUS,
+            # Trailing apostrophe/quote fragment.
+            "'", RSQUO,
         }
-        # Tokens that should attach to the FOLLOWING word without trailing space
-        no_post_space = {
-            "(", "[", "{", "“", "‘", "$"
-        }
+
+        # Binds to the FOLLOWING word (no trailing space).
+        no_post_space = {"(", "[", "{", LDQUO, LSQUO, '"', "\u00ab", "$"}
+
+        # Quote characters whose role depends on the surrounding tokens.
+        quote_chars = {'"', LDQUO, RDQUO}
+
+        def is_wordish(tok: str) -> bool:
+            return bool(tok) and (tok[-1].isalnum() or tok[-1] in ")]}\u201d\u2019\"'")
 
         result_parts: List[str] = []
 
@@ -154,26 +235,60 @@ class TranscriptFormatter:
                 continue
 
             prev_token = cleaned_tokens[i - 1]
+            next_token = cleaned_tokens[i + 1] if i + 1 < len(cleaned_tokens) else ""
 
-            # Contractions like 's, 't, 're, 've, 'm, 'd, n't, 'll, ’s, etc.
+            # Quote role is decided by what follows: a quote followed by a word is
+            # opening (needs a space before it), otherwise it is closing and hugs
+            # the preceding word. Deciding from the previous token alone was wrong
+            # because an opening quote also follows a word, which produced
+            # `He said"hello".`
+            if token in quote_chars:
+                if is_wordish(next_token):
+                    result_parts.append(" " + token)    # opening
+                else:
+                    result_parts.append(token)          # closing
+                continue
+
+            # Contractions: 's, 't, 're, n't, \u2019s ...
             is_contraction = (
-                token.startswith("'") or
-                token.startswith("’") or
-                token == "n't" or
-                token == "n’t"
+                token in {"n't", "n\u2019t"} or
+                (len(token) > 1 and token[0] in {"'", RSQUO} and token[1].isalpha())
             )
 
-            # Check if this token should attach to previous word
-            if token in no_pre_space or is_contraction:
+            # A hyphen at the end of the previous token continues that word, so
+            # "well-" + "known" must not gain a space.
+            prev_ends_hyphen = prev_token.endswith(("-", NDASH, MDASH, MINUS))
+
+            if token in no_pre_space or is_contraction or prev_ends_hyphen:
                 result_parts.append(token)
-            # Check if previous token was an opening delimiter
             elif prev_token in no_post_space:
                 result_parts.append(token)
             else:
                 result_parts.append(" " + token)
 
         assembled = "".join(result_parts)
-        return re.sub(r'\s+', ' ', assembled).strip()
+        return re.sub(r"\s+", " ", assembled).strip()
+
+    def _segment_text(self, segment: Dict[str, Any]) -> str:
+        """Text for one segment, falling back when word timings are absent.
+
+        A segment can arrive with a populated ``text`` but an empty ``words``
+        list (the model returned no word-level timing for it). Selecting only
+        word-reconstructed segments and testing them with ``any(...)`` silently
+        dropped every such segment, losing whole sentences from the transcript.
+        """
+        if segment.get("words"):
+            return self._format_words_to_text(segment["words"])
+        # No words: use the segment text as the model supplied it, only guarding
+        # against the collapsed-word case seen before the spacing fix.
+        text = (segment.get("text") or "").strip()
+        if not text:
+            return ""
+        # "Helloworld" style output means the words were stripped before
+        # reassembly, so repair the spacing instead of emitting it.
+        if re.search(r"[a-z][A-Z]", text):
+            return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", text)
+        return text
 
     def group_sentences(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -181,38 +296,72 @@ class TranscriptFormatter:
         If word timestamps exist, splits when seeing ('.', '?', '!') or exceeding sent_max_chars.
         First start -> first word start. Final end -> final word end.
         """
-        # Collect all words across all segments if they exist
-        has_words = any(len(s.get("words", [])) > 0 for s in segments)
+        sentences: List[Dict[str, Any]] = []
 
-        if not has_words:
-            # Fallback directly to segment structures as sentences
-            sentences = []
+        # Segments without word timings still carry text. Building sentences from
+        # the union of all `words` and only keeping word-reconstructed units used
+        # to silently drop every wordless segment, losing whole sentences.
+        if not any(s.get("words") for s in segments):
             for s in segments:
+                text = self._segment_text(s)
+                if not text:
+                    continue
                 sentences.append({
                     "id": len(sentences),
-                    "text": s["text"],
+                    "text": text,
                     "start": s["start"],
                     "end": s["end"],
                     "words": []
                 })
             return sentences
 
-        # Build sentences from words
-        all_words = []
+        # Build sentences from words, flushing at wordless segment boundaries so
+        # their text is preserved in order.
+        all_words: List[Dict[str, Any]] = []
+        segment_boundaries: List[Tuple[int, Dict[str, Any]]] = []
         for s in segments:
-            all_words.extend(s["words"])
+            if s.get("words"):
+                all_words.extend(s["words"])
+            else:
+                segment_boundaries.append((len(all_words), s))
 
-        sentences = []
-        current_sentence_words = []
-        current_sentence_text = []
+        current_sentence_words: List[Dict[str, Any]] = []
+        current_sentence_text: List[str] = []
+        boundary_at = {index: s for index, s in segment_boundaries}
 
-        for w in all_words:
+        for word_index, w in enumerate(all_words):
+            if word_index in boundary_at:
+                # Commit the in-progress sentence before the wordless segment.
+                if current_sentence_words:
+                    sentences.append(
+                        self._build_sentence_unit(len(sentences), current_sentence_words)
+                    )
+                    current_sentence_words = []
+                    current_sentence_text = []
+                fallback = self._segment_text(boundary_at[word_index])
+                if fallback:
+                    gap = boundary_at[word_index]
+                    sentences.append({
+                        "id": len(sentences),
+                        "text": fallback,
+                        "start": gap["start"],
+                        "end": gap["end"],
+                        "words": []
+                    })
             current_sentence_words.append(w)
             current_sentence_text.append(w["word"])
 
-            # Sentence endings check (trailing dot, question, exclamation)
+            # Sentence endings check (trailing dot, question, exclamation).
+            # An ellipsis is NOT terminal: Whisper splits "Wait ... really" into
+            # `...` as its own token, and treating it as terminal produced
+            # two-word "sentences".
             word_str = w["word"].strip()
-            is_terminal = len(word_str) > 0 and word_str[-1] in [".", "?", "!"]
+            prev_str = (
+                current_sentence_words[-2]["word"].strip()
+                if len(current_sentence_words) >= 2
+                else ""
+            )
+            is_terminal = _ends_sentence(word_str, prev_str)
 
             # Character length limit check with proper space estimation
             current_char_count = len(" ".join(current_sentence_text))
@@ -226,6 +375,19 @@ class TranscriptFormatter:
         # Commit trailing words
         if current_sentence_words:
             sentences.append(self._build_sentence_unit(len(sentences), current_sentence_words))
+
+        # Any wordless segment that landed after the final word.
+        for index, gap in segment_boundaries:
+            if index >= len(all_words):
+                fallback = self._segment_text(gap)
+                if fallback:
+                    sentences.append({
+                        "id": len(sentences),
+                        "text": fallback,
+                        "start": gap["start"],
+                        "end": gap["end"],
+                        "words": []
+                    })
 
         return sentences
 
@@ -299,38 +461,74 @@ class TranscriptFormatter:
         Used for Word Mode. Groups raw words into readable text lines with timestamps.
         Each line uses its first word's start time and final word's end time.
         """
-        has_words = any(len(s.get("words", [])) > 0 for s in segments)
+        lines: List[Dict[str, Any]] = []
+        has_words = any(s.get("words") for s in segments)
         if not has_words:
             # Fall back to segments if no word timestamps
-            lines = []
             for s in segments:
+                text = self._segment_text(s)
+                if not text:
+                    continue
                 lines.append({
                     "id": len(lines),
-                    "text": s["text"],
+                    "text": text,
                     "start": s["start"],
                     "end": s["end"],
                     "words": []
                 })
             return lines
 
-        all_words = []
+        # Word Mode has the same text-loss problem as group_sentences: wordless
+        # segments must be flushed in order instead of being skipped.
+        all_words: List[Dict[str, Any]] = []
+        boundaries: List[Tuple[int, Dict[str, Any]]] = []
         for s in segments:
-            all_words.extend(s["words"])
+            if s.get("words"):
+                all_words.extend(s["words"])
+            else:
+                boundaries.append((len(all_words), s))
+        boundary_at = {index: s for index, s in boundaries}
 
-        lines = []
-        current_words = []
+        current_words: List[Dict[str, Any]] = []
 
-        for w in all_words:
+        def flush() -> None:
+            if current_words:
+                lines.append(self._build_line_unit(len(lines), current_words))
+                current_words.clear()
+
+        def add_gap(gap: Dict[str, Any]) -> None:
+            text = self._segment_text(gap)
+            if text:
+                lines.append({
+                    "id": len(lines),
+                    "text": text,
+                    "start": gap["start"],
+                    "end": gap["end"],
+                    "words": []
+                })
+
+        for word_index, w in enumerate(all_words):
+            if word_index in boundary_at:
+                flush()
+                add_gap(boundary_at[word_index])
+
             current_words.append(w)
             # Split line when word limit reached or seeing terminal punctuation
-            is_terminal = w["word"].strip() and w["word"].strip()[-1] in [".", "?", "!"]
+            prev_str = (
+                current_words[-2]["word"].strip()
+                if len(current_words) >= 2
+                else ""
+            )
+            is_terminal = _ends_sentence(w["word"].strip(), prev_str)
 
             if len(current_words) >= words_per_line or is_terminal:
-                lines.append(self._build_line_unit(len(lines), current_words))
-                current_words = []
+                flush()
 
-        if current_words:
-            lines.append(self._build_line_unit(len(lines), current_words))
+        flush()
+
+        for index, gap in boundaries:
+            if index >= len(all_words):
+                add_gap(gap)
 
         return lines
 
@@ -405,17 +603,23 @@ class TranscriptFormatter:
             if start >= end:
                 end = start + 0.5  # shift slightly
 
-            last_end = end
+            # Long units become several consecutive cues so no text is lost.
+            for chunk_text, chunk_start, chunk_end in self._subtitle_cue_chunks(
+                text, start, end
+            ):
+                cue_start = chunk_start
+                cue_end = chunk_end
+                if cue_start < last_end:
+                    cue_start = last_end
+                if cue_start >= cue_end:
+                    cue_end = cue_start + 0.5
+                last_end = cue_end
 
-            # Split long cues into subtitle lines (max 2 lines, 84 chars per line)
-            split_lines = self._wrap_subtitle_text(text, limit=self.sub_max_chars, max_lines=self.sub_max_lines)
-            subtitle_block = "\n".join(split_lines)
+                start_tag = format_srt_timestamp(cue_start)
+                end_tag = format_srt_timestamp(cue_end)
 
-            start_tag = format_srt_timestamp(start)
-            end_tag = format_srt_timestamp(end)
-
-            lines.append(f"{cue_idx}\n{start_tag} --> {end_tag}\n{subtitle_block}\n")
-            cue_idx += 1
+                lines.append(f"{cue_idx}\n{start_tag} --> {end_tag}\n{chunk_text}\n")
+                cue_idx += 1
 
         return "\n".join(lines)
 
@@ -436,34 +640,48 @@ class TranscriptFormatter:
             if start >= end:
                 end = start + 0.5
 
-            last_end = end
+            for chunk_text, chunk_start, chunk_end in self._subtitle_cue_chunks(
+                text, start, end
+            ):
+                cue_start = chunk_start
+                cue_end = chunk_end
+                if cue_start < last_end:
+                    cue_start = last_end
+                if cue_start >= cue_end:
+                    cue_end = cue_start + 0.5
+                last_end = cue_end
 
-            split_lines = self._wrap_subtitle_text(text, limit=self.sub_max_chars, max_lines=self.sub_max_lines)
-            subtitle_block = "\n".join(split_lines)
+                start_tag = format_vtt_timestamp(cue_start)
+                end_tag = format_vtt_timestamp(cue_end)
 
-            start_tag = format_vtt_timestamp(start)
-            end_tag = format_vtt_timestamp(end)
-
-            lines.append(f"{cue_idx}\n{start_tag} --> {end_tag}\n{subtitle_block}\n")
-            cue_idx += 1
+                lines.append(f"{cue_idx}\n{start_tag} --> {end_tag}\n{chunk_text}\n")
+                cue_idx += 1
 
         return "\n".join(lines)
 
     def _wrap_subtitle_text(self, text: str, limit: int, max_lines: int) -> List[str]:
-        """Utility to split subtitle texts cleanly on word boundaries."""
+        """Utility to split subtitle texts cleanly on word boundaries.
+
+        Never drops content: every word is emitted, even when that produces more
+        than ``max_lines``. The previous implementation truncated with
+        ``lines[:max_lines]``, which silently discarded everything past
+        ``limit * max_lines`` characters (168 by default) — invisible in the TXT
+        and JSON exports, so long sentences simply vanished from the SRT/VTT.
+        Callers use the returned list to emit follow-up cues; ``max_lines`` is
+        therefore only a soft target used to decide when to start a new cue.
+        """
         words = text.split()
-        lines = []
-        current_line = []
+        lines: List[str] = []
+        current_line: List[str] = []
 
         for w in words:
-            # Check length of current line + next word
             test_line = " ".join(current_line + [w])
             if len(test_line) > limit:
                 if current_line:
                     lines.append(" ".join(current_line))
                     current_line = [w]
                 else:
-                    # Single extremely long word, force split
+                    # Single extremely long token on its own line.
                     lines.append(w)
                     current_line = []
             else:
@@ -472,8 +690,40 @@ class TranscriptFormatter:
         if current_line:
             lines.append(" ".join(current_line))
 
-        # Restrict to max lines
-        if len(lines) > max_lines:
-            lines = lines[:max_lines]
-
         return lines
+
+    def _subtitle_cue_chunks(
+        self, text: str, start: float, end: float
+    ) -> List[tuple]:
+        """Chops one transcript unit into (text, start, end) cues that each fit
+        the subtitle line budget.
+
+        A unit whose text needs more than ``sub_max_lines`` wrapped lines is
+        emitted as several consecutive cues, with times divided proportionally
+        by character offset. Nothing is dropped.
+        """
+        wrapped = self._wrap_subtitle_text(
+            text, limit=self.sub_max_chars, max_lines=self.sub_max_lines
+        )
+
+        if len(wrapped) <= self.sub_max_lines:
+            return [(text, start, end)]
+
+        total_chars = sum(len(line) for line in wrapped) or 1
+        duration = max(0.0, end - start)
+        chunks: List[tuple] = []
+        consumed = 0
+        cursor = start
+
+        for index, line in enumerate(wrapped):
+            # +1 accounts for the joining space between lines.
+            share = (len(line) + (1 if index else 0)) / total_chars
+            is_last = index == len(wrapped) - 1
+            chunk_end = end if is_last else cursor + (duration * share)
+            if chunk_end <= cursor:
+                chunk_end = cursor + 0.5
+            chunks.append((line, cursor, chunk_end))
+            cursor = chunk_end
+            consumed += len(line)
+
+        return chunks

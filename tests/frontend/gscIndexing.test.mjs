@@ -11,9 +11,12 @@ import {
   submitBatchToGoogleIndexing,
 } from '../../scripts/gscIndexing.mjs';
 import {
-  GOOGLE_PING_URL,
-  pingSearchEngine,
-  pingAllSearchEngines,
+  SITEMAP_URL,
+  verifySitemap,
+  submitToIndexNow,
+  submitToGoogleIndexing,
+  verifyLocalSitemapArtifact,
+  runPostBuildChecks,
 } from '../../scripts/pingSitemaps.mjs';
 
 test('loadServiceAccountCredentials returns null when input is empty or unset', () => {
@@ -143,28 +146,144 @@ test('submitBatchToGoogleIndexing skips gracefully without credentials', async (
   assert.equal(result.reason, 'CREDENTIALS_MISSING');
 });
 
-test('pingSearchEngine handles successful and deprecation responses gracefully', async () => {
-  const mockFetchOk = async () => ({ ok: true, status: 200 });
-  const resOk = await pingSearchEngine('TestEngine', 'https://example.com/ping', mockFetchOk);
-  assert.equal(resOk.success, true);
-  assert.equal(resOk.status, 200);
+const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<loc>https://konthora.dev.bd</loc>
+<loc>https://konthora.dev.bd/text-to-speech</loc>
+</urlset>`;
 
-  const mockFetch404 = async () => ({ ok: false, status: 404 });
-  const res404 = await pingSearchEngine('Google', GOOGLE_PING_URL, mockFetch404);
-  assert.equal(res404.success, false);
-  assert.equal(res404.status, 404);
-  assert.ok(res404.message.includes('404'));
+function xmlResponse(body = SITEMAP_XML, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    text: async () => body,
+    json: async () => ({}),
+  };
+}
+
+test('verifySitemap accepts a healthy live sitemap and counts its URLs', async () => {
+  const result = await verifySitemap(async () => xmlResponse());
+  assert.equal(result.success, true);
+  assert.equal(result.status, 200);
+  assert.equal(result.urlCount, 2);
+  assert.equal(result.url, SITEMAP_URL);
 });
 
-test('pingAllSearchEngines pings Google and Bing URLs', async () => {
-  const pingedUrls = [];
-  const mockFetch = async (url) => {
-    pingedUrls.push(url);
-    return { ok: true, status: 200 };
-  };
+test('verifySitemap fails when the live sitemap 404s', async () => {
+  // The old script pinged retired endpoints and could not tell this apart from
+  // success, so a broken deploy looked healthy in the build log.
+  const result = await verifySitemap(async () => xmlResponse('Not found', 404));
+  assert.equal(result.success, false);
+  assert.equal(result.status, 404);
+  assert.equal(result.urlCount, 0);
+});
 
-  const results = await pingAllSearchEngines(mockFetch);
-  assert.equal(results.length, 2);
-  assert.ok(pingedUrls.some((u) => u.includes('google.com/ping')));
-  assert.ok(pingedUrls.some((u) => u.includes('bing.com/ping')));
+test('verifySitemap rejects a 200 response that is not a sitemap', async () => {
+  const result = await verifySitemap(async () => xmlResponse('<html><body>hello</body></html>', 200));
+  assert.equal(result.success, false);
+  assert.match(result.message, /not a sitemap urlset/u);
+});
+
+test('verifySitemap rejects an empty urlset', async () => {
+  const result = await verifySitemap(async () =>
+    xmlResponse('<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'),
+  );
+  assert.equal(result.success, false);
+  assert.equal(result.urlCount, 0);
+});
+
+test('verifySitemap reports a network failure without throwing', async () => {
+  const result = await verifySitemap(async () => {
+    throw new Error('getaddrinfo ENOTFOUND');
+  });
+  assert.equal(result.success, false);
+  assert.equal(result.status, 0);
+  assert.match(result.message, /ENOTFOUND/u);
+});
+
+test('verifySitemap accepts a sitemapindex document', async () => {
+  const result = await verifySitemap(async () =>
+    xmlResponse('<?xml version="1.0"?><sitemapindex><sitemap><loc>x</loc></sitemap></sitemapindex>'),
+  );
+  assert.equal(result.success, true);
+});
+
+test('submitToIndexNow posts the real IndexNow endpoint and reports acceptance', async () => {
+  const seen = [];
+  const result = await submitToIndexNow(async (url, init) => {
+    seen.push({ url, body: JSON.parse(init.body) });
+    return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+  });
+
+  assert.equal(seen[0].url, 'https://api.indexnow.org/indexnow');
+  assert.ok(seen[0].body.urlList.length > 0, 'IndexNow must receive the sitemap URLs');
+  assert.equal(result.name, 'IndexNow');
+  assert.equal(result.success, true);
+  assert.equal(result.status, 200);
+  assert.ok(result.submitted > 0);
+});
+
+test('submitToIndexNow surfaces a rejection instead of claiming success', async () => {
+  const result = await submitToIndexNow(async () => ({
+    ok: false,
+    status: 403,
+    text: async () => '',
+    json: async () => ({}),
+  }));
+  assert.equal(result.success, false);
+  assert.equal(result.status, 403);
+  assert.equal(result.submitted, 0);
+});
+
+test('submitToGoogleIndexing skips cleanly when no credentials are configured', async () => {
+  const previous = process.env.GSC_SERVICE_ACCOUNT_JSON;
+  delete process.env.GSC_SERVICE_ACCOUNT_JSON;
+  try {
+    const result = await submitToGoogleIndexing(async () => {
+      throw new Error('should not be called without credentials');
+    });
+    assert.equal(result.skipped, true);
+    assert.equal(result.success, true);
+    assert.match(result.message, /GSC_SERVICE_ACCOUNT_JSON/u);
+  } finally {
+    if (previous !== undefined) process.env.GSC_SERVICE_ACCOUNT_JSON = previous;
+  }
+});
+
+test('the local build artifact exposes a non-empty URL list', () => {
+  const result = verifyLocalSitemapArtifact();
+  // Reads the built artifact when present, otherwise the sitemap route list.
+  assert.equal(result.success, true);
+  assert.ok(result.urlCount > 0);
+});
+
+test('runPostBuildChecks gates on the live sitemap, not on deprecated pings', async () => {
+  const calls = [];
+  const result = await runPostBuildChecks(async (url) => {
+    calls.push(url);
+    if (url === SITEMAP_URL) return xmlResponse();
+    return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.live.success, true);
+  assert.equal(result.submissions.length, 2);
+  assert.deepEqual(
+    result.submissions.map((s) => s.name),
+    ['IndexNow', 'Google Indexing API'],
+  );
+  assert.ok(
+    !calls.some((u) => u.includes('/ping')),
+    'the retired ping endpoints must not be called',
+  );
+});
+
+test('runPostBuildChecks reports failure when the live sitemap is broken', async () => {
+  const result = await runPostBuildChecks(async (url) => {
+    if (url === SITEMAP_URL) return xmlResponse('Not found', 404);
+    return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.live.success, false);
+  assert.equal(result.live.status, 404);
 });

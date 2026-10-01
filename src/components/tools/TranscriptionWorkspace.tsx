@@ -18,6 +18,7 @@ import {
   ApiTranscriptionCapabilities,
   ApiError,
   isAbortError,
+  isTimeoutError,
 } from '@/lib/api';
 import {
   getFileSizeBucket,
@@ -360,6 +361,7 @@ export function TranscriptionWorkspace() {
         pollTimerRef.current = setTimeout(() => void poll(jobId, token), POLL_INTERVAL_MS);
       }
     } catch (err) {
+      // A caller abort (unmount, cancel, new submit) ends the chain silently.
       if (isAbortError(err) || !mountedRef.current) return;
 
       console.error('Transcription status polling error:', err);
@@ -379,9 +381,27 @@ export function TranscriptionWorkspace() {
         return;
       }
 
-      setPhase('failed');
-      setErrorMsg('Lost connection to the server. Please try again.');
+      // Retryable: a single slow or timed-out request must not abandon a job
+      // that is still running on the server. Previously any error below the
+      // ceiling immediately flipped the UI to "failed", and because the poll
+      // chain was not rescheduled the workspace hung on a dead state. A
+      // TimeoutError from the request deadline lands here too, which is why
+      // isAbortError no longer treats it as a caller abort.
+      setPhase(statusPhaseWhileRetrying());
+      setErrorMsg(
+        isTimeoutError(err)
+          ? 'The server is responding slowly. Still waiting for your transcription…'
+          : null,
+      );
+      pollTimerRef.current = setTimeout(() => void poll(jobId, token), POLL_INTERVAL_MS);
     }
+  };
+
+  /** Keeps the last known job status visible while retrying, defaulting to processing. */
+  const statusPhaseWhileRetrying = (): WorkspacePhase => {
+    const current = job?.statusResponse?.status;
+    if (current === 'queued' || current === 'processing') return current;
+    return 'processing';
   };
 
   // ── Submit ──────────────────────────────────────────────────────────────────

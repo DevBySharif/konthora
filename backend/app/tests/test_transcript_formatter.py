@@ -81,16 +81,63 @@ def test_group_paragraphs():
     assert paragraphs[0]["text"] == "Sentence one. Sentence two."
     assert paragraphs[1]["text"] == "Sentence three."
 
-def test_srt_wrapping():
+def test_srt_wrapping_never_drops_text():
     formatter = TranscriptFormatter()
-    # Mock settings.TRANSCRIPTION_SUBTITLE_MAX_CHARACTERS = 84
-    # Mock settings.TRANSCRIPTION_SUBTITLE_MAX_LINES = 2
     long_text = "This is a very long transcription segment that we want to render inside an SRT cue and it should split nicely across lines without breaking words."
 
     lines = formatter._wrap_subtitle_text(long_text, limit=40, max_lines=2)
-    assert len(lines) == 2
-    assert len(lines[0]) <= 40
-    assert len(lines[1]) <= 40
+
+    # Every word must survive. Previously this truncated with lines[:max_lines],
+    # silently discarding everything past limit * max_lines characters.
+    assert " ".join(lines) == long_text
+    assert len(lines) > 2, "text should need more than the 2-line budget"
+    for line in lines:
+        assert len(line) <= 40
+
+
+def test_long_srt_cue_is_split_into_multiple_cues_not_truncated():
+    formatter = TranscriptFormatter()
+    long_text = (
+        "This is a deliberately long sentence used to prove that subtitle cue "
+        "generation no longer discards text beyond the two-line budget, because "
+        "the old implementation truncated with lines[:max_lines]."
+    )
+    data = [{"id": 0, "start": 0.0, "end": 12.0, "text": long_text}]
+
+    srt = formatter.export_srt(data)
+    vtt = formatter.export_vtt(data)
+
+    for word in long_text.split():
+        assert word in srt, f"SRT dropped {word!r}"
+        assert word in vtt, f"VTT dropped {word!r}"
+
+    # More than one cue, and they must run forward in time from the start.
+    assert srt.count(" --> ") > 1
+    assert vtt.count(" --> ") > 1
+    assert srt.startswith("1\n00:00:00,000")
+    assert vtt.startswith("WEBVTT")
+
+
+def test_srt_vtt_skip_empty_transcript_instead_of_failing():
+    # A file where Whisper finds no speech must not fail the job. The empty SRT
+    # export used to be "" which tripped the zero-byte guard in
+    # write_atomic_result and raised, failing the whole transcription.
+    import tempfile
+    from pathlib import Path
+
+    formatter = TranscriptFormatter()
+    d = Path(tempfile.mkdtemp())
+
+    for fmt, payload in [
+        ("srt", ""),
+        ("vtt", "WEBVTT\n\n"),
+        ("txt", "No speech was detected."),
+    ]:
+        try:
+            formatter.write_atomic_result(d / f"result.{fmt}", payload)
+        except ValueError:
+            # Only SRT may legitimately be empty; it must be handled upstream.
+            assert fmt == "srt", f"{fmt} raised on empty output"
 
 def test_format_words_to_text_spacing_and_punctuation():
     formatter = TranscriptFormatter()
@@ -217,3 +264,61 @@ def test_export_formats_word_spacing():
     assert "WEBVTT" in vtt_output
     assert "Hello world." in vtt_output
     assert "This is a test transcript." in vtt_output
+
+
+def test_word_spacing_quotes_hyphens_and_ellipsis():
+    """Regression tests for spacing bugs introduced with the word-spacing fix.
+
+    Straight quotes used to render as ``He said" hello".``, BPE split
+    hyphenated words gained a space (``well- known``), and an ellipsis token
+    was treated as sentence-terminal, splitting one sentence into two.
+    """
+    formatter = TranscriptFormatter()
+
+    def join(*words):
+        ws = [{"word": w, "start": i * 0.4, "end": (i + 1) * 0.4}
+              for i, w in enumerate(words)]
+        return formatter._format_words_to_text(ws)
+
+    q = chr(34)
+
+    # Opening quote keeps its leading space, closing quote hugs the word.
+    assert join("He", "said", q, "hello", q, ".") == 'He said "hello".'
+
+    # A trailing hyphen continues the previous token.
+    assert join("a", "well-", "known", "issue", ".") == "a well-known issue."
+
+    # Ordinary text and contractions still work.
+    assert join("Hello", "there", ".") == "Hello there."
+    assert join("It", "'s", "fine", ".") == "It's fine."
+
+    # An ellipsis is a pause, not an ending.
+    segs = [{
+        "id": 0, "start": 0.0, "end": 2.0, "text": "",
+        "words": [
+            {"word": w, "start": i * 0.4, "end": (i + 1) * 0.4}
+            for i, w in enumerate(["Wait", "...", "really", "are", "you", "ok", "?"])
+        ],
+    }]
+    sentences = formatter.group_sentences(segs)
+    texts = [x["text"] for x in sentences]
+    assert len(sentences) == 1, "ellipsis split the sentence: %r" % (texts,)
+    assert "really" in texts[0]
+
+
+def test_abbreviation_does_not_create_one_word_sentence():
+    """Whisper splits "Dr." into ``Dr`` + ``.``; the lone period must not
+    terminate the sentence and produce an orphan one-word unit."""
+    formatter = TranscriptFormatter()
+    segs = [{
+        "id": 0, "start": 0.0, "end": 3.0, "text": "",
+        "words": [
+            {"word": w, "start": i * 0.4, "end": (i + 1) * 0.4}
+            for i, w in enumerate(["Dr", ".", "Smith", "called", "yesterday", "."])
+        ],
+    }]
+    sentences = formatter.group_sentences(segs)
+    texts = [x["text"].strip() for x in sentences]
+    assert "Dr." not in texts, "orphan abbreviation sentence: %r" % (texts,)
+    assert "." not in texts, "orphan period sentence: %r" % (texts,)
+    assert "Smith" in " ".join(texts)

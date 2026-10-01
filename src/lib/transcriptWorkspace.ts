@@ -166,9 +166,13 @@ export function transcriptWorkspaceReducer(
       const query = action.query.trim();
       if (!query) return state;
       const pattern = new RegExp(escapeRegExp(query), 'giu');
+      const replacement = action.replacement;
       const segments = state.segments.map((segment) => ({
         ...segment,
-        text: segment.text.replace(pattern, action.replacement),
+        // Pass a replacer function so `$&`, `$1`, `$\`` and `$'` typed into the
+        // "Replace with" box are inserted literally. A replacement string made
+        // the user's own text act as a substitution pattern.
+        text: segment.text.replace(pattern, () => replacement),
       }));
       return withHistory(state, segments);
     }
@@ -224,22 +228,29 @@ export function findTranscriptMatches(
   segments: TranscriptSegmentData[],
   rawQuery: string,
 ): TranscriptSearchMatch[] {
-  const query = rawQuery.trim().toLocaleLowerCase();
+  const query = rawQuery.trim();
   if (!query) return [];
+
+  // Search the original text with a locale-independent case-insensitive pattern
+  // instead of lowercasing a copy. `toLocaleLowerCase()` used the host locale and
+  // can change string length (Turkish dotted I, Lithuanian accents), so the
+  // offsets derived from the lowercased copy did not line up with the original
+  // text that gets sliced during replace, corrupting the transcript.
+  const pattern = new RegExp(escapeRegExp(query), 'giu');
 
   const matches: TranscriptSearchMatch[] = [];
   segments.forEach((segment, segmentIndex) => {
-    const haystack = segment.text.toLocaleLowerCase();
-    let start = 0;
-    while (start <= haystack.length - query.length) {
-      const matchStart = haystack.indexOf(query, start);
-      if (matchStart === -1) break;
+    pattern.lastIndex = 0;
+    let match = pattern.exec(segment.text);
+    while (match !== null) {
       matches.push({
         segmentIndex,
-        start: matchStart,
-        end: matchStart + query.length,
+        start: match.index,
+        end: match.index + match[0].length,
       });
-      start = matchStart + Math.max(1, query.length);
+      // Zero-length matches (e.g. an empty-ish query) would loop forever.
+      pattern.lastIndex = match.index + Math.max(1, match[0].length);
+      match = pattern.exec(segment.text);
     }
   });
   return matches;
@@ -258,12 +269,15 @@ export function getHighlightParts(text: string, rawQuery: string): HighlightPart
   const query = rawQuery.trim();
   if (!query) return [{ text, match: false }];
   const pattern = new RegExp(`(${escapeRegExp(query)})`, 'giu');
+  // Case folding is decided by the same `iu` pattern that produced the split, so
+  // the host locale can no longer mislabel a part as a match or vice versa.
+  const exact = new RegExp(`^${escapeRegExp(query)}$`, 'iu');
   return text
     .split(pattern)
     .filter(Boolean)
     .map((part) => ({
       text: part,
-      match: part.toLocaleLowerCase() === query.toLocaleLowerCase(),
+      match: exact.test(part),
     }));
 }
 

@@ -16,7 +16,8 @@ kokoro==0.7.16
 # Whisper
 faster-whisper
 
-# Voice Agent Hackathon (AssemblyAI & Gemini)
-assemblyai>=0.33.0
-websockets>=12.0
-google-genai>=0.1.0
+# Removed: assemblyai, websockets, google-genai
+# These were pulled in for the realtime voice-agent feature, which has been
+# removed from both the frontend and the API surface. Nothing imports them any
+# more, and dropping them shrinks the install image that ships to the Hugging
+# Face Space. Re-add them only if the voice agent comes back.
