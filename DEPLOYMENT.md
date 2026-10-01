@@ -1,5 +1,37 @@
 # Konthora — Production Deployment
 
+> ## ⚠️ Read this first: the documented stack is not what is running
+>
+> The rest of this document describes a **planned EC2 deployment** (Next.js and
+> FastAPI both on one VPS behind Nginx). **Production is not running that.**
+>
+> What is actually live as of 2026-10-01:
+>
+> | Layer | Actually live | Documented here |
+> |---|---|---|
+> | Frontend | Next.js on EC2, Nginx + Let's Encrypt, `konthora.dev.bd` | ✅ matches |
+> | API | **Hugging Face Space** `DEVSHARIF/konthora-api` (CPU, 2 vCPU / 16 GB / 50 GB non-persistent) | ❌ `api.konthora.dev.bd` on the VPS |
+>
+> Consequences that matter:
+>
+> - The built frontend bakes `NEXT_PUBLIC_API_URL=https://devsharif-konthora-api.hf.space/api/v1`
+>   into the client bundle. **`api.konthora.dev.bd` currently does not respond**
+>   (21s timeout), so nothing depends on it right now.
+> - The Space's filesystem is **non-persistent** and 50 GB. Model cache
+>   (~1.4 GB), stored results and in-flight uploads share it. Uploads are now
+>   rejected up front with a retryable `503 STORAGE_UNAVAILABLE` when free
+>   space drops below `TRANSCRIPTION_MIN_FREE_DISK_MB` (500 MB).
+> - The Space runs on **CPU only**, so transcription and TTS compete for 2
+>   cores. `TRANSCRIPTION_WORKER_COUNT=1` is deliberate; raising it will thrash.
+> - The Space is deployed by pushing to its **own git remote**, not by
+>   `deploy/scripts/deploy.sh`. Its repo is flat (`app/` at the root) and has
+>   independent history, so `git push hf main` from the monorepo does not
+>   update it.
+>
+> Either migrate the API onto the EC2 box as described below, or rewrite this
+> document to describe the Space as the supported target. Until then, treat the
+> EC2 sections below as a migration guide, not as a description of production.
+
 This document describes how to deploy the entire Konthora stack to **AWS EC2**
 (Ubuntu 24.04 LTS) behind **Nginx + Let's Encrypt**, managed by **systemd**.
 Both the Next.js frontend and the FastAPI backend run on the same VPS — no
