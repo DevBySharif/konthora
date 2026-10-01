@@ -69,7 +69,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Must be >=22.6. The frontend suite imports .ts modules directly
+          # (transcriptWorkspace.ts, api.ts), and `node --test` can only strip
+          # TypeScript types from 22.6 onward. On Node 20 every import of a .ts
+          # file fails, so this job had never passed. Next 16 itself only needs
+          # >=20.9.0, so the app is unaffected by this bump.
+          node-version: "22"
           cache: npm
 
       - name: Install dependencies
