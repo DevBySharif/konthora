@@ -23,10 +23,10 @@
   --secondary: #141414;
   --secondary-foreground: #F3F3F3;
   --muted: #0F0F0F;
-  --muted-foreground: #9A9A9A;
-  --border: rgba(255, 255, 255, 0.16);
-  --border-soft: rgba(255, 255, 255, 0.12);
-  --ring: rgba(255, 255, 255, 0.30);
+  --muted-foreground: #B3B3B3;
+  --border: rgba(255, 255, 255, 0.20);
+  --border-soft: rgba(255, 255, 255, 0.14);
+  --ring: rgba(255, 255, 255, 0.35);
   --success: #34D399;
   --error: #EF4444;
   --destructive: #EF4444;

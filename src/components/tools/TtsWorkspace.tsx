@@ -1151,24 +1151,64 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         </div>
 
         <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
+          {/* Sample Scripts - shown when no audio generated yet */}
+          {status !== 'completed' && status !== 'failed' && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Quick start — click a script to load it
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {SAMPLE_SCRIPTS.map((script) => (
+                  <button
+                    key={script.id}
+                    type="button"
+                    onClick={() => {
+                      setText(script.text);
+                      setErrorMsg(null);
+                      trackTtsSampleInserted('quick_start');
+                    }}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h4>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{script.duration}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty state / Error state / Results */}
           {status !== 'completed' && (
             <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
-                <div className="mb-3 text-muted-foreground">
-                  {status === 'failed' ? (
-                    <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
-                  ) : (
-                    <Music className="w-8 h-8 opacity-40" />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-                  {status === 'failed'
-                    ? 'There was an error generating your speech. Check the error message above.'
-                    : 'Enter your script above and click Generate Speech. Your audio will appear here when ready.'}
-                </p>
+              <div className="mb-3 text-muted-foreground">
+                {status === 'failed' ? (
+                  <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
+                ) : (
+                  <Music className="w-8 h-8 opacity-40" />
+                )}
               </div>
+              <h3 className="text-lg font-semibold text-foreground">
+                {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                {status === 'failed'
+                  ? 'There was an error generating your speech. Check the error message above.'
+                  : 'Enter your script above and click Generate Speech. Your audio will appear here when ready.'}
+              </p>
+            </div>
           )}
 
           {status === 'completed' && audioUrl && (
