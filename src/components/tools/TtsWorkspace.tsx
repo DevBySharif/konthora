@@ -17,6 +17,10 @@ import {
   Lock,
   Settings2,
   RotateCcw,
+  FileAudio,
+  Headphones,
+  MessageSquare,
+  BookOpen,
 } from 'lucide-react';
 import {
   fetchVoices,
@@ -39,6 +43,7 @@ import {
   trackTtsAudioDownloaded,
   getCharacterCountBucket
 } from '@/components/analytics/events';
+import { VoicePicker } from './VoicePicker';
 import {
   DEFAULT_VOICE_BY_LANGUAGE,
   SupportedLanguage,
@@ -109,6 +114,54 @@ const PROGRESS_MESSAGES: Record<string, string> = {
 
 const SAMPLE_TEXT =
   'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
+
+const SAMPLE_SCRIPTS = [
+  {
+    id: 'intro',
+    title: 'Product Introduction',
+    description: 'Short promo for a new product or feature launch.',
+    icon: Sparkles,
+    text: 'Introducing the future of productivity. Our new AI-powered workspace learns how you work, anticipates what you need, and helps you create your best work — automatically. No setup. No learning curve. Just results.',
+    category: 'Marketing',
+    duration: '~12 sec',
+  },
+  {
+    id: 'explainer',
+    title: 'Explainer Video',
+    description: 'Clear, educational script for tutorials or onboarding.',
+    icon: BookOpen,
+    text: 'When you save a file to the cloud, it travels through encrypted channels to secure data centers. Your data is split into fragments, each stored on different servers across multiple regions. This means even if one server fails, your files remain safe and accessible.',
+    category: 'Education',
+    duration: '~18 sec',
+  },
+  {
+    id: 'social',
+    title: 'Social Media Hook',
+    description: 'Punchy opening for Reels, TikTok, or Shorts.',
+    icon: MessageSquare,
+    text: 'Stop scrolling. You\'re probably making this one mistake with your morning routine — and it\'s costing you hours of focus every day. Here\'s the fix that changed everything for me.',
+    category: 'Social',
+    duration: '~10 sec',
+  },
+  {
+    id: 'podcast',
+    title: 'Podcast Intro',
+    description: 'Warm, conversational opener for audio shows.',
+    icon: Headphones,
+    text: 'Hey there, welcome back to The Daily Grind. I\'m your host Alex, and today we\'re diving into something that affects every single one of us: decision fatigue. Why do smart people make bad choices by 5 PM? And how do we fix it?',
+    category: 'Audio',
+    duration: '~15 sec',
+  },
+  {
+    id: 'welcome',
+    title: 'Welcome / Onboarding',
+    description: 'Friendly greeting for apps, courses, or platforms.',
+    icon: FileAudio,
+    text: 'Welcome aboard! We\'re thrilled to have you here. In the next few minutes, I\'ll walk you through the three things you need to know to get the most out of your new account. Let\'s get started.',
+    category: 'Onboarding',
+    duration: '~11 sec',
+  },
+];
 
 const POLL_INTERVAL_MS = 1500;
 /**
@@ -732,6 +785,44 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </div>
         </div>
 
+{/* Sample Scripts - Quick Start */}
+        {(!text || text.trim() === '') && status !== 'submitting' && status !== 'polling' ? (
+          <div className="border border-border/50 bg-card/50 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Quick start — click a script to load it
+            </h3>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {SAMPLE_SCRIPTS.map((script) => (
+                <button
+                  key={script.id}
+                  type="button"
+                  onClick={() => {
+                    setText(script.text);
+                    setErrorMsg(null);
+                    trackTtsSampleInserted('quick_start');
+                  }}
+                  className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h4>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground">{script.duration}</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Validation Errors */}
         {errorMsg && (
           <StatusMessage
@@ -747,8 +838,11 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           <div className="flex flex-col gap-3">
             <div
               id="tts-language-label"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
             >
+              <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                <Volume2 className="w-3.5 h-3.5 text-primary" />
+              </span>
               Language
             </div>
             <div
@@ -780,42 +874,34 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(15rem,0.75fr)] lg:items-start">
           {/* Voice Selector */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="tts-voice-select"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
-            >
-              Voice
-            </label>
-            <select
-              id="tts-voice-select"
-              value={resolvedVoiceId}
-              onChange={(e) => handleVoiceSelect(e.target.value)}
-              disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
-              className="min-h-11 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {availableVoices.length === 0 ? (
-                <option value="">No voices available for this language</option>
-              ) : (
-                availableVoices.map((voice) => (
-                  <option key={voice.id} value={voice.id}>
-                    {voice.displayName} — {voice.accent}
-                    {voice.recommended ? ' (Recommended)' : ''}
-                  </option>
-                ))
-              )}
-            </select>
-            {availableVoices.length === 0 && (
-              <p className="text-[11px] text-destructive leading-snug">
-                No voices are available for this language right now. Please pick another language.
-              </p>
-            )}
-          </div>
+          <VoicePicker
+            voices={availableVoices.map(v => ({
+              id: v.id,
+              displayName: v.displayName,
+              accent: v.accent,
+              gender: v.gender,
+              language: v.language,
+              recommended: v.recommended,
+              previewUrl: `/audio/voice-previews/${v.id}.mp3`
+            }))}
+            selectedVoiceId={resolvedVoiceId}
+            selectedLanguage={selectedLanguage}
+            onSelectVoice={handleVoiceSelect}
+            disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
+          />
+          {availableVoices.length === 0 && (
+            <p className="text-[11px] text-destructive leading-snug">
+              No voices are available for this language right now. Please pick another language.
+            </p>
+          )}
 
           {/* Speed Slider */}
           <div className="flex flex-col gap-2 lg:order-2 lg:col-span-2 border-t border-border/70 pt-5">
             <div className="flex justify-between items-center">
-              <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                  <Settings2 className="w-3.5 h-3.5 text-primary" />
+                </span>
                 Speech Speed
               </label>
               <span className="text-xs font-mono font-bold text-primary">
@@ -864,8 +950,11 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           <div className="flex flex-col gap-2 lg:order-1">
             <div
               id="tts-format-label"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
             >
+              <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                <FileAudio className="w-3.5 h-3.5 text-primary" />
+              </span>
               Output Format
             </div>
             <div
@@ -1063,34 +1152,22 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
           {status !== 'completed' && (
             <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
-              <div className="mb-3 text-muted-foreground">
-                {status === 'failed' ? (
-                  <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
-                ) : (
-                  <Music className="w-8 h-8 opacity-40" />
-                )}
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">
-                {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-                {status === 'failed'
-                  ? 'There was an error generating your speech. Check the error message above.'
-                  : 'Enter your script and click Generate Speech to create natural-sounding voiceovers. Output controls will appear here.'}
-              </p>
-              {status !== 'failed' && (
-                <div className="mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleInsertSample('empty_state')}
-                  >
-                    Try a sample script
-                  </Button>
+                <div className="mb-3 text-muted-foreground">
+                  {status === 'failed' ? (
+                    <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
+                  ) : (
+                    <Music className="w-8 h-8 opacity-40" />
+                  )}
                 </div>
-              )}
-            </div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                  {status === 'failed'
+                    ? 'There was an error generating your speech. Check the error message above.'
+                    : 'Enter your script above and click Generate Speech. Your audio will appear here when ready.'}
+                </p>
+              </div>
           )}
 
           {status === 'completed' && audioUrl && (

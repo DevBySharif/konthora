@@ -28,7 +28,7 @@ export function getCharacterCountBucket(count: number): TtsCharacterCountBucket 
   return '1501_2000';
 }
 
-export const trackTtsSampleInserted = (source: 'input_action' | 'empty_state') => {
+export const trackTtsSampleInserted = (source: 'input_action' | 'empty_state' | 'quick_start') => {
   trackEvent('tts_sample_inserted', { source });
 };
 
@@ -89,6 +89,15 @@ export const trackTtsPreviewPlayed = (params: { voice_id: string; format: TtsFor
 
 export const trackTtsAudioDownloaded = (params: { voice_id: string; format: TtsFormat }) => {
   trackEvent('tts_audio_downloaded', params);
+};
+
+export const trackTtsVoicePreviewPlayed = (params: {
+  voice_id: string;
+  accent: string;
+  gender: string;
+  recommended: boolean;
+}) => {
+  trackEvent('tts_voice_preview_played', params);
 };
 
 // ── Transcription analytics ──────────────────────────────────────────────────

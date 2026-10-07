@@ -19,7 +19,6 @@ from app.core.exceptions import TtsException
 from app.core.queue import TtsQueueManager
 from app.core.transcription_queue import TranscriptionQueueManager
 from app.services.cleanup_service import CleanupService
-from app.services.kokoro_service import KokoroService
 from app.services.transcription_service import TranscriptionService
 from app.api.v1.health import router as health_router
 from app.api.v1.tts import router as tts_router
