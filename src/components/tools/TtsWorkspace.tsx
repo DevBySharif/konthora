@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { StatusMessage } from '@/components/ui/StatusMessage';
+import { JsonLd } from '@/components/JsonLd';
 import {
   Volume2,
   Trash2,
@@ -1171,7 +1172,23 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           )}
 
           {status === 'completed' && audioUrl && (
-            <div className="space-y-4">
+            <>
+              <JsonLd schema={{
+                '@context': 'https://schema.org',
+                '@type': 'AudioObject',
+                name: `Konthora Speech — ${resolvedVoiceId}`,
+                description: `AI-generated speech using ${resolvedVoiceId} voice, ${outputFormat.toUpperCase()} format`,
+                contentUrl: audioUrl,
+                encodingFormat: `audio/${outputFormat}`,
+                duration: durationSeconds ? `PT${Math.floor(durationSeconds)}S` : undefined,
+                author: {
+                  '@type': 'Organization',
+                  name: 'Konthora',
+                  url: 'https://konthora.dev.bd',
+                },
+                dateCreated: new Date().toISOString(),
+              }} />
+              <div className="space-y-4">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-secondary/20 rounded-xl">
                 {/* Audio HTML element (hidden visually but driven by refs and play controls) */}
                 <audio
@@ -1227,7 +1244,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 </span>
               </div>
             </div>
-          )}
+          </>)}
         </div>
       </div>
     </div>

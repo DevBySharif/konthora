@@ -21,6 +21,11 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert Hindi text to natural speech online for free. Generate Indian AI voiceover with 4 native Hindi voices (female and male) and download as MP3 or WAV.',
   path: '/text-to-speech/hindi',
+  languages: {
+    'hi-IN': '/text-to-speech/hindi',
+    'en-US': '/text-to-speech',
+    'bn-BD': '/text-to-speech/bengali',
+  },
 });
 
 export default function HindiTtsPage() {

@@ -102,11 +102,42 @@ export default function HowTtsWorksPage() {
     })),
   };
 
+  /* ── Schema: TechArticle ── */
+  const techArticleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: 'How Does Text-to-Speech Work?',
+    description: 'Learn how text-to-speech works. Understand the major steps from text preparation and pronunciation mapping to voice generation and audio output.',
+    url: pageUrl,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    author: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: pageUrl,
+    datePublished: '2024-08-01',
+    dateModified: '2024-08-01',
+    inLanguage: 'en-US',
+    about: {
+      '@type': 'Thing',
+      name: 'Text-to-Speech Technology',
+      description: 'The process of converting written text into spoken audio using AI and linguistic models.',
+    },
+    articleSection: 'AI Audio Technology',
+    keywords: ['text-to-speech', 'TTS', 'Kokoro', 'neural voices', 'speech synthesis'],
+  };
+
   return (
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={howToSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={techArticleSchema} />
 
       {/* ── HERO / INTRO ── */}
       <section

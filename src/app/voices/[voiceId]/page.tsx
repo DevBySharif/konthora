@@ -99,11 +99,50 @@ export default async function VoicePage({ params }: VoicePageProps) {
     })),
   };
 
+  /* ── Schema: Product/Service (Voice) ── */
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: voice.heading,
+    description: voice.description,
+    url: pageUrl,
+    provider: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    serviceType: 'AI Text-to-Speech Voice',
+    areaServed: 'Worldwide',
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: pageUrl,
+      serviceMobileApp: false,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      eligibleRegion: { '@type': 'Country', name: 'World' },
+    },
+    category: 'AI Voice Generation',
+    featureList: [
+      `${voice.gender === 'female' ? 'Female' : 'Male'} ${voice.accent} voice`,
+      `Speed range: ${voice.minimumSpeed}× – ${voice.maximumSpeed}×`,
+      'Output: MP3, WAV',
+      `Language: ${voice.language}`,
+      voice.recommended ? 'Recommended default voice' : 'Available voice option',
+    ],
+    termsOfService: `${siteConfig.url}/terms`,
+    providerMobility: 'online',
+  };
+
   return (
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={webAppSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={serviceSchema} />
 
       {/* ── HERO ── */}
       <section

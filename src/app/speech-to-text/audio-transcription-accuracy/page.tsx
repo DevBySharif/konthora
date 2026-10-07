@@ -62,10 +62,41 @@ export default function AudioTranscriptionAccuracyPage() {
     })),
   };
 
+  /* ── Schema: TechArticle ── */
+  const techArticleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: 'Audio Transcription Accuracy: What Matters',
+    description: 'Learn what affects English audio transcription accuracy, from background noise to microphone quality, and how to improve speech-to-text results.',
+    url: pageUrl,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    author: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: pageUrl,
+    datePublished: '2024-08-01',
+    dateModified: '2024-08-01',
+    inLanguage: 'en-US',
+    about: {
+      '@type': 'Thing',
+      name: 'Audio Transcription Accuracy',
+      description: 'Factors that affect speech-to-text accuracy and how to improve results.',
+    },
+    articleSection: 'Audio Transcription',
+    keywords: ['transcription accuracy', 'speech recognition', 'faster-whisper', 'audio quality', 'background noise'],
+  };
+
   return (
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={techArticleSchema} />
 
       {/* ── HERO / INTRO ── */}
       <section

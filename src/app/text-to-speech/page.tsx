@@ -84,6 +84,21 @@ export default function TextToSpeechPage() {
     },
   ];
 
+  const steps = [
+    {
+      title: 'Write or paste your script',
+      desc: 'Enter up to 2,000 characters of text directly in the workspace above.',
+    },
+    {
+      title: 'Choose voice, language and speed',
+      desc: 'Pick a language and voice, then set the pace that fits your content.',
+    },
+    {
+      title: 'Generate and download',
+      desc: 'Generate a voiceover, preview it, and save it as MP3 or WAV.',
+    },
+  ];
+
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -91,6 +106,30 @@ export default function TextToSpeechPage() {
       '@type': 'Question',
       name: f.question,
       acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  };
+
+  /* ── Schema: HowTo ── */
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Generate AI Speech with Konthora',
+    description: 'Free browser-based text-to-speech with 41 neural voices, adjustable speed, and MP3/WAV download.',
+    url: pageUrl,
+    totalTime: 'PT2M',
+    supply: [
+      { '@type': 'HowToSupply', name: 'Text script (up to 2,000 characters)' },
+      { '@type': 'HowToSupply', name: 'Internet connection' },
+    ],
+    tool: [
+      { '@type': 'HowToTool', name: 'Konthora Text-to-Speech Workspace', url: pageUrl },
+    ],
+    step: steps.map((step, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: step.title,
+      text: step.desc,
+      url: `${pageUrl}#step-${index + 1}`,
     })),
   };
 
@@ -140,21 +179,6 @@ export default function TextToSpeechPage() {
     },
   ];
 
-  const steps = [
-    {
-      title: 'Write or paste your script',
-      desc: 'Enter up to 2,000 characters of text directly in the workspace above.',
-    },
-    {
-      title: 'Choose voice, language and speed',
-      desc: 'Pick a language and voice, then set the pace that fits your content.',
-    },
-    {
-      title: 'Generate and download',
-      desc: 'Generate a voiceover, preview it, and save it as MP3 or WAV.',
-    },
-  ];
-
   return (
     <>
       <JsonLd schema={webAppSchema} />
@@ -164,6 +188,7 @@ export default function TextToSpeechPage() {
       </SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={howToSchema} />
 
       <Section className="pb-4">
         <Container>

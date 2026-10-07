@@ -21,6 +21,12 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert Spanish text to natural speech online for free. Generate Spanish AI voiceover in 3 native voices, then download as MP3 or WAV.',
   path: '/text-to-speech/spanish',
+  languages: {
+    'es-ES': '/text-to-speech/spanish',
+    'en-US': '/text-to-speech',
+    'hi-IN': '/text-to-speech/hindi',
+    'bn-BD': '/text-to-speech/bengali',
+  },
 });
 
 export default function SpanishTtsPage() {

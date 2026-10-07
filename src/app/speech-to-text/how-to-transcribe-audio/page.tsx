@@ -136,11 +136,42 @@ export default function HowToTranscribeAudioPage() {
     })),
   };
 
+  /* ── Schema: TechArticle ── */
+  const techArticleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: 'How to Transcribe Audio to Text for Free',
+    description: 'Step-by-step guide to transcribing audio to text for free with sentence, paragraph, or word timestamps. Accepts MP3, WAV, M4A, AAC, MP4, WebM, and MOV.',
+    url: pageUrl,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    author: {
+      '@type': 'Organization',
+      name: 'Konthora',
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: pageUrl,
+    datePublished: '2024-08-01',
+    dateModified: '2024-08-01',
+    inLanguage: 'en-US',
+    about: {
+      '@type': 'Thing',
+      name: 'Audio Transcription',
+      description: 'The process of converting audio and video files into timestamped text transcripts.',
+    },
+    articleSection: 'Audio Transcription Guide',
+    keywords: ['transcribe audio', 'speech to text', 'timestamps', 'faster-whisper', 'free transcription'],
+  };
+
   return (
     <>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={howToSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={techArticleSchema} />
 
       {/* â”€â”€ HERO â”€â”€ */}
       <section

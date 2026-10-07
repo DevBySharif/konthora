@@ -21,6 +21,12 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert Portuguese text to natural speech online for free. Generate Brazilian Portuguese AI voiceover with 3 native voices and download as MP3 or WAV.',
   path: '/text-to-speech/portuguese',
+  languages: {
+    'pt-BR': '/text-to-speech/portuguese',
+    'en-US': '/text-to-speech',
+    'hi-IN': '/text-to-speech/hindi',
+    'bn-BD': '/text-to-speech/bengali',
+  },
 });
 
 export default function PortugueseTtsPage() {

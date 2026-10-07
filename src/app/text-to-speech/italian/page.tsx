@@ -21,6 +21,12 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert Italian text to natural speech online for free. Generate Italian AI voiceover with 2 native voices and download as MP3 or WAV.',
   path: '/text-to-speech/italian',
+  languages: {
+    'it-IT': '/text-to-speech/italian',
+    'en-US': '/text-to-speech',
+    'hi-IN': '/text-to-speech/hindi',
+    'bn-BD': '/text-to-speech/bengali',
+  },
 });
 
 export default function ItalianTtsPage() {

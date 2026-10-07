@@ -30,6 +30,9 @@ export const metadata: Metadata = constructMetadata({
 export default function VoicesPage() {
   const pageUrl = `${siteConfig.url}/voices`;
 
+  /* ── Voice Data ── */
+  const allVoices = getAllVoices();
+
   /* ── Schema: BreadcrumbList ── */
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -40,8 +43,23 @@ export default function VoicesPage() {
     ],
   };
 
-/* ── Voice Data ── */
-  const allVoices = getAllVoices();
+  /* ── Schema: ItemList (Voice Catalogue) ── */
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Konthora AI Voice Catalogue',
+    description: '41 neural AI voices across 6 languages with American, British, Hindi, Spanish, French, Italian, and Portuguese accents.',
+    numberOfItems: allVoices.length,
+    itemListElement: allVoices.map((voice, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `${siteConfig.url}${getVoiceUrl(voice.slug)}`,
+      name: voice.shortName,
+      description: `${voice.gender === 'female' ? 'Female' : 'Male'} ${voice.language.replace('-', ' ')} voice`,
+    })),
+  };
+
+  /* ── Schema: FAQPage ── */
 
   const americanVoices = allVoices
     .filter((v) => v.language === 'en-US')
@@ -94,6 +112,7 @@ export default function VoicesPage() {
   return (
     <>
       <JsonLd schema={breadcrumbSchema} />
+      <JsonLd schema={itemListSchema} />
       <JsonLd schema={faqSchema} />
 
       {/* ── HERO / INTRO ── */}

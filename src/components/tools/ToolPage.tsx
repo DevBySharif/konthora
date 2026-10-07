@@ -99,6 +99,30 @@ export function ToolPage({ content }: { content: ToolContent }) {
     })),
   };
 
+  /* ── Schema: HowTo ── */
+  const howToSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: `How to ${content.crumb.toLowerCase()} with Konthora`,
+    description: content.stepDescription,
+    url: pageUrl,
+    totalTime: 'PT3M',
+    supply: [
+      { '@type': 'HowToSupply', name: 'Audio or video file (up to 100 MB, 10 minutes)' },
+      { '@type': 'HowToSupply', name: 'Internet connection' },
+    ],
+    tool: [
+      { '@type': 'HowToTool', name: `Konthora ${content.crumb} Workspace`, url: pageUrl },
+    ],
+    step: content.steps.map((step, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: step.title,
+      text: step.desc,
+      url: `${pageUrl}#step-${index + 1}`,
+    })),
+  };
+
   const faqs: FAQItem[] = content.faqs;
 
   return (
@@ -108,6 +132,7 @@ export function ToolPage({ content }: { content: ToolContent }) {
       <SpeakableSummary id="speakable-summary">{content.speakable}</SpeakableSummary>
       <JsonLd schema={breadcrumbSchema} />
       <JsonLd schema={faqSchema} />
+      <JsonLd schema={howToSchema} />
 
       <Section className="pb-6">
         <Container>

@@ -21,6 +21,12 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert French text to natural speech online for free. Generate French AI voiceover with a native French voice and download as MP3 or WAV.',
   path: '/text-to-speech/french',
+  languages: {
+    'fr-FR': '/text-to-speech/french',
+    'en-US': '/text-to-speech',
+    'hi-IN': '/text-to-speech/hindi',
+    'bn-BD': '/text-to-speech/bengali',
+  },
 });
 
 export default function FrenchTtsPage() {
