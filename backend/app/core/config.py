@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     TTS_MAX_CHARACTERS: int = 2000
     TTS_MAX_QUEUE_SIZE: int = 10
     TTS_WORKER_COUNT: int = 1
+    # Inference device for Kokoro. Keep "cpu" on ZeroGPU Spaces: CUDA is only
+    # real inside a @spaces.GPU request, and the jobs run in a background thread.
+    TTS_DEVICE: str = "cpu"
     TTS_JOB_RETENTION_MINUTES: int = 60
     TTS_STORAGE_ROOT: str = "./storage"
     TTS_DEFAULT_VOICE: str = "af_heart"

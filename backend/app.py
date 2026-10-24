@@ -1,7 +1,7 @@
 import spaces
 import torch
 
-@spaces.GPU
+@spaces.GPU(duration=5)
 def zerogpu_warmup():
     if torch.cuda.is_available():
         return torch.zeros(1).cuda().sum().item()
@@ -15,7 +15,6 @@ import sys
 import gradio as gr
 from fastapi.middleware.cors import CORSMiddleware
 from app.main import app as fastapi_app
-from app.services.kokoro_service import KokoroService
 
 os.environ.setdefault("CORS_ORIGINS", "*")
 os.environ.setdefault("TRUSTED_HOSTS", "*")
@@ -29,34 +28,16 @@ fastapi_app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# ZeroGPU Kokoro Inference Task
+# Kokoro inference runs on CPU inside the FastAPI queue workers.
+#
+# ZeroGPU's @spaces.GPU decorator can only schedule a GPU from a live Gradio
+# request context (it reads the visitor's X-IP-Token from that request). The TTS
+# queue processes jobs in a background thread after the HTTP request has
+# returned, so there is no request context: every call failed to schedule and
+# was surfaced as "Speech synthesis failed due to an internal worker error."
+# Keeping synthesis on CPU avoids the ZeroGPU quota entirely; the model is an
+# 82M-parameter Kokoro pipeline and runs comfortably on the Space's vCPUs.
 # ---------------------------------------------------------------------------
-original_synthesize_chunk = KokoroService.synthesize_chunk
-
-@spaces.GPU(duration=120)
-def gpu_synthesis_task(chunk_text: str, voice_id: str, speed: float):
-    service = KokoroService()
-    lang_code = service.get_lang_code_for_voice(voice_id)
-    pipeline = service.load_pipeline(lang_code)
-    use_cuda = torch.cuda.is_available()
-    if use_cuda and hasattr(pipeline, "model") and pipeline.model is not None:
-        try:
-            pipeline.model.to("cuda")
-        except Exception:
-            pass
-    try:
-        return original_synthesize_chunk(service, chunk_text, voice_id, speed)
-    finally:
-        if use_cuda and hasattr(pipeline, "model") and pipeline.model is not None:
-            try:
-                pipeline.model.to("cpu")
-            except Exception:
-                pass
-
-def _routed_synthesize_chunk(self, chunk_text: str, voice_id: str, speed: float):
-    return gpu_synthesis_task(chunk_text, voice_id, speed)
-
-KokoroService.synthesize_chunk = _routed_synthesize_chunk
 
 # ---------------------------------------------------------------------------
 # Minimal Gradio Interface (Mounted under /gradio)

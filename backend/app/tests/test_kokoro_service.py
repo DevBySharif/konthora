@@ -73,3 +73,33 @@ def test_integration_non_english_generation_regression():
     
     assert isinstance(res, np.ndarray)
     assert len(res) > 16000 # should be valid duration, not truncated
+
+
+def test_integration_load_pipeline_pins_configured_device(monkeypatch):
+    """Kokoro must load on TTS_DEVICE instead of auto-selecting CUDA.
+
+    On a ZeroGPU Space torch.cuda.is_available() is emulated as True in the
+    main process, but real CUDA only exists inside a @spaces.GPU request. The
+    TTS queue runs in a background thread, so auto-selection would place the
+    model on an unusable device.
+    """
+    import kokoro
+    from app.core.config import settings
+
+    service = KokoroService()
+    monkeypatch.setattr(service, "_setup_espeak_env", lambda: None)
+    monkeypatch.setattr(service, "_pipelines", {})
+    monkeypatch.setattr(settings, "TTS_DEVICE", "cpu")
+
+    captured = {}
+
+    class FakePipeline:
+        def __init__(self, lang_code=None, device=None):
+            captured["lang_code"] = lang_code
+            captured["device"] = device
+            self.g2p = lambda text: text
+
+    monkeypatch.setattr(kokoro, "KPipeline", FakePipeline)
+    service.load_pipeline("a")
+
+    assert captured == {"lang_code": "a", "device": "cpu"}

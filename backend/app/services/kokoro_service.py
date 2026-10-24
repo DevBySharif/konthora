@@ -539,8 +539,14 @@ class KokoroService:
             logger.info(f"Initializing Kokoro KPipeline for language code: {lang_code}")
             try:
                 from kokoro import KPipeline
-                # Initialize pipeline (this fetches model weights from Hugging Face if not local)
-                pipeline = KPipeline(lang_code=lang_code)
+                # Initialize pipeline (this fetches model weights from Hugging Face if not local).
+                # The device is explicit: on ZeroGPU Spaces torch.cuda.is_available()
+                # is emulated as True in the main process, so letting Kokoro auto-select
+                # would place the model on an unreal CUDA device and fail at inference.
+                pipeline = KPipeline(
+                    lang_code=lang_code,
+                    device=getattr(settings, "TTS_DEVICE", "cpu"),
+                )
 
                 # --- NARROW COMPATIBILITY WRAPPER ---
                 # Kokoro's KPipeline assumes `pipeline.g2p(text)` returns a string for non-English languages.

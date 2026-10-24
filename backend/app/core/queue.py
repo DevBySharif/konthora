@@ -233,7 +233,10 @@ class TtsQueueManager:
             logger.info(f"Successfully finished processing Job: {job_id}. Duration: {duration:.2f}s")
 
         except Exception as e:
-            logger.error(f"Error processing Job: {job_id}: {e}")
+            # Keep the client-facing text generic, but preserve the full stack
+            # trace in the server log. Without it a non-TtsException (for
+            # example a failed ZeroGPU schedule) is impossible to diagnose.
+            logger.exception(f"Error processing Job: {job_id}: {e}")
 
             # Retrieve error codes or fallback
             code = "GENERATION_FAILED"
