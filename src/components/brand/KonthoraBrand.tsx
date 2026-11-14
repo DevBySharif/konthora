@@ -10,10 +10,10 @@ interface KonthoraBrandProps {
 export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
   const isHeader = variant === 'header';
   
-  const gapClass = isHeader ? 'gap-[9px]' : 'gap-[10px]';
-  const containerClass = isHeader ? 'h-[36px] w-[36px]' : 'h-[40px] w-[40px]';
-  const imageSize = isHeader ? '36px' : '40px';
-  const wordmarkClass = isHeader ? 'text-[17px]' : 'text-[20px]';
+  const gapClass = isHeader ? 'gap-3' : 'gap-[10px]';
+  const containerClass = isHeader ? 'h-12 w-12' : 'h-[40px] w-[40px]';
+  const imageSize = isHeader ? '48px' : '40px';
+  const wordmarkClass = isHeader ? 'text-[22px]' : 'text-[20px]';
 
   return (
     <Link
@@ -48,7 +48,7 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
         />
       </span>
       <span
-        className={`font-sans font-[650] tracking-[-0.03em] text-foreground leading-none mt-[1px] ${wordmarkClass}`}
+        className={`font-sans font-[650] tracking-[-0.03em] text-foreground leading-none ${wordmarkClass}`}
       >
         {siteConfig.name}
       </span>
