@@ -40,6 +40,23 @@ class Settings(BaseSettings):
     TTS_TERMINAL_SILENCE_MS: int = 200
     TTS_ENABLE_MP3: bool = True
 
+    # Edge TTS (Microsoft neural voices) as a second engine beside Kokoro.
+    # Kokoro stays the default and always works; Edge voices are only served
+    # while Edge is reachable (see EdgeTTSService availability probe). Edge is
+    # an unofficial, free endpoint with no SLA — it can be throttled or blocked
+    # for datacenter IPs at any time, so the catalogue must degrade silently.
+    EDGE_TTS_ENABLED: bool = True
+    # How long a fetched Edge voice list stays cached (seconds).
+    EDGE_TTS_VOICE_LIST_TTL_SECONDS: int = 3600
+    # How long a successful availability probe stays trusted (seconds).
+    EDGE_TTS_AVAILABILITY_TTL_SECONDS: int = 600
+    # How long a failed probe keeps Edge hidden before retrying (seconds).
+    EDGE_TTS_AVAILABILITY_FAILURE_TTL_SECONDS: int = 120
+    # Timeout for the tiny probe synthesis (seconds).
+    EDGE_TTS_PROBE_TIMEOUT_SECONDS: int = 10
+    # Timeout for one real synthesis call (seconds).
+    EDGE_TTS_SYNTH_TIMEOUT_SECONDS: int = 60
+
     TTS_RATE_LIMIT_PER_HOUR: int = 30
     TTS_RATE_LIMIT_REQUESTS: int = 30
     TTS_RATE_LIMIT_WINDOW_SECONDS: int = 3600

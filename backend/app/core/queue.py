@@ -12,6 +12,7 @@ from app.core.exceptions import QueueFullException, TtsException
 from app.utils.text_normalizer import normalize_text
 from app.utils.text_chunker import chunk_text
 from app.services.job_service import JobService
+from app.services.edge_tts_service import EdgeTTSService
 from app.services.kokoro_service import KokoroService
 from app.services.audio_service import AudioService
 from app.services.rate_limit_service import RateLimitService
@@ -135,12 +136,17 @@ class TtsQueueManager:
             if not original_text:
                 raise TtsException("TEXT_EMPTY", "Job text is empty.")
 
-            # Determine language for text normalizer
+            # Determine language for text normalizer (Kokoro catalogue first,
+            # then Edge — Edge voices carry e.g. "bn-BD").
             language = "en-US"
             for v in self.kokoro_service.get_voices():
                 if v["id"] == job.voice_id:
                     language = v.get("language", "en-US")
                     break
+            else:
+                edge_voice = EdgeTTSService().get_voice(job.voice_id)
+                if edge_voice:
+                    language = edge_voice.get("language", "en-US")
 
             # 1. Normalize text (synchronous, fast)
             normalized_text = (
@@ -160,6 +166,86 @@ class TtsQueueManager:
                 raise TtsException("TEXT_EMPTY", "No speakable content remaining after normalization.")
 
             loop = asyncio.get_running_loop()
+
+            if job.engine == "edge":
+                # ── Edge engine branch ──────────────────────────────────────
+                # Edge streams ready-made MP3, so there is no waveform to
+                # assemble: the whole normalized text goes in ONE websocket
+                # call (the 2000-char job cap is well within Edge's limits),
+                # with a per-chunk retry if that single call fails.
+                # Sentence/paragraph pauses are NOT re-inserted here — Edge's
+                # own prosody handles sentence breaks; the pause sliders only
+                # affect Kokoro jobs.
+                job.progress_stage = "generating_speech"
+                edge_service = EdgeTTSService()
+                try:
+                    master_mp3 = await loop.run_in_executor(
+                        self._executor,
+                        edge_service.synthesize,
+                        normalized_text,
+                        job.voice_id,
+                        job.speed,
+                    )
+                    chunk_mp3s = [master_mp3]
+                except TtsException:
+                    logger.warning(f"Edge single-call synthesis failed for Job {job_id}; retrying per chunk.")
+                    chunk_mp3s = []
+                    for chunk in chunks:
+                        job.progress_stage = "generating_speech"
+                        chunk_mp3s.append(await loop.run_in_executor(
+                            self._executor,
+                            edge_service.synthesize,
+                            chunk.text,
+                            job.voice_id,
+                            job.speed,
+                        ))
+
+                job.progress_stage = "processing_audio"
+                storage_root = Path(settings.TTS_STORAGE_ROOT).resolve()
+                storage_root.mkdir(parents=True, exist_ok=True)
+
+                mp3_path = storage_root / f"konthora-speech-{job.job_id}.mp3"
+                wav_path = storage_root / f"konthora-speech-{job.job_id}.wav"
+
+                # Byte-wise concatenation of complete MP3 files is valid:
+                # every part starts with its own frame headers and players
+                # decode them in sequence.
+                with open(mp3_path, "wb") as f:
+                    for part in chunk_mp3s:
+                        f.write(part)
+
+                duration = await loop.run_in_executor(
+                    self._executor,
+                    self.audio_service.get_mp3_duration,
+                    mp3_path,
+                )
+
+                job.progress_stage = "finalizing_file"
+                final_file_path = mp3_path
+
+                # If WAV was requested, transcode the MP3 master with FFmpeg.
+                if job.output_format == "wav":
+                    if self.audio_service.is_ffmpeg_available():
+                        await loop.run_in_executor(
+                            self._executor,
+                            self.audio_service.convert_mp3_to_wav,
+                            mp3_path,
+                            wav_path,
+                        )
+                        final_file_path = wav_path
+                        await loop.run_in_executor(self._executor, os.unlink, mp3_path)
+                    else:
+                        logger.warning("WAV requested for Edge job but FFmpeg is not available. Serving MP3.")
+                        job.output_format = "mp3"
+
+                job.expiry_delta = timedelta(minutes=settings.TTS_JOB_RETENTION_MINUTES)
+                job.finalize_success(
+                    file_path=str(final_file_path),
+                    duration_seconds=duration,
+                )
+                logger.info(f"Successfully finished processing Edge Job: {job_id}. Duration: {duration:.2f}s")
+                return
+
             waveforms_and_boundaries: List[Tuple[np.ndarray, str]] = []
 
             # 3. Synthesize chunks sequentially using ThreadPoolExecutor to prevent blocking the event loop

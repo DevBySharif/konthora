@@ -16,12 +16,15 @@ class TtsJob:
         sentence_pause_ms: int,
         paragraph_pause_ms: int,
         normalize_text: bool,
+        engine: str = "kokoro",
     ):
         self.job_id = job_id
         # Original text stored in memory for processing
         self.text: Optional[str] = text
         self.voice_id = voice_id
         self.accent = accent
+        # "kokoro" (default, self-hosted) or "edge" (Microsoft neural voices).
+        self.engine = engine
         self.speed = speed
         self.output_format = output_format
         self.sentence_pause_ms = sentence_pause_ms

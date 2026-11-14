@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/text-to-speech/how-does-text-to-speech-work',
     '/text-to-speech/spanish',
     '/text-to-speech/hindi',
+    '/text-to-speech/bengali',
     '/text-to-speech/french',
     '/text-to-speech/italian',
     '/text-to-speech/portuguese',

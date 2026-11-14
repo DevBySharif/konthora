@@ -15,6 +15,7 @@ class AudioService:
     def __init__(self):
         self.sample_rate = 24000  # Kokoro-82M native sample rate
         self.ffmpeg_path = self._discover_ffmpeg()
+        self.ffprobe_path = shutil.which("ffprobe")
 
     def _discover_ffmpeg(self) -> Tuple[bool, str]:
         """Checks if ffmpeg is available on the system path."""
@@ -213,3 +214,63 @@ class AudioService:
         except Exception as e:
             logger.error(f"Failed to execute FFmpeg sub-process: {e}")
             raise GenerationFailedException(f"Could not execute MP3 conversion process.")
+
+    def convert_mp3_to_wav(self, mp3_path: Path, wav_path: Path):
+        """Uses FFmpeg to transcode an MP3 master (Edge engine) to 16-bit PCM WAV."""
+        is_avail, ffmpeg_bin = self.ffmpeg_path
+        if not is_avail:
+            raise EncoderUnavailableException("FFmpeg is not installed or available on PATH.")
+
+        args = [
+            ffmpeg_bin,
+            "-y",                     # Overwrite output files
+            "-i", str(mp3_path),      # Input file
+            "-codec:a", "pcm_s16le", # 16-bit PCM WAV
+            "-ar", "24000",           # Keep the 24kHz sample rate
+            str(wav_path),            # Output file
+        ]
+
+        try:
+            logger.info(f"Running FFmpeg WAV conversion for: {wav_path.name}")
+            subprocess.run(args, capture_output=True, check=True, shell=False)
+
+            if not wav_path.exists() or wav_path.stat().st_size == 0:
+                raise GenerationFailedException("FFmpeg ran successfully but WAV output size is zero.")
+
+            logger.info(f"Successfully generated WAV file: {wav_path.name}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"FFmpeg WAV conversion process failed with code {e.returncode}.")
+            raise GenerationFailedException("FFmpeg WAV conversion process failed.")
+        except Exception as e:
+            logger.error(f"Failed to execute FFmpeg sub-process: {e}")
+            raise GenerationFailedException("Could not execute WAV conversion process.")
+
+    def get_mp3_duration(self, mp3_path: Path) -> float:
+        """
+        Duration of an MP3 file in seconds. Prefers ffprobe; falls back to a
+        bitrate estimate (Edge streams 48kbps mono MP3) when ffprobe is absent
+        or the file cannot be probed.
+        """
+        if self.ffprobe_path:
+            try:
+                result = subprocess.run(
+                    [
+                        self.ffprobe_path,
+                        "-v", "error",
+                        "-show_entries", "format=duration",
+                        "-of", "default=noprint_wrappers=1:nokey=1",
+                        str(mp3_path),
+                    ],
+                    capture_output=True,
+                    check=True,
+                    shell=False,
+                    timeout=15,
+                )
+                duration = float(result.stdout.decode().strip())
+                if duration > 0:
+                    return duration
+            except Exception as e:  # noqa: BLE001 — fall through to the estimate
+                logger.warning(f"ffprobe duration read failed for {mp3_path.name}: {e}")
+
+        size_bytes = mp3_path.stat().st_size if mp3_path.exists() else 0
+        return size_bytes * 8 / 48000.0

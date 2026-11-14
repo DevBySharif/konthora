@@ -16,8 +16,12 @@ kokoro==0.7.16
 # Whisper
 faster-whisper
 
-# Removed: assemblyai, websockets, google-genai
-# These were pulled in for the realtime voice-agent feature, which has been
-# removed from both the frontend and the API surface. Nothing imports them any
-# more, and dropping them shrinks the install image that ships to the Hugging
-# Face Space. Re-add them only if the voice agent comes back.
+# Edge TTS (second TTS engine beside Kokoro)
+# edge-tts is pinned: EdgeTTSService uses its internal modules (TTSConfig,
+# mkssml, DRM), which may change across major versions. websockets is the
+# transport for Edge synthesis (edge-tts' own aiohttp client fails behind
+# TLS-intercepting egress proxies). assemblyai and google-genai stay removed:
+# they were pulled in for the realtime voice-agent feature, which has been
+# removed from both the frontend and the API surface.
+edge-tts==7.3.1
+websockets==17.4

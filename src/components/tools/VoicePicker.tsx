@@ -13,6 +13,7 @@ export interface Voice {
   language?: string;
   recommended?: boolean;
   previewUrl?: string;
+  engine?: string;
 }
 
 interface VoicePickerProps {
@@ -50,6 +51,8 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
   };
 
   const isPreviewing = activePreviewId === selectedVoice?.id;
+  // Edge voices have no preview clips, so there is nothing to play.
+  const hasPreview = Boolean(selectedVoice?.previewUrl);
 
   return (
     <div className="flex flex-col gap-2">
@@ -73,12 +76,14 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
             availableVoices.map((voice) => (
               <option key={voice.id} value={voice.id}>
                 {voice.displayName} — {voice.accent}
+                {voice.engine === 'edge' ? ' · Edge' : ''}
                 {voice.recommended ? ' (Recommended)' : ''}
               </option>
             ))
           )}
         </select>
 
+        {hasPreview && (
         <button
           type="button"
           onClick={handlePreviewClick}
@@ -105,6 +110,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
             </>
           )}
         </button>
+        )}
       </div>
 
       {isPreviewing && previewStatus === 'error' && (

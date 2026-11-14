@@ -6,6 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
 
 from app.schemas.tts import TtsJobCreate, TtsJobResponse, TtsJobStatusResponse, VoiceInfo
+from app.services.edge_tts_service import EdgeTTSService
 from app.services.job_service import JobService
 from app.services.kokoro_service import KokoroService
 from app.services.rate_limit_service import RateLimitService
@@ -28,11 +29,23 @@ def get_bearer_token(credentials: HTTPAuthorizationCredentials = Depends(securit
         raise UnauthorizedJobAccessException("Authentication token is missing.")
     return credentials.credentials
 
+def _served_voices():
+    """
+    The full catalogue the workspace may offer: all Kokoro voices, plus
+    Edge voices ONLY while Edge is reachable (cached availability probe).
+    When Edge is down, its voices are simply absent — the user never sees
+    a voice that cannot generate.
+    """
+    voices = KokoroService().get_voices()
+    if EdgeTTSService().is_available():
+        voices = voices + EdgeTTSService().get_voices()
+    return voices
+
+
 @router.get("/tts/voices", response_model=List[VoiceInfo])
 def get_voices():
-    """Returns the verified catalogue of English voices."""
-    kokoro_service = KokoroService()
-    return kokoro_service.get_voices()
+    """Returns the served voice catalogue (Kokoro + Edge when available)."""
+    return _served_voices()
 
 @router.post("/tts/jobs", response_model=TtsJobResponse)
 def create_tts_job(payload: TtsJobCreate, request: Request):
@@ -43,7 +56,6 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
     rate_limiter = RateLimitService()
     job_service = JobService()
     queue_manager = TtsQueueManager()
-    kokoro_service = KokoroService()
 
     client_ip = rate_limiter.get_client_ip(request)
 
@@ -53,21 +65,31 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
     # 2. Enforce active jobs capacity per client IP
     rate_limiter.check_tts_active_jobs_limit(client_ip, max_active=settings.TTS_MAX_CONCURRENT_PER_IP, request=request)
 
-    # 3. Validate voice selection against catalog
-    voices = kokoro_service.get_voices()
-    if not any(v["id"] == payload.voiceId for v in voices):
+    # 3. Validate voice selection against the SERVED catalog (Kokoro + Edge
+    #    only when available). The engine and accent are taken from the voice
+    #    itself — server-authoritative, so a stale client cannot smuggle in a
+    #    mismatched engine or an accent the voice does not have.
+    voices = _served_voices()
+    voice = next((v for v in voices if v["id"] == payload.voiceId), None)
+    if voice is None:
         raise InvalidRequestException("VOICE_UNSUPPORTED", f"Voice ID '{payload.voiceId}' is not supported.")
+    if payload.engine != "kokoro" and payload.engine != voice["engine"]:
+        raise InvalidRequestException(
+            "VOICE_UNSUPPORTED",
+            f"Voice ID '{payload.voiceId}' is a {voice['engine']} voice, not '{payload.engine}'.",
+        )
 
     # 4. Create the in-memory Job tracking entity
     job = job_service.create_job(
         text=payload.text,
         voice_id=payload.voiceId,
-        accent=payload.accent,
+        accent=voice["accent"],
         speed=payload.speed,
         output_format=payload.outputFormat,
         sentence_pause_ms=payload.sentencePauseMs,
         paragraph_pause_ms=payload.paragraphPauseMs,
         normalize_text=payload.normalizeText,
+        engine=voice["engine"],
     )
 
     # 5. Register active job before enqueuing to prevent race condition limits bypass

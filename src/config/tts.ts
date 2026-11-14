@@ -5,6 +5,7 @@ export const SUPPORTED_LANGUAGE_CODES = [
   'fr-FR',
   'it',
   'pt-BR',
+  'bn-BD',
 ] as const;
 
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGE_CODES[number];
@@ -52,6 +53,12 @@ export const SUPPORTED_LANGUAGES: SupportedLanguageConfig[] = [
     label: 'Portuguese',
     description: 'Native Brazilian Portuguese neural voices.',
     defaultVoiceId: 'pf_dora',
+  },
+  {
+    value: 'bn-BD',
+    label: 'Bengali',
+    description: 'Native Bengali (Bangla) neural voices, powered by Edge.',
+    defaultVoiceId: 'bn-BD-NabanitaNeural',
   },
 ];
 

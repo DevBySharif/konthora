@@ -8,6 +8,7 @@ export const TTS_LANGUAGE_CODES = [
   'fr-FR',
   'it',
   'pt-BR',
+  'bn-BD',
 ] as const;
 
 export type TtsPreferenceLanguage = (typeof TTS_LANGUAGE_CODES)[number];

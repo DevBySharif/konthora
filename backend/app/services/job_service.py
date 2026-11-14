@@ -27,6 +27,7 @@ class JobService:
         sentence_pause_ms: Optional[int] = None,
         paragraph_pause_ms: Optional[int] = None,
         normalize_text: bool = True,
+        engine: str = "kokoro",
     ) -> TtsJob:
         """Creates a new job in-memory, allocates a UUID, and configures default state."""
         job_id = str(uuid.uuid4())
@@ -38,6 +39,7 @@ class JobService:
             speed=speed,
             output_format=output_format,
             retention_minutes=settings.TTS_JOB_RETENTION_MINUTES,
+            engine=engine,
             sentence_pause_ms=(
                 settings.TTS_SENTENCE_PAUSE_MS
                 if sentence_pause_ms is None

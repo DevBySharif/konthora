@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.schemas.tts import HealthResponse
+from app.services.edge_tts_service import EdgeTTSService
 from app.services.kokoro_service import KokoroService
 from app.services.audio_service import AudioService
 from app.core.queue import TtsQueueManager
@@ -36,5 +37,7 @@ def get_health():
         transcriptionModelReady=trans_ready,
         transcriptionModelStatus=trans_status,
         transcriptionQueueDepth=trans_queue.get_queue_depth(),
-        transcriptionQueueCapacity=settings.TRANSCRIPTION_MAX_QUEUE_SIZE
+        transcriptionQueueCapacity=settings.TRANSCRIPTION_MAX_QUEUE_SIZE,
+        # Cached probe result; a cold cache triggers one short probe at most.
+        edgeTtsAvailable=EdgeTTSService().is_available(),
     )

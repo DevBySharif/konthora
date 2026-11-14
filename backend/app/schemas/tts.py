@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from app.services.kokoro_service import VOICES_CATALOGUE
 
 VALID_ACCENTS = {v["accent"].lower() for v in VOICES_CATALOGUE}
@@ -7,6 +7,11 @@ VALID_ACCENTS = {v["accent"].lower() for v in VOICES_CATALOGUE}
 class TtsJobCreate(BaseModel):
     text: str = Field(..., min_length=1, max_length=2000, description="The script text to synthesize.")
     voiceId: str = Field(..., description="The unique identifier of the selected voice model.")
+    # Synthesis engine: "kokoro" (default, self-hosted) or "edge" (Microsoft
+    # neural voices). Declared before `accent` so the accent validator below
+    # can read it. The endpoint resolves the engine from the voice catalogue
+    # anyway; this field must match the voice's engine when both are given.
+    engine: str = Field("kokoro", description="Synthesis engine ('kokoro' or 'edge').")
     accent: str = Field("American English", description="The voice accent.")
     speed: float = Field(1.0, ge=0.75, le=1.25, description="Playback speech rate factor.")
     outputFormat: str = Field("mp3", description="Audio output file format ('mp3' or 'wav').")
@@ -27,6 +32,14 @@ class TtsJobCreate(BaseModel):
         description="Apply the existing conservative text normalization pass before synthesis.",
     )
 
+    @field_validator("engine")
+    @classmethod
+    def validate_engine(cls, value: str) -> str:
+        eng = value.lower()
+        if eng not in ("kokoro", "edge"):
+            raise ValueError("Supported engines are 'kokoro' and 'edge'.")
+        return eng
+
     @field_validator("outputFormat")
     @classmethod
     def validate_format(cls, value: str) -> str:
@@ -37,8 +50,16 @@ class TtsJobCreate(BaseModel):
 
     @field_validator("accent")
     @classmethod
-    def validate_accent(cls, value: str) -> str:
+    def validate_accent(cls, value: str, info: ValidationInfo) -> str:
         acc = value.lower()
+        # Edge voices carry Microsoft locale names ("Bengali (Bangladesh)")
+        # that are not in the Kokoro allowlist. The endpoint resolves the
+        # voice from the served catalogue and uses the voice's own accent,
+        # so for Edge any non-empty accent is accepted here.
+        if info.data.get("engine") == "edge":
+            if not value.strip():
+                raise ValueError("Accent must not be empty.")
+            return value
         if acc not in VALID_ACCENTS:
             raise ValueError(f"Supported accents are: {', '.join(sorted(VALID_ACCENTS))}")
         return acc
@@ -88,7 +109,9 @@ class VoiceInfo(BaseModel):
     minimumSpeed: float = 0.75
     maximumSpeed: float = 1.25
     engine: str = "kokoro"
-    previewUrl: str
+    # Empty for Edge voices: Microsoft has no hosted preview clips, and the
+    # UI hides the Listen button for voices without a preview URL.
+    previewUrl: str = ""
 
 class HealthResponse(BaseModel):
     status: str
@@ -103,3 +126,5 @@ class HealthResponse(BaseModel):
     transcriptionModelStatus: Optional[str] = None
     transcriptionQueueDepth: Optional[int] = None
     transcriptionQueueCapacity: Optional[int] = None
+    # True only while Edge TTS is reachable (cached availability probe).
+    edgeTtsAvailable: Optional[bool] = None

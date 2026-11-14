@@ -11,6 +11,7 @@ export const SUPPORTED_TTS_LANGUAGES = [
   'French',
   'Italian',
   'Portuguese',
+  'Bengali',
 ] as const;
 
 export const TOTAL_TTS_VOICES = getAllVoices().length;

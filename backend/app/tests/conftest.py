@@ -86,6 +86,22 @@ def mock_kokoro_service(request):
         yield mock_load, mock_synth
 
 @pytest.fixture(autouse=True)
+def mock_edge_tts_service(request):
+    """
+    Edge TTS is unavailable by default in the mock suite: no network, no
+    probe, no Edge voices in the catalogue. Tests that need Edge re-patch
+    the class methods inside the test (nested patch wins while active).
+    """
+    if "integration" in request.node.nodeid:
+        yield
+        return
+
+    with patch("app.services.edge_tts_service.EdgeTTSService.is_available", return_value=False) as mock_avail, \
+         patch("app.services.edge_tts_service.EdgeTTSService.get_voices", return_value=[]) as mock_voices, \
+         patch("app.services.edge_tts_service.EdgeTTSService.synthesize", return_value=b"FAKE_EDGE_MP3") as mock_synth:
+        yield mock_avail, mock_voices, mock_synth
+
+@pytest.fixture(autouse=True)
 def mock_audio_service(request):
     """Mocks FFmpeg converter execution and checks."""
     if "integration" in request.node.nodeid:

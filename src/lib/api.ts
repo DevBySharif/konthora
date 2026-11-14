@@ -282,6 +282,7 @@ export async function createTtsJob(
     sentencePauseMs: number;
     paragraphPauseMs: number;
     normalizeText: boolean;
+    engine?: string;
   },
   signal?: AbortSignal,
 ): Promise<ApiJobResponse> {

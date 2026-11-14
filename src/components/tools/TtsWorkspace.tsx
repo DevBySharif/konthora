@@ -622,6 +622,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           sentencePauseMs,
           paragraphPauseMs,
           normalizeText,
+          // The engine travels with the voice: Kokoro voices stay on Kokoro,
+          // Edge voices (e.g. Bengali) are synthesized by Edge. The backend
+          // re-derives it from the served catalogue anyway.
+          engine: voice?.engine,
         },
         submitController.signal,
       );
@@ -847,7 +851,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               Language
             </div>
             <div
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2"
               role="group"
               aria-labelledby="tts-language-label"
             >
@@ -883,7 +887,16 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               gender: v.gender,
               language: v.language,
               recommended: v.recommended,
-              previewUrl: `/audio/voice-previews/${v.id}.mp3`
+              engine: v.engine,
+              // Use the API preview when present (Kokoro). Fallback voices
+              // carry no previewUrl, so build the conventional path for
+              // them. Edge voices have no preview clips — leave it empty
+              // and the Listen button hides.
+              previewUrl: v.previewUrl
+                ? v.previewUrl
+                : v.engine === 'edge'
+                  ? undefined
+                  : `/audio/voice-previews/${v.id}.mp3`,
             }))}
             selectedVoiceId={resolvedVoiceId}
             selectedLanguage={selectedLanguage}
