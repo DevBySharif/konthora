@@ -1,6 +1,7 @@
 import asyncio
 import os
 import concurrent.futures
+import tempfile
 from datetime import datetime, timedelta
 from typing import List, Tuple
 import numpy as np
@@ -135,6 +136,12 @@ class TtsQueueManager:
             original_text = job.text
             if not original_text:
                 raise TtsException("TEXT_EMPTY", "Job text is empty.")
+
+            # Dialogue jobs carry per-turn voices in job.segments: synthesize
+            # each turn with its own engine, then concat into one file.
+            if job.segments:
+                await self._process_dialogue_job(job)
+                return
 
             # Determine language for text normalizer (Kokoro catalogue first,
             # then Edge — Edge voices carry e.g. "bn-BD").
@@ -348,3 +355,128 @@ class TtsQueueManager:
             # Always deregister IP rate limits
             if job_id:
                 self.rate_limit_service.deregister_active_job(client_ip, job_id)
+
+    async def _process_dialogue_job(self, job):
+        """
+        Synthesizes a multi-voice dialogue job: each segment is generated
+        with its own voice/engine exactly as its engine's normal path does
+        (Kokoro: chunk -> synthesize_chunk -> assemble_audio -> export_wav;
+        Edge: one websocket call returning MP3), then the per-segment files
+        are concatenated into ONE file with FFmpeg (aresample to 24kHz so
+        mixed-engine segments join cleanly, 300ms silence between turns).
+        Any segment failure raises, and the outer _process_job handler
+        finalizes the job as 'failed' — no partial file is ever served.
+        """
+        loop = asyncio.get_running_loop()
+        storage_root = Path(settings.TTS_STORAGE_ROOT).resolve()
+        storage_root.mkdir(parents=True, exist_ok=True)
+
+        with tempfile.TemporaryDirectory(prefix=f"dialogue-{job.job_id}-") as tmpdir:
+            segment_files = []
+            for idx, segment in enumerate(job.segments):
+                job.progress_stage = "generating_speech"
+                voice_id = segment["voice_id"]
+                language = segment.get("language", "en-US")
+
+                normalized = (
+                    normalize_text(segment["text"], language=language)
+                    if job.normalize_text
+                    else segment["text"].strip()
+                )
+                if not normalized:
+                    raise TtsException("TEXT_EMPTY", f"Dialogue segment {idx + 1} has no speakable content.")
+
+                if segment["engine"] == "edge":
+                    # Same as the normal Edge branch: one call for the whole
+                    # segment (well within Edge's limits at the 2000-char cap).
+                    # Edge's websocket occasionally drops mid-stream with no
+                    # close frame (transient; a retry seconds later succeeds
+                    # — the normal job path retries per chunk the same way),
+                    # so a failed segment gets exactly one retry before the
+                    # job fails.
+                    edge_service = EdgeTTSService()
+                    try:
+                        mp3_bytes = await loop.run_in_executor(
+                            self._executor,
+                            edge_service.synthesize,
+                            normalized,
+                            voice_id,
+                            job.speed,
+                        )
+                    except TtsException:
+                        logger.warning(
+                            f"Edge segment synthesis failed for Dialogue Job "
+                            f"{job.job_id}; retrying once."
+                        )
+                        await asyncio.sleep(2)
+                        mp3_bytes = await loop.run_in_executor(
+                            self._executor,
+                            edge_service.synthesize,
+                            normalized,
+                            voice_id,
+                            job.speed,
+                        )
+                    seg_path = Path(tmpdir) / f"segment-{idx}.mp3"
+                    seg_path.write_bytes(mp3_bytes)
+                else:
+                    # Same as the normal Kokoro branch, per segment.
+                    chunks = chunk_text(
+                        normalized,
+                        preserve_sentence_boundaries=(
+                            job.sentence_pause_ms != settings.TTS_SENTENCE_PAUSE_MS
+                        ),
+                    )
+                    if not chunks:
+                        raise TtsException("TEXT_EMPTY", f"Dialogue segment {idx + 1} has no speakable content.")
+                    waveforms_and_boundaries: List[Tuple[np.ndarray, str]] = []
+                    for chunk in chunks:
+                        waveform = await loop.run_in_executor(
+                            self._executor,
+                            self.kokoro_service.synthesize_chunk,
+                            chunk.text,
+                            voice_id,
+                            job.speed,
+                        )
+                        waveforms_and_boundaries.append((waveform, chunk.end_boundary))
+
+                    master_waveform, _ = await loop.run_in_executor(
+                        self._executor,
+                        self.audio_service.assemble_audio,
+                        waveforms_and_boundaries,
+                        24000,
+                        job.sentence_pause_ms,
+                        job.paragraph_pause_ms,
+                    )
+                    seg_path = Path(tmpdir) / f"segment-{idx}.wav"
+                    await loop.run_in_executor(
+                        self._executor,
+                        self.audio_service.export_wav,
+                        master_waveform,
+                        seg_path,
+                    )
+                segment_files.append(seg_path)
+
+            # Join the segment files into the single combined output.
+            job.progress_stage = "processing_audio"
+            final_path = storage_root / f"konthora-speech-{job.job_id}.{job.output_format}"
+            duration = await loop.run_in_executor(
+                self._executor,
+                self.audio_service.concatenate_audio_files,
+                segment_files,
+                final_path,
+                job.output_format,
+            )
+
+        # Segment temp files are gone with the TemporaryDirectory; the final
+        # file lives in the storage root under the standard job filename, so
+        # the existing status/download endpoints serve it unchanged.
+        job.progress_stage = "finalizing_file"
+        job.expiry_delta = timedelta(minutes=settings.TTS_JOB_RETENTION_MINUTES)
+        job.finalize_success(
+            file_path=str(final_path),
+            duration_seconds=duration,
+        )
+        logger.info(
+            f"Successfully finished processing Dialogue Job: {job.job_id} "
+            f"({len(job.segments)} segments). Duration: {duration:.2f}s"
+        )

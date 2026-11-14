@@ -8,6 +8,10 @@ import { FAQ, FAQItem } from '@/components/ui/FAQ';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
 import { getAllVoices, getVoiceUrl } from '@/config/voices';
+import { getVoicePreviewSource } from '@/lib/voicePreview';
+import { API_BASE_URL } from '@/lib/api';
+import { VoiceCardPreview } from '@/components/tools/VoiceCardPreview';
+import { VoiceFavoriteButton } from '@/components/tools/VoiceFavoriteButton';
 import {
   Globe2,
   Gauge,
@@ -47,8 +51,8 @@ export default function VoicesPage() {
   const itemListSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Konthora Kokoro Voice Catalogue',
-    description: '41 Kokoro neural AI voices across 6 languages with American, British, Hindi, Spanish, French, Italian, and Portuguese accents.',
+    name: 'Konthora Voice Catalogue',
+    description: `${allVoices.length} neural AI voices across English, Hindi, Spanish, French, Italian, Portuguese, and Bengali accents.`,
     numberOfItems: allVoices.length,
     itemListElement: allVoices.map((voice, index) => ({
       '@type': 'ListItem',
@@ -64,7 +68,9 @@ export default function VoicesPage() {
   const americanVoices = allVoices
     .filter((v) => v.language === 'en-US')
     .map((v) => ({
+      id: v.id,
       name: v.shortName,
+      accent: v.accent,
       gender: v.gender === 'female' ? 'Female' : 'Male',
       href: getVoiceUrl(v.slug),
     }));
@@ -72,22 +78,64 @@ export default function VoicesPage() {
   const britishVoices = allVoices
     .filter((v) => v.language === 'en-GB')
     .map((v) => ({
+      id: v.id,
       name: v.shortName,
+      accent: v.accent,
       gender: v.gender === 'female' ? 'Female' : 'Male',
       href: getVoiceUrl(v.slug),
     }));
 
   const multilingualVoices = allVoices.filter(v => !['en-US', 'en-GB'].includes(v.language));
 
-  /* ── Edge voices (served live by the API, verified 2026-11-14) ── */
-  const edgeVoiceGroups: { language: string; count: number; examples: string; href: string }[] = [
-    { language: 'English', count: 17, examples: 'Andrew, Ava, Emma, Brian, Aria', href: '/text-to-speech' },
-    { language: 'Spanish', count: 45, examples: 'Alvaro, Elvira, Jorge, Dalia, Alonso', href: '/text-to-speech/spanish' },
-    { language: 'French', count: 13, examples: 'Denise, Henri, Eloise, Vivienne, Remy', href: '/text-to-speech/french' },
-    { language: 'Hindi', count: 2, examples: 'Madhur, Swara', href: '/text-to-speech/hindi' },
-    { language: 'Italian', count: 4, examples: 'Giuseppe, Diego, Elsa, Isabella', href: '/text-to-speech/italian' },
-    { language: 'Portuguese', count: 3, examples: 'Thalita, Antonio, Francisca', href: '/text-to-speech/portuguese' },
-    { language: 'Bengali', count: 4, examples: 'Nabanita, Pradeep, Bashkar, Tanishaa', href: '/text-to-speech/bengali' },
+  /* ── Voices by language (totals verified against the live API, 2026-11-15).
+     Every total is one number per language with the Kokoro/Edge split as the
+     subtitle. The representative is a real Edge voiceId confirmed present in
+     GET /api/v1/tts/voices — note Giuseppe and Thalita are the
+     *MultilingualNeural variants, not the plain *Neural names. ── */
+  const languageGroups: {
+    language: string;
+    total: number;
+    kokoro: number;
+    edge: number;
+    examples: string[];
+    href: string;
+    representative: { id: string; name: string; gender: string; accent: string };
+  }[] = [
+    {
+      language: 'English', total: 45, kokoro: 28, edge: 17,
+      examples: ['Andrew', 'Ava', 'Emma', 'Brian', 'Aria'], href: '/text-to-speech',
+      representative: { id: 'en-US-AndrewNeural', name: 'Andrew', gender: 'male', accent: 'English (United States)' },
+    },
+    {
+      language: 'Spanish', total: 48, kokoro: 3, edge: 45,
+      examples: ['Alvaro', 'Elvira', 'Jorge', 'Dalia', 'Alonso'], href: '/text-to-speech/spanish',
+      representative: { id: 'es-ES-AlvaroNeural', name: 'Alvaro', gender: 'male', accent: 'Spanish (Spain)' },
+    },
+    {
+      language: 'French', total: 14, kokoro: 1, edge: 13,
+      examples: ['Denise', 'Henri', 'Eloise', 'Vivienne', 'Remy'], href: '/text-to-speech/french',
+      representative: { id: 'fr-FR-DeniseNeural', name: 'Denise', gender: 'female', accent: 'French (France)' },
+    },
+    {
+      language: 'Hindi', total: 6, kokoro: 4, edge: 2,
+      examples: ['Madhur', 'Swara'], href: '/text-to-speech/hindi',
+      representative: { id: 'hi-IN-MadhurNeural', name: 'Madhur', gender: 'male', accent: 'Hindi (India)' },
+    },
+    {
+      language: 'Italian', total: 6, kokoro: 2, edge: 4,
+      examples: ['Giuseppe', 'Diego', 'Elsa', 'Isabella'], href: '/text-to-speech/italian',
+      representative: { id: 'it-IT-GiuseppeMultilingualNeural', name: 'Giuseppe', gender: 'male', accent: 'Italian (Italy)' },
+    },
+    {
+      language: 'Portuguese', total: 6, kokoro: 3, edge: 3,
+      examples: ['Thalita', 'Antonio', 'Francisca'], href: '/text-to-speech/portuguese',
+      representative: { id: 'pt-BR-ThalitaMultilingualNeural', name: 'Thalita', gender: 'female', accent: 'Portuguese (Brazil)' },
+    },
+    {
+      language: 'Bengali', total: 4, kokoro: 0, edge: 4,
+      examples: ['Nabanita', 'Pradeep', 'Bashkar', 'Tanishaa'], href: '/text-to-speech/bengali',
+      representative: { id: 'bn-BD-NabanitaNeural', name: 'Nabanita', gender: 'female', accent: 'Bangla (Bangladesh)' },
+    },
   ];
 
   /* ── Schema: FAQPage ── */
@@ -218,7 +266,7 @@ export default function VoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
                 <p>
-                  Konthora currently exposes 28 verified English voices to support a variety of audio workflows. 
+                  Konthora currently exposes 45 English voices (28 Kokoro · 17 Edge) to support a variety of audio workflows.
                   These are split into two major accent groups: American English and British English.
                 </p>
               </div>
@@ -232,23 +280,35 @@ export default function VoicesPage() {
                   </Link>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  There are 20 American English voices available, providing a standard North American pronunciation style.
+                  There are 37 American English voices available, providing a standard North American pronunciation style.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {americanVoices.map((voice) => {
-                    const cardInner = (
+                    const cardText = (
                       <>
                         <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
                         <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
                       </>
                     );
-                    return voice.href ? (
-                      <Link key={voice.name} href={voice.href} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/40 transition-colors">
-                        {cardInner}
-                      </Link>
-                    ) : (
-                      <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
-                        {cardInner}
+                    return (
+                      <div key={voice.name} className="flex flex-col items-center gap-2 p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/40 transition-colors">
+                        {voice.href ? (
+                          <Link href={voice.href} className="flex flex-col">
+                            {cardText}
+                          </Link>
+                        ) : (
+                          <div className="flex flex-col">{cardText}</div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <VoiceCardPreview
+                            voiceId={voice.id}
+                            displayName={voice.name}
+                            accent={voice.accent}
+                            gender={voice.gender}
+                            previewUrl={getVoicePreviewSource(voice.id)}
+                          />
+                          <VoiceFavoriteButton voiceId={voice.id} displayName={voice.name} />
+                        </div>
                       </div>
                     );
                   })}
@@ -268,19 +328,31 @@ export default function VoicesPage() {
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {britishVoices.map((voice) => {
-                    const cardInner = (
+                    const cardText = (
                       <>
                         <strong className="text-foreground text-sm font-semibold">{voice.name}</strong>
                         <span className="text-xs text-muted-foreground mt-1">{voice.gender}</span>
                       </>
                     );
-                    return voice.href ? (
-                      <Link key={voice.name} href={voice.href} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors">
-                        {cardInner}
-                      </Link>
-                    ) : (
-                      <div key={voice.name} className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center">
-                        {cardInner}
+                    return (
+                      <div key={voice.name} className="flex flex-col items-center gap-2 p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors">
+                        {voice.href ? (
+                          <Link href={voice.href} className="flex flex-col">
+                            {cardText}
+                          </Link>
+                        ) : (
+                          <div className="flex flex-col">{cardText}</div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <VoiceCardPreview
+                            voiceId={voice.id}
+                            displayName={voice.name}
+                            accent={voice.accent}
+                            gender={voice.gender}
+                            previewUrl={getVoicePreviewSource(voice.id)}
+                          />
+                          <VoiceFavoriteButton voiceId={voice.id} displayName={voice.name} />
+                        </div>
                       </div>
                     );
                   })}
@@ -302,54 +374,91 @@ export default function VoicesPage() {
                 <p>
                   Beyond English, Konthora ships native voices for Hindi, Spanish, French, Italian, Brazilian Portuguese, and Bengali in the same workspace. Each has a dedicated page with a preview, voice specifications, and a link to generate speech.
                 </p>
+                <p>
+                  Full counts, including Edge voices: Spanish 48 (3 Kokoro · 45 Edge), French 14 (1 Kokoro · 13 Edge), Hindi 6 (4 Kokoro · 2 Edge), Italian 6 (2 Kokoro · 4 Edge), Portuguese 6 (3 Kokoro · 3 Edge), and Bengali 4 (0 Kokoro · 4 Edge).
+                </p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {multilingualVoices.map((voice) => (
-                  <Link
+                  <div
                     key={voice.id}
-                    href={getVoiceUrl(voice.slug)}
-                    className="flex flex-col p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors"
+                    className="flex flex-col items-center gap-2 p-4 rounded-lg bg-card border border-border/70 text-center hover:border-primary/25 transition-colors"
                   >
-                    <strong className="text-foreground text-sm font-semibold">{voice.shortName}</strong>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {voice.gender === 'female' ? 'Female' : 'Male'} · {voice.language}
-                    </span>
-                  </Link>
+                    <Link
+                      href={getVoiceUrl(voice.slug)}
+                      className="flex flex-col"
+                    >
+                      <strong className="text-foreground text-sm font-semibold">{voice.shortName}</strong>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {voice.gender === 'female' ? 'Female' : 'Male'} · {voice.language}
+                      </span>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                      <VoiceCardPreview
+                        voiceId={voice.id}
+                        displayName={voice.shortName}
+                        accent={voice.accent}
+                        gender={voice.gender}
+                        previewUrl={getVoicePreviewSource(voice.id)}
+                      />
+                      <VoiceFavoriteButton voiceId={voice.id} displayName={voice.shortName} />
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>
 
             <hr className="border-border/40" />
 
-            {/* ── H2: Edge Voices ── */}
+            {/* ── H2: Voices by Language ── */}
             <section aria-labelledby="edge-voices">
               <h2
                 id="edge-voices"
                 className="text-2xl sm:text-3xl font-bold text-foreground mb-5"
               >
-                Edge Voices
+                Voices by Language
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
                 <p>
-                  Alongside the 41 Kokoro voices above, Konthora serves 88 Microsoft Edge neural voices — the same voices can be previewed in the workspace before generating, with no job needed. Each language page lists its full set.
+                  The full catalogue of 129 voices breaks down by language below. Each card shows the combined total with the Kokoro/Edge split, and the Listen button previews a representative Edge voice for that language — the same voices can be previewed in the workspace before generating, with no job needed. Each language page lists its full set.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {edgeVoiceGroups.map((group) => (
-                  <Link
-                    key={group.language}
-                    href={group.href}
-                    className="flex flex-col p-4 rounded-lg bg-card border border-border/70 hover:border-primary/25 transition-colors"
-                  >
-                    <strong className="text-foreground text-sm font-semibold">
-                      {group.language} · {group.count} Edge voices
-                    </strong>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {group.examples}
-                      {group.count > 5 ? `, and ${group.count - 5} more` : ''}
-                    </span>
-                  </Link>
-                ))}
+                {languageGroups.map((group) => {
+                  const remaining = group.total - group.examples.length;
+                  return (
+                    <div
+                      key={group.language}
+                      className="flex flex-col gap-2 p-4 rounded-lg bg-card border border-border/70 hover:border-primary/25 transition-colors"
+                    >
+                      <Link
+                        href={group.href}
+                        className="flex flex-col"
+                      >
+                        <strong className="text-foreground text-sm font-semibold">
+                          {group.language} · {group.total} voices
+                        </strong>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {group.kokoro} Kokoro · {group.edge} Edge
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {group.examples.join(', ')}
+                          {remaining > 0 ? `, and ${remaining} more` : ''}
+                        </span>
+                      </Link>
+                      <div className="mt-1">
+                        <VoiceCardPreview
+                          voiceId={group.representative.id}
+                          displayName={group.representative.name}
+                          accent={group.representative.accent}
+                          gender={group.representative.gender}
+                          previewUrl={`${API_BASE_URL}/tts/preview/${encodeURIComponent(group.representative.id)}`}
+                          contextLabel={`Preview: ${group.representative.name}`}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </section>
 

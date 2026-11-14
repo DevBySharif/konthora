@@ -18,6 +18,7 @@ const footerColumns = [
     title: 'Resources',
     links: [
       { label: 'Voice Library', href: '/voices' },
+      { label: 'Developers', href: '/developers' },
       { label: 'Guides', href: '/text-to-speech/how-does-text-to-speech-work' },
       { label: 'Text-to-Speech vs Screen Readers', href: '/accessibility/tts-vs-screen-reader' },
     ],

@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field, field_validator, ValidationInfo
+from pydantic import BaseModel, Field, field_validator, model_validator, ValidationInfo
 from app.services.kokoro_service import VOICES_CATALOGUE
 
 VALID_ACCENTS = {v["accent"].lower() for v in VOICES_CATALOGUE}
@@ -84,6 +84,73 @@ class TtsJobResponse(BaseModel):
     jobId: str = Field(..., description="Unique job identifier.")
     accessToken: str = Field(..., description="Cryptographically secure access token for retrieving status and files.")
     status: str = Field("queued", description="Initial queue state.")
+
+
+class DialogueSegment(BaseModel):
+    """One turn of a multi-voice dialogue: its own text and its own voice."""
+    text: str = Field(..., min_length=1, max_length=2000, description="The spoken lines for this turn.")
+    voiceId: str = Field(..., description="The unique identifier of the voice for this turn.")
+
+    @field_validator("text")
+    @classmethod
+    def validate_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Segment text must contain at least one non-whitespace character.")
+        for char in value:
+            code = ord(char)
+            if code < 32 and code not in [9, 10, 13]:
+                raise ValueError("Text contains unsupported control characters.")
+        return value
+
+
+class DialogueJobCreate(BaseModel):
+    """
+    Multi-voice dialogue (interview/podcast style). Each segment is
+    synthesized with its own voice (Kokoro or Edge, mixed engines allowed)
+    and the segments are concatenated into ONE audio file with a short
+    silence gap between turns. The whole dialogue counts ONCE against the
+    TTS rate limit, and the combined text shares the normal 2000-char cap.
+    A single segment should use the normal /tts/jobs endpoint instead.
+    """
+    segments: List[DialogueSegment] = Field(
+        ..., min_length=2, max_length=8,
+        description="2-8 dialogue turns, each with its own text and voice.",
+    )
+    speed: float = Field(1.0, ge=0.75, le=1.25, description="Playback speech rate factor, applied to every segment.")
+    outputFormat: str = Field("mp3", description="Audio output file format ('mp3' or 'wav').")
+    sentencePauseMs: Optional[int] = Field(
+        None,
+        ge=0,
+        le=1000,
+        description="Optional silence inserted at sentence chunk boundaries in milliseconds.",
+    )
+    paragraphPauseMs: Optional[int] = Field(
+        None,
+        ge=0,
+        le=2000,
+        description="Optional silence inserted at paragraph chunk boundaries in milliseconds.",
+    )
+    normalizeText: bool = Field(
+        True,
+        description="Apply the existing conservative text normalization pass before synthesis.",
+    )
+
+    @field_validator("outputFormat")
+    @classmethod
+    def validate_format(cls, value: str) -> str:
+        fmt = value.lower()
+        if fmt not in ["mp3", "wav"]:
+            raise ValueError("Supported output formats are 'mp3' and 'wav' only.")
+        return fmt
+
+    @model_validator(mode="after")
+    def validate_total_length(self):
+        total = sum(len(segment.text) for segment in self.segments)
+        if total > 2000:
+            raise ValueError(
+                f"Combined dialogue text must not exceed 2000 characters (got {total})."
+            )
+        return self
 
 class TtsJobStatusResponse(BaseModel):
     jobId: str

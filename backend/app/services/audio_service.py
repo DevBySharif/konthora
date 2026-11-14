@@ -245,6 +245,88 @@ class AudioService:
             logger.error(f"Failed to execute FFmpeg sub-process: {e}")
             raise GenerationFailedException("Could not execute WAV conversion process.")
 
+    # Silence inserted between dialogue turns when concatenating segments.
+    DIALOGUE_SEGMENT_GAP_MS = 300
+
+    def concatenate_audio_files(
+        self,
+        input_paths: List[Path],
+        output_path: Path,
+        output_format: str,
+        gap_ms: int = DIALOGUE_SEGMENT_GAP_MS,
+    ) -> float:
+        """
+        Concatenates per-segment audio files (WAV from Kokoro, MP3 from Edge,
+        or a mix) into ONE output file with a short silence gap between
+        segments. Every input is resampled to 24kHz with aresample first so
+        mixed-engine segments join cleanly, then a single FFmpeg concat
+        filter joins them in order. Returns the combined duration in seconds.
+        """
+        is_avail, ffmpeg_bin = self.ffmpeg_path
+        if not is_avail:
+            raise EncoderUnavailableException("FFmpeg is not installed or available on PATH.")
+        if not input_paths:
+            raise GenerationFailedException("No audio segments to concatenate.")
+        if output_format not in ("mp3", "wav"):
+            raise GenerationFailedException(f"Unsupported output format: {output_format}")
+
+        gap_seconds = max(0, gap_ms) / 1000.0
+
+        # [i:a]aresample=24000[a{i}] per input; one generated silence source
+        # reused between every pair; concat joins segment, gap, segment...
+        filter_parts = []
+        concat_inputs = []
+        for i in range(len(input_paths)):
+            filter_parts.append(f"[{i}:a]aresample=24000[a{i}]")
+            concat_inputs.append(f"[a{i}]")
+            if i < len(input_paths) - 1:
+                concat_inputs.append("[sil]")
+        if len(input_paths) > 1:
+            filter_parts.append(
+                f"anullsrc=r=24000:cl=mono,atrim=0:{gap_seconds:.3f}[sil]"
+            )
+        filter_parts.append(
+            f"{''.join(concat_inputs)}concat=n={len(concat_inputs)}:v=0:a=1[out]"
+        )
+        filter_complex = ";".join(filter_parts)
+
+        if output_format == "mp3":
+            codec_args = ["-codec:a", "libmp3lame", "-qscale:a", "2"]
+        else:
+            codec_args = ["-codec:a", "pcm_s16le"]
+
+        args = [ffmpeg_bin, "-y"]
+        for path in input_paths:
+            args += ["-i", str(path)]
+        args += [
+            "-filter_complex", filter_complex,
+            "-map", "[out]",
+            *codec_args,
+            str(output_path),
+        ]
+
+        try:
+            logger.info(
+                f"Running FFmpeg dialogue concat ({len(input_paths)} segments, "
+                f"{gap_ms}ms gaps) for: {output_path.name}"
+            )
+            subprocess.run(args, capture_output=True, check=True, shell=False)
+
+            if not output_path.exists() or output_path.stat().st_size == 0:
+                raise GenerationFailedException("FFmpeg ran successfully but concatenated output size is zero.")
+
+            logger.info(f"Successfully generated concatenated audio file: {output_path.name}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"FFmpeg dialogue concat failed with code {e.returncode}.")
+            raise GenerationFailedException("FFmpeg audio concatenation failed.")
+        except Exception as e:
+            logger.error(f"Failed to execute FFmpeg sub-process: {e}")
+            raise GenerationFailedException("Could not execute audio concatenation process.")
+
+        if output_format == "mp3":
+            return self.get_mp3_duration(output_path)
+        return sf.info(str(output_path)).duration
+
     def get_mp3_duration(self, mp3_path: Path) -> float:
         """
         Duration of an MP3 file in seconds. Prefers ffprobe; falls back to a

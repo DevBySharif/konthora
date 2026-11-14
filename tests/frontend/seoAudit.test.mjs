@@ -471,7 +471,7 @@ test('Crawl budget, robots.txt disallow rules, and voice links internal link boo
   assert.ok(ogContent.includes("'X-Robots-Tag': 'noindex'"), 'opengraph-image must send X-Robots-Tag: noindex');
   assert.ok(twContent.includes("'X-Robots-Tag': 'noindex'"), 'twitter-image must send X-Robots-Tag: noindex');
 
-  // 5. All 41 voice profiles linked via SSR in footer on homepage
+  // 5. All 129 voice profiles linked via SSR in footer on homepage
   const homeHtml = fs.readFileSync(path.join(rootDir, '.next/server/app/index.html'), 'utf8');
   const matchedVoices = homeHtml.match(/\/voices\/[a-z0-9-]+/g) || [];
   const uniqueVoiceSlugs = [...new Set(matchedVoices)].filter(
@@ -479,8 +479,8 @@ test('Crawl budget, robots.txt disallow rules, and voice links internal link boo
   );
   assert.equal(
     uniqueVoiceSlugs.length,
-    41,
-    `Homepage footer must link all 41 voice profiles (found ${uniqueVoiceSlugs.length})`
+    129,
+    `Homepage footer must link all 129 voice profiles (found ${uniqueVoiceSlugs.length})`
   );
 });
 

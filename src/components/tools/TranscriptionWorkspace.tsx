@@ -9,7 +9,7 @@ import {
   Loader2, Lock
 } from 'lucide-react';
 import {
-  createTranscriptionJob,
+  createTranscriptionJobWithProgress,
   getTranscriptionJobStatus,
   fetchStructuredTranscript,
   fetchTranscriptionCapabilities,
@@ -90,6 +90,54 @@ const PROGRESS_STAGE_LABELS: Record<string, string> = {
   failed: 'Transcription failed',
 };
 
+/** Server limit when capabilities are unavailable (matches the 10-minute cap). */
+const FALLBACK_MAX_DURATION_SECONDS = 600;
+/** A metadata probe that never resolves must not block file selection. */
+const DURATION_PROBE_TIMEOUT_MS = 10_000;
+
+/**
+ * Reads a local media file's duration WITHOUT uploading it, via an object URL
+ * and a throwaway <audio>/<video> element listening for `loadedmetadata`.
+ * Returns null when the duration cannot be determined (unknown codec,
+ * corrupt container, probe timeout) — the caller then lets the file through
+ * and the server validates it, rather than blocking a possibly valid file.
+ * The object URL is always revoked once the probe settles.
+ */
+function readMediaDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const isVideoFile =
+      file.type.startsWith('video/') ||
+      ['.mp4', '.webm', '.mov'].some((ext) => file.name.toLowerCase().endsWith(ext));
+    const media = document.createElement(isVideoFile ? 'video' : 'audio');
+    const url = URL.createObjectURL(file);
+    let done = false;
+    const finish = (duration: number | null) => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      URL.revokeObjectURL(url);
+      media.removeAttribute('src');
+      media.load();
+      resolve(duration);
+    };
+    const timer = window.setTimeout(() => finish(null), DURATION_PROBE_TIMEOUT_MS);
+    media.preload = 'metadata';
+    media.onloadedmetadata = () => {
+      const duration = media.duration;
+      finish(Number.isFinite(duration) ? duration : null);
+    };
+    media.onerror = () => finish(null);
+    media.src = url;
+  });
+}
+
+/** Human-readable duration for the over-limit message, e.g. "12.5 minutes". */
+function formatDurationForMessage(seconds: number): string {
+  if (seconds < 60) return `${Math.round(seconds)} seconds`;
+  const minutes = seconds / 60;
+  return `${Number.isInteger(minutes) ? minutes : minutes.toFixed(1)} minutes`;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function TranscriptionWorkspace() {
@@ -106,6 +154,10 @@ export function TranscriptionWorkspace() {
 
   const [phase, setPhase] = useState<WorkspacePhase>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  /** Non-error note (e.g. "Transcription cancelled.") — info styling, not an error state. */
+  const [noticeMsg, setNoticeMsg] = useState<string | null>(null);
+  /** Bytes sent so far during the 'uploading' phase; null once the upload ends. */
+  const [uploadProgress, setUploadProgress] = useState<{ loaded: number; total: number } | null>(null);
   const [job, setJob] = useState<JobState | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [resultDirty, setResultDirty] = useState(false);
@@ -237,8 +289,23 @@ export function TranscriptionWorkspace() {
     abortRef.current = null;
   };
 
-  const selectFile = (file: File, source: 'picker' | 'drop' = 'picker') => {
+  const selectFile = async (file: File, source: 'picker' | 'drop' = 'picker') => {
     if (!validateFile(file)) return;
+
+    // Client-side duration check BEFORE any upload: a 90 MB file that runs
+    // 20 minutes long used to upload fully before the server rejected it.
+    // The probe reads only local metadata, so a rejection costs no bandwidth.
+    // Unknown durations (null) pass through — the server still validates.
+    const maxDuration = maxDurationSeconds ?? FALLBACK_MAX_DURATION_SECONDS;
+    const duration = await readMediaDuration(file);
+    if (duration != null && duration > maxDuration) {
+      setErrorMsg(
+        `This file is ${formatDurationForMessage(duration)} long. The maximum is ${formatDurationForMessage(maxDuration)} — please trim it and try again.`,
+      );
+      trackTranscriptFileRejected({ reason: 'too_long' });
+      return;
+    }
+
     if (!confirmDiscardEdits()) return;
 
     // Refuse to swap the file mid-run unless the user confirmed discarding edits.
@@ -251,6 +318,7 @@ export function TranscriptionWorkspace() {
 
     setForm((prev) => ({ ...prev, file }));
     setErrorMsg(null);
+    setNoticeMsg(null);
     setPhase('idle');
     setJob(null);
     setResultDirty(false);
@@ -284,11 +352,30 @@ export function TranscriptionWorkspace() {
     cancelActiveRun();
     setForm((prev) => ({ ...prev, file: null }));
     setErrorMsg(null);
+    setNoticeMsg(null);
+    setUploadProgress(null);
     setPhase('idle');
     setJob(null);
     jobStartedAtRef.current = null;
     if (fileInputRef.current) fileInputRef.current.value = '';
     setResultDirty(false);
+  };
+
+  /**
+   * Cancels a run mid-flight (upload, queue, or processing). The abort
+   * reaches the in-flight XHR upload through abortRef's signal as well as
+   * the poll chain, so both stop. This is NOT an error state: the phase
+   * returns to 'idle' with an info note, and the selected file stays so the
+   * user can submit again immediately.
+   */
+  const handleCancelRun = () => {
+    cancelActiveRun();
+    setUploadProgress(null);
+    setJob(null);
+    setPhase('idle');
+    setErrorMsg(null);
+    setNoticeMsg('Transcription cancelled.');
+    jobStartedAtRef.current = null;
   };
 
   const openFileBrowser = () => fileInputRef.current?.click();
@@ -413,6 +500,8 @@ export function TranscriptionWorkspace() {
     }
 
     setErrorMsg(null);
+    setNoticeMsg(null);
+    setUploadProgress(null);
     setJob(null);
     setPhase('uploading');
 
@@ -437,15 +526,26 @@ export function TranscriptionWorkspace() {
       const ac = new AbortController();
       abortRef.current = ac;
 
-      const result = await createTranscriptionJob(
+      // XHR upload so the user sees real progress; fetch() cannot report it.
+      // Aborting mid-upload (Cancel) rejects with AbortError and the catch
+      // below returns silently, leaving handleCancelRun's 'idle' phase intact.
+      const result = await createTranscriptionJobWithProgress(
         form.file,
         form.language,
         form.timestampMode,
         form.exportFormat,
-        ac.signal
+        {
+          signal: ac.signal,
+          onProgress: (progress) => {
+            if (mountedRef.current) setUploadProgress(progress);
+          },
+        },
       );
 
-      if (!mountedRef.current) return;
+      // A cancel that landed after the upload resolved must not revive the run.
+      if (!mountedRef.current || ac.signal.aborted) return;
+
+      setUploadProgress(null);
 
       const jobState: JobState = {
         jobId: result.jobId,
@@ -463,6 +563,7 @@ export function TranscriptionWorkspace() {
       );
     } catch (err) {
       if (isAbortError(err) || !mountedRef.current) return;
+      setUploadProgress(null);
       setPhase('failed');
       if (err instanceof ApiError) {
         if (err.status === 429) {
@@ -482,6 +583,12 @@ export function TranscriptionWorkspace() {
           error_code: err.code,
           export_format: form.exportFormat,
         });
+      } else if (isTimeoutError(err)) {
+        // The 120s upload deadline fired: say so plainly instead of the
+        // generic "unexpected error" — the fix is a smaller file or a better
+        // connection, and the user can act on that.
+        setErrorMsg('The upload timed out. Try a smaller file or check your connection.');
+        trackTranscriptFailed({ stage: 'submit', export_format: form.exportFormat });
       } else {
         setErrorMsg('An unexpected error occurred. Please try again.');
         trackTranscriptFailed({ stage: 'submit', export_format: form.exportFormat });
@@ -499,6 +606,11 @@ export function TranscriptionWorkspace() {
   const isRunning = phase === 'uploading' || phase === 'queued' || phase === 'processing';
   const capsUnavailable = !capsLoading && (!capabilities || capsError);
   const maxSizeMb = Math.round(maxFileSizeBytes / (1024 * 1024));
+  /** 0–100 while uploading; 0 until the first progress event arrives. */
+  const uploadPercent =
+    uploadProgress && uploadProgress.total > 0
+      ? Math.min(100, Math.round((uploadProgress.loaded / uploadProgress.total) * 100))
+      : 0;
 
   const progressLabel = job?.statusResponse?.progressStage
     ? PROGRESS_STAGE_LABELS[job.statusResponse.progressStage] ?? 'Processing…'
@@ -741,6 +853,13 @@ export function TranscriptionWorkspace() {
         </div>
       </form>
 
+      {/* ── Cancel Note (info, not an error) ──────────────────────────────── */}
+      {noticeMsg && phase === 'idle' && (
+        <div className="mt-6">
+          <StatusMessage id="transcribe-notice" type="info" message={noticeMsg} />
+        </div>
+      )}
+
       {/* ── Progress / Status ─────────────────────────────────────────────── */}
       {isRunning && (
         <div
@@ -750,14 +869,44 @@ export function TranscriptionWorkspace() {
           className="mt-6 p-5 border border-border/80 bg-card rounded-2xl flex items-center gap-4"
         >
           <Loader2 className="w-5 h-5 animate-spin text-primary shrink-0" aria-hidden="true" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground">{progressLabel}</p>
+            {phase === 'uploading' && (
+              <div className="mt-2">
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-secondary"
+                  role="progressbar"
+                  aria-valuenow={uploadPercent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Upload progress"
+                >
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${uploadPercent}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {uploadProgress ? `${uploadPercent}% uploaded` : 'Starting upload…'}
+                </p>
+              </div>
+            )}
             {job?.statusResponse?.segmentCount != null && (
               <p className="text-xs text-muted-foreground mt-0.5">
                 {job.statusResponse.segmentCount} segment{job.statusResponse.segmentCount !== 1 ? 's' : ''} found so far
               </p>
             )}
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCancelRun}
+            aria-label="Cancel transcription"
+            className="shrink-0"
+          >
+            Cancel
+          </Button>
         </div>
       )}
 

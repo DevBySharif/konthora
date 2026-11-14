@@ -69,6 +69,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/ai-voice-sounds-robotic',
     '/accessibility',
     '/accessibility/tts-vs-screen-reader',
+    '/developers',
     '/about',
     '/contact',
     '/privacy-policy',

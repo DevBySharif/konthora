@@ -28,6 +28,7 @@ class JobService:
         paragraph_pause_ms: Optional[int] = None,
         normalize_text: bool = True,
         engine: str = "kokoro",
+        segments: Optional[List[Dict[str, str]]] = None,
     ) -> TtsJob:
         """Creates a new job in-memory, allocates a UUID, and configures default state."""
         job_id = str(uuid.uuid4())
@@ -51,6 +52,7 @@ class JobService:
                 else paragraph_pause_ms
             ),
             normalize_text=normalize_text,
+            segments=segments,
         )
         self._jobs[job_id] = job
         logger.info(f"Created Job: {job_id} | Character count: {len(text)} | Voice: {voice_id}")

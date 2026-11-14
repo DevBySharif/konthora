@@ -17,6 +17,7 @@ import {
   getLanguagePage,
   getVoiceUrl,
 } from '@/config/voices';
+import { VoicePagePreview } from '@/components/tools/VoicePagePreview';
 import {
   Volume2,
   Mic2,
@@ -59,13 +60,17 @@ export default async function VoicePage({ params }: VoicePageProps) {
   const pageUrl = `${siteConfig.url}${getVoiceUrl(voice.slug)}`;
   const related = getRelatedVoices(voice);
   const languagePage = getLanguagePage(voice.language);
-  // Internal links must not carry ?voice=. Every such URL is a duplicate of the
-  // language page, so Search Console classified them as "alternate page with
-  // proper canonical tag" and reported them as crawled-but-not-indexed: 12 of
-  // them burned crawl budget re-confirming a duplicate the canonical already
-  // covered. The query still works for a visitor arriving from a shared link,
-  // it is just never emitted by our own navigation.
-  const generateSlug = languagePage;
+  // The "Generate with this voice" and "Open this voice in the TTS Studio"
+  // links carry a voice query so the studio opens with this voice
+  // pre-selected (TtsWorkspaceWithPreset reads the parameter). The link
+  // points at the STUDIO (/text-to-speech), never at a language page: the
+  // old form — a voice query hanging off a language page — duplicated the
+  // language page in Search Console ("alternate page with proper canonical
+  // tag"), so no voice query may ever be emitted on a language-page URL.
+  // This is the one place the site emits voice-query links (feature #3,
+  // Nov 2026); the plain language-page link still exists in the About
+  // section below.
+  const generateSlug = `/text-to-speech?voice=${encodeURIComponent(voice.id)}`;
   const homeUrl = siteConfig.url;
   const voicesUrl = `${siteConfig.url}/voices`;
 
@@ -183,6 +188,7 @@ export default async function VoicePage({ params }: VoicePageProps) {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
+            <VoicePagePreview voice={voice} />
             <Link
               href={generateSlug}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
@@ -355,7 +361,7 @@ export default async function VoicePage({ params }: VoicePageProps) {
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:bg-primary/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0 cursor-pointer"
                 >
                   <Volume2 className="h-4 w-4" aria-hidden="true" />
-                  Generate speech with {voice.shortName}
+                  Open this voice in the TTS Studio
                 </Link>
               </div>
             </section>
@@ -383,6 +389,8 @@ export default async function VoicePage({ params }: VoicePageProps) {
 
 function languageLabel(language: string): string {
   switch (language) {
+    case 'bn-BD':
+      return 'Bengali';
     case 'hi-IN':
       return 'Hindi';
     case 'es':

@@ -9,8 +9,6 @@ import {
   Trash2,
   FileText,
   Download,
-  Play,
-  Pause,
   Music,
   RefreshCw,
   AlertCircle,
@@ -27,6 +25,7 @@ import {
   API_BASE_URL,
   fetchVoices,
   createTtsJob,
+  createDialogueJob,
   getTtsJobStatus,
   fetchAudioBlob,
   ApiError,
@@ -46,6 +45,15 @@ import {
   getCharacterCountBucket
 } from '@/components/analytics/events';
 import { VoicePicker } from './VoicePicker';
+import { WaveformPlayer } from './WaveformPlayer';
+import {
+  DialogueBuilder,
+  DIALOGUE_MAX_CHARS,
+  DIALOGUE_MIN_SEGMENTS,
+  dialogueTotalChars,
+  newDialogueSegment,
+  type DialogueSegmentDraft,
+} from './DialogueBuilder';
 import {
   DEFAULT_VOICE_BY_LANGUAGE,
   SupportedLanguage,
@@ -194,6 +202,112 @@ const MAX_CONSECUTIVE_POLL_FAILURES = 40;
 /** Absolute wall-clock ceiling for one synthesis job (10 minutes). */
 const MAX_JOB_DURATION_MS = 10 * 60 * 1000;
 
+/**
+ * The current TTS job, persisted in sessionStorage so a refresh restores it
+ * while the server still holds the audio (60 minutes). Tokens live in
+ * sessionStorage ONLY — never localStorage, which survives the session.
+ */
+const TTS_CURRENT_JOB_STORAGE_KEY = 'konthora:tts-current-job:v1';
+const TTS_JOB_TTL_MS = 60 * 60 * 1000;
+
+interface PersistedTtsJob {
+  jobId: string;
+  token: string;
+  voiceId: string;
+  format: 'mp3' | 'wav';
+  text: string;
+  speed: number;
+  createdAt: string;
+  expiresAt?: string;
+  durationSeconds?: number | null;
+  status: 'polling' | 'completed';
+}
+
+function loadPersistedTtsJob(): PersistedTtsJob | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    const raw = window.sessionStorage.getItem(TTS_CURRENT_JOB_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PersistedTtsJob;
+    if (!parsed || typeof parsed.jobId !== 'string' || typeof parsed.token !== 'string') return null;
+    // Drop anything past the server's 60-minute retention.
+    const end = parsed.expiresAt ? Date.parse(parsed.expiresAt) : Date.parse(parsed.createdAt) + TTS_JOB_TTL_MS;
+    if (Number.isNaN(end) || end <= Date.now()) {
+      window.sessionStorage.removeItem(TTS_CURRENT_JOB_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function savePersistedTtsJob(job: PersistedTtsJob): void {
+  try {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(TTS_CURRENT_JOB_STORAGE_KEY, JSON.stringify(job));
+    }
+  } catch {
+    // A failed write just means this session cannot restore the job.
+  }
+}
+
+function clearPersistedTtsJob(): void {
+  try {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(TTS_CURRENT_JOB_STORAGE_KEY);
+    }
+  } catch {
+    // Nothing to clean up.
+  }
+}
+
+/**
+ * Last 5 generations, also in sessionStorage (metadata + token only — the
+ * audio itself is never stored, it is re-fetched from the server while the
+ * 60-minute window lasts).
+ */
+const TTS_HISTORY_STORAGE_KEY = 'konthora:tts-history:v1';
+const TTS_HISTORY_MAX_ENTRIES = 5;
+
+interface TtsHistoryEntry {
+  jobId: string;
+  token: string;
+  voiceId: string;
+  voiceName: string;
+  format: 'mp3' | 'wav';
+  textSnippet: string;
+  createdAt: string;
+  expiresAt: string;
+  durationSeconds: number | null;
+}
+
+function loadTtsHistory(): TtsHistoryEntry[] {
+  try {
+    if (typeof window === 'undefined') return [];
+    const raw = window.sessionStorage.getItem(TTS_HISTORY_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as TtsHistoryEntry[];
+    if (!Array.isArray(parsed)) return [];
+    const now = Date.now();
+    return parsed
+      .filter((e) => e && typeof e.jobId === 'string' && typeof e.token === 'string' && Date.parse(e.expiresAt) > now)
+      .slice(0, TTS_HISTORY_MAX_ENTRIES);
+  } catch {
+    return [];
+  }
+}
+
+function saveTtsHistory(entries: TtsHistoryEntry[]): void {
+  try {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(TTS_HISTORY_STORAGE_KEY, JSON.stringify(entries.slice(0, TTS_HISTORY_MAX_ENTRIES)));
+    }
+  } catch {
+    // History is a convenience; losing it is not fatal.
+  }
+}
+
 export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | null }) {
   const [voices, setVoices] = useState<ApiVoice[]>(FALLBACK_VOICES);
   const [loadingVoices, setLoadingVoices] = useState<boolean>(true);
@@ -202,6 +316,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en-US');
   const [text, setText] = useState<string>('');
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(FALLBACK_VOICES[0].id);
+  // 'single' = one voice for the whole text; 'dialogue' = one script split
+  // into turns, each turn with its own voice (Feature 7).
+  const [mode, setMode] = useState<'single' | 'dialogue'>('single');
+  const [dialogueSegments, setDialogueSegments] = useState<DialogueSegmentDraft[]>(() => [
+    newDialogueSegment(),
+    newDialogueSegment(),
+  ]);
   const lastVoiceByLanguage = useRef<Record<SupportedLanguage, string>>({ ...DEFAULT_VOICE_BY_LANGUAGE });
   const [speed, setSpeed] = useState<number>(1.0);
   const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
@@ -215,11 +336,30 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   const [progressStage, setProgressStage] = useState<string>('');
   const [jobId, setJobId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // Shown when pasted/typed text exceeds the 2,000-character limit and was
+  // trimmed, so the user sees what happened instead of text silently vanishing.
+  const [trimNotice, setTrimNotice] = useState<string | null>(null);
 
   // Audio playback states
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
+  // Server-reported expiry for the generated audio, for the countdown.
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  // Ticking clock that drives the countdown display.
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  /** Guards the one-time sessionStorage restore on mount. */
+  const restoredJobRef = useRef(false);
+  /**
+   * A restored job waiting for its poll to start. The mount effect cannot
+   * call startStatusPolling directly (it is declared later in the file), so
+   * the restore stashes the job here and the effect below drains it.
+   */
+  const pendingRestoreRef = useRef<{ jobId: string; token: string } | null>(null);
+  // Last 5 generations, restored from sessionStorage (expired ones filtered).
+  const [history, setHistory] = useState<TtsHistoryEntry[]>(() => loadTtsHistory());
+  /** Job id currently being loaded/downloaded from history (buttons disable). */
+  const [historyBusyId, setHistoryBusyId] = useState<string | null>(null);
 
   const charLimit = 2000;
 
@@ -263,6 +403,31 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     ? selectedVoiceId
     : (availableVoices[0]?.id ?? '');
 
+  /**
+   * The picker list with a Listen preview URL attached to every voice. Shared
+   * by the studio picker and by each dialogue turn's picker, so both always
+   * show the same voices and the same previews.
+   */
+  const pickerVoices = availableVoices.map(v => ({
+    id: v.id,
+    displayName: v.displayName,
+    accent: v.accent,
+    gender: v.gender,
+    language: v.language,
+    recommended: v.recommended,
+    engine: v.engine,
+    // Use the API preview when present (Kokoro). Fallback voices carry no
+    // previewUrl, so build the conventional path for them. Edge voices are
+    // previewed by the API endpoint, which synthesizes a short line in the
+    // voice's own language and caches it server-side — the Listen button
+    // works for them without generating a job.
+    previewUrl: v.previewUrl
+      ? v.previewUrl
+      : v.engine === 'edge'
+        ? `${API_BASE_URL}/tts/preview/${encodeURIComponent(v.id)}`
+        : `/audio/voice-previews/${v.id}.mp3`,
+  }));
+
   const handleVoiceSelect = (voiceId: string) => {
     if (voiceId === resolvedVoiceId) return;
     setSelectedVoiceId(voiceId);
@@ -295,6 +460,37 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
       : DEFAULT_VOICE_BY_LANGUAGE[lang];
     setSelectedVoiceId(fallback);
   };
+
+  /**
+   * Restores a job saved in sessionStorage by an earlier page load, if the
+   * server still holds its audio. Runs once, after the voice catalogue loads
+   * so the stored voice/language resolve against real data. A ?voice= preset
+   * wins over the restore — explicit navigation beats a stale session.
+   *
+   * A function declaration (not a const arrow) so the mount effect above can
+   * call it: declarations hoist, consts do not.
+   */
+  function restorePersistedJob(catalogue: ApiVoice[]) {
+    if (restoredJobRef.current || initialVoiceId) return;
+    restoredJobRef.current = true;
+    const stored = loadPersistedTtsJob();
+    if (!stored) return;
+
+    const voice = catalogue.find((v) => v.id === stored.voiceId);
+    if (voice) {
+      setSelectedVoiceId(voice.id);
+      setSelectedLanguage(voice.language as SupportedLanguage);
+      lastVoiceByLanguage.current[voice.language as SupportedLanguage] = voice.id;
+    }
+    // A submit that beat the catalogue fetch owns the workspace now;
+    // restoring over it would hijack its poll.
+    if (pollTimerRef.current || abortControllerRef.current) return;
+    setText(stored.text);
+    setSpeed(stored.speed);
+    setOutputFormat(stored.format);
+    setJobId(stored.jobId);
+    pendingRestoreRef.current = { jobId: stored.jobId, token: stored.token };
+  }
 
   // Fetch voices list on mount
   useEffect(() => {
@@ -349,11 +545,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         if (data && data.length > 0) {
           setVoices(data);
           applyInitialPreferences(data);
+          restorePersistedJob(data);
         }
       } catch (err) {
         console.error('Failed to load dynamic voices catalog. Falling back to local values.', err);
         setVoices(FALLBACK_VOICES);
         applyInitialPreferences(FALLBACK_VOICES);
+        restorePersistedJob(FALLBACK_VOICES);
       } finally {
         setLoadingVoices(false);
       }
@@ -430,10 +628,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   // Wipes all states back to starting setup
   const handleClear = () => {
     setText('');
+    setTrimNotice(null);
     setErrorMsg(null);
     setStatus('idle');
     setProgressStage('');
     setJobId(null);
+    setExpiresAt(null);
+    clearPersistedTtsJob();
     setDurationSeconds(null);
     clearRunningTasks();
     releaseAudioUrl();
@@ -444,6 +645,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
   const handleInsertSample = (source: 'input_action' | 'empty_state' = 'input_action') => {
     setText(SAMPLE_TEXTS[selectedLanguage]);
+    setTrimNotice(null);
     setErrorMsg(null);
     trackTtsSampleInserted(source);
   };
@@ -466,7 +668,14 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   };
 
   // Polls status check endpoint recursively
-  const startStatusPolling = (id: string, token: string) => {
+  /**
+   * Polls a job to completion. `meta` lets a dialogue job describe itself:
+   * without it the history entry and analytics read the single-editor text
+   * and the studio voice, which is wrong for a multi-turn job.
+   */
+  const startStatusPolling = (id: string, token: string, meta?: { text: string; voiceId: string }) => {
+    const jobText = meta?.text ?? text;
+    const jobVoiceId = meta?.voiceId ?? resolvedVoiceId;
     clearRunningTasks();
     setStatus('polling');
     setProgressStage('queued');
@@ -484,11 +693,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         clearRunningTasks();
         setStatus('failed');
         setProgressStage('failed');
+        setExpiresAt(null);
+        clearPersistedTtsJob();
         setErrorMsg('This took longer than expected and was stopped. Please try again.');
         trackTtsGenerationFailed({
           stage: 'poll',
           error_code: 'JOB_TIMEOUT',
-          voice_id: resolvedVoiceId,
+          voice_id: jobVoiceId,
           format: outputFormat,
         });
         return;
@@ -507,6 +718,35 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         if (data.status === 'completed') {
           setProgressStage('completed');
           setDurationSeconds(data.durationSeconds);
+          setExpiresAt(data.expiresAt);
+          const previous = loadPersistedTtsJob();
+          if (previous && previous.jobId === id) {
+            savePersistedTtsJob({
+              ...previous,
+              status: 'completed',
+              expiresAt: data.expiresAt,
+              durationSeconds: data.durationSeconds,
+            });
+          }
+
+          // Record this generation in the recent history (last 5). The
+          // sessionStorage copy is the source of truth here, not the
+          // closure's `history` value, which predates this poll chain.
+          const completedVoice = voices.find((v) => v.id === jobVoiceId);
+          const historyEntry: TtsHistoryEntry = {
+            jobId: id,
+            token,
+            voiceId: jobVoiceId,
+            voiceName: completedVoice?.displayName ?? resolvedVoiceId,
+            format: outputFormat,
+            textSnippet: jobText.trim().slice(0, 80),
+            createdAt: data.createdAt,
+            expiresAt: data.expiresAt,
+            durationSeconds: data.durationSeconds,
+          };
+          const nextHistory = [historyEntry, ...loadTtsHistory().filter((e) => e.jobId !== id)].slice(0, TTS_HISTORY_MAX_ENTRIES);
+          saveTtsHistory(nextHistory);
+          setHistory(nextHistory);
 
           // Request file download, convert to blob, set Object URL
           const blob = await fetchAudioBlob(id, token);
@@ -524,7 +764,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           setStatus('completed');
           clearRunningTasks();
 
-          const voice = voices.find(v => v.id === resolvedVoiceId);
+          const voice = voices.find(v => v.id === jobVoiceId);
           if (voice && jobStartTimeRef.current) {
             trackTtsGenerationCompleted({
               voice_id: voice.id,
@@ -532,7 +772,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               gender: voice.gender,
               speed,
               format: outputFormat,
-              character_count_bucket: getCharacterCountBucket(text.length),
+              character_count_bucket: getCharacterCountBucket(jobText.length),
               duration_seconds: data.durationSeconds ?? undefined,
               elapsed_seconds: Math.round((Date.now() - jobStartTimeRef.current) / 1000)
             });
@@ -541,24 +781,28 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         } else if (data.status === 'failed') {
           setProgressStage('failed');
           setStatus('failed');
+          setExpiresAt(null);
+          clearPersistedTtsJob();
           setErrorMsg(data.errorMessage || 'Generation failed on worker.');
           clearRunningTasks();
 
           trackTtsGenerationFailed({
             stage: 'poll',
-            voice_id: resolvedVoiceId,
+            voice_id: jobVoiceId,
             format: outputFormat
           });
         } else if (data.status === 'expired') {
           setProgressStage('expired');
           setStatus('failed');
+          setExpiresAt(null);
+          clearPersistedTtsJob();
           setErrorMsg('This audio file cache has expired. Please run synthesis again.');
           clearRunningTasks();
 
           trackTtsGenerationFailed({
             stage: 'poll',
             error_code: 'expired',
-            voice_id: resolvedVoiceId,
+            voice_id: jobVoiceId,
             format: outputFormat
           });
         } else {
@@ -586,7 +830,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           trackTtsGenerationFailed({
             stage: 'poll',
             error_code: 'POLL_TIMEOUT',
-            voice_id: resolvedVoiceId,
+            voice_id: jobVoiceId,
             format: outputFormat
           });
         }
@@ -598,8 +842,144 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     pollTimerRef.current = setInterval(poll, POLL_INTERVAL_MS);
   };
 
+  // Starts polling for a sessionStorage-restored job. The mount effect
+  // stashes the job in pendingRestoreRef; this effect drains it once the
+  // catalogue load has set the job id. The ref guard keeps a fresh submit —
+  // which also sets jobId — from double-starting its own poll.
+  useEffect(() => {
+    const pending = pendingRestoreRef.current;
+    if (!pending) return;
+    pendingRestoreRef.current = null;
+    startStatusPolling(pending.jobId, pending.token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
+
+  /**
+   * Shared submit-failure handling for both single and dialogue jobs, so the
+   * user gets the same friendly rate-limit / connection messages either way.
+   * `voiceId` is the studio voice for a single job, the first turn's voice
+   * for a dialogue.
+   */
+  const handleSubmitError = (err: unknown, voiceId: string) => {
+    if (isAbortError(err) || !mountedRef.current) return;
+
+    // Prefer the typed ApiError, which carries the code and Retry-After.
+    const error = err instanceof ApiError ? err : (err as { code?: string; message?: string });
+    console.error('Job submission failed:', error);
+    setStatus('failed');
+    setProgressStage('failed');
+
+    let friendlyMsg: string;
+    if (error.code === 'RATE_LIMITED') {
+      const wait = err instanceof ApiError ? err.retryAfterSeconds : undefined;
+      friendlyMsg = wait
+        ? `Rate limit exceeded. Please try again in ${wait} second${wait === 1 ? '' : 's'}.`
+        : (error.message || 'Rate limit exceeded. Please try again later.');
+    } else if (err instanceof ApiError && err.code === 'INVALID_RESPONSE') {
+      friendlyMsg = err.message;
+    } else {
+      friendlyMsg = error.message || 'Could not connect to the speech synthesis server.';
+    }
+    setErrorMsg(friendlyMsg);
+
+    trackTtsGenerationFailed({
+      stage: 'submit',
+      error_code: error.code,
+      voice_id: voiceId,
+      format: outputFormat
+    });
+  };
+
+  /**
+   * Dialogue submit (Feature 7): every turn must have text, the combined
+   * text shares the 2,000-character cap, and the whole dialogue counts once
+   * against the hourly limit. The response is one job id, so the same polling
+   * and player flow serves it — the meta describes the dialogue for the
+   * history entry and analytics instead of the single-editor text.
+   */
+  const handleDialogueSubmit = async () => {
+    if (dialogueSegments.some((segment) => !segment.text.trim())) {
+      setErrorMsg('Every turn needs some text — fill in the empty turns or remove them.');
+      return;
+    }
+    const totalChars = dialogueTotalChars(dialogueSegments);
+    if (totalChars > DIALOGUE_MAX_CHARS) {
+      setErrorMsg(`Dialogue text is ${totalChars.toLocaleString()} characters — trim it to ${DIALOGUE_MAX_CHARS.toLocaleString()} or less.`);
+      return;
+    }
+
+    setErrorMsg(null);
+    setStatus('submitting');
+    setProgressStage('queued');
+    setExpiresAt(null);
+
+    // Revoke previous audio resources
+    releaseAudioUrl();
+    setAudioUrl(null);
+    setIsPlaying(false);
+    hasTrackedPlayRef.current = false;
+
+    const segments = dialogueSegments.map((segment) => ({
+      text: segment.text.trim(),
+      voiceId: segment.voiceId || resolvedVoiceId,
+    }));
+    const combinedText = segments.map((segment) => segment.text).join(' ');
+    const firstVoiceId = segments[0].voiceId;
+    const firstVoice = voices.find((v) => v.id === firstVoiceId);
+    if (firstVoice) {
+      trackTtsGenerateClicked({
+        voice_id: firstVoice.id,
+        accent: firstVoice.accent,
+        gender: firstVoice.gender,
+        speed,
+        format: outputFormat,
+        character_count_bucket: getCharacterCountBucket(combinedText.length)
+      });
+    }
+
+    jobStartTimeRef.current = Date.now();
+
+    const submitController = new AbortController();
+    abortControllerRef.current = submitController;
+
+    try {
+      const jobData = await createDialogueJob(
+        segments,
+        speed,
+        outputFormat,
+        { sentencePauseMs, paragraphPauseMs, normalizeText },
+        submitController.signal,
+      );
+
+      // Bail out if we were torn down while the POST was in flight.
+      if (!mountedRef.current) return;
+
+      setJobId(jobData.jobId);
+      savePersistedTtsJob({
+        jobId: jobData.jobId,
+        token: jobData.accessToken,
+        voiceId: firstVoiceId,
+        format: outputFormat,
+        text: combinedText,
+        speed,
+        createdAt: new Date().toISOString(),
+        status: 'polling',
+      });
+
+      // Start status verification interval
+      startStatusPolling(jobData.jobId, jobData.accessToken, { text: combinedText, voiceId: firstVoiceId });
+    } catch (err) {
+      handleSubmitError(err, firstVoiceId);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (mode === 'dialogue') {
+      await handleDialogueSubmit();
+      return;
+    }
 
     if (!text.trim()) {
       setErrorMsg('Please enter some text in the editor to convert.');
@@ -609,6 +989,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setErrorMsg(null);
     setStatus('submitting');
     setProgressStage('queued');
+    setExpiresAt(null);
 
     // Revoke previous audio resources
     releaseAudioUrl();
@@ -659,37 +1040,21 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
       if (!mountedRef.current) return;
 
       setJobId(jobData.jobId);
+      savePersistedTtsJob({
+        jobId: jobData.jobId,
+        token: jobData.accessToken,
+        voiceId: resolvedVoiceId,
+        format: outputFormat,
+        text,
+        speed,
+        createdAt: new Date().toISOString(),
+        status: 'polling',
+      });
 
       // Start status verification interval
       startStatusPolling(jobData.jobId, jobData.accessToken);
     } catch (err) {
-      if (isAbortError(err) || !mountedRef.current) return;
-
-      // Prefer the typed ApiError, which carries the code and Retry-After.
-      const error = err instanceof ApiError ? err : (err as { code?: string; message?: string });
-      console.error('Job submission failed:', error);
-      setStatus('failed');
-      setProgressStage('failed');
-
-      let friendlyMsg: string;
-      if (error.code === 'RATE_LIMITED') {
-        const wait = err instanceof ApiError ? err.retryAfterSeconds : undefined;
-        friendlyMsg = wait
-          ? `Rate limit exceeded. Please try again in ${wait} second${wait === 1 ? '' : 's'}.`
-          : (error.message || 'Rate limit exceeded. Please try again later.');
-      } else if (err instanceof ApiError && err.code === 'INVALID_RESPONSE') {
-        friendlyMsg = err.message;
-      } else {
-        friendlyMsg = error.message || 'Could not connect to the speech synthesis server.';
-      }
-      setErrorMsg(friendlyMsg);
-
-      trackTtsGenerationFailed({
-        stage: 'submit',
-        error_code: error.code,
-        voice_id: resolvedVoiceId,
-        format: outputFormat
-      });
+      handleSubmitError(err, resolvedVoiceId);
     }
   };
 
@@ -717,22 +1082,120 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
     setIsPlaying(false);
   };
 
+  // Loads a history entry back into the player (re-fetches the audio while
+  // the server still holds it). The entry is NOT written back to the
+  // current-job store: only a snippet was kept, and restoring a truncated
+  // snippet into the editor on the next refresh would wipe the user's text.
+  const loadHistoryEntry = async (entry: TtsHistoryEntry) => {
+    if (historyBusyId) return;
+    setHistoryBusyId(entry.jobId);
+    try {
+      const blob = await fetchAudioBlob(entry.jobId, entry.token);
+      if (!mountedRef.current) return;
+      const localUrl = URL.createObjectURL(blob);
+      releaseAudioUrl();
+      audioUrlRef.current = localUrl;
+      setAudioUrl(localUrl);
+      setJobId(entry.jobId);
+      setStatus('completed');
+      setProgressStage('completed');
+      setDurationSeconds(entry.durationSeconds);
+      setExpiresAt(entry.expiresAt);
+      setSelectedVoiceId(entry.voiceId);
+      setIsPlaying(false);
+      hasTrackedPlayRef.current = false;
+    } catch (err) {
+      if (!mountedRef.current) return;
+      console.error('Failed to load history audio:', err);
+      setErrorMsg('That audio is no longer available. It may have expired after 60 minutes.');
+      const next = loadTtsHistory().filter((e) => e.jobId !== entry.jobId);
+      saveTtsHistory(next);
+      setHistory(next);
+    } finally {
+      if (mountedRef.current) setHistoryBusyId(null);
+    }
+  };
+
+  const downloadHistoryEntry = async (entry: TtsHistoryEntry) => {
+    if (historyBusyId) return;
+    setHistoryBusyId(entry.jobId);
+    try {
+      const blob = await fetchAudioBlob(entry.jobId, entry.token);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `konthora-speech-${entry.jobId.slice(0, 8)}.${entry.format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      trackTtsAudioDownloaded({ voice_id: entry.voiceId, format: entry.format });
+    } catch (err) {
+      if (!mountedRef.current) return;
+      console.error('Failed to download history audio:', err);
+      setErrorMsg('That audio is no longer available. It may have expired after 60 minutes.');
+    } finally {
+      if (mountedRef.current) setHistoryBusyId(null);
+    }
+  };
+
   // Word-count estimate adjusted for selected speed and requested boundary pauses.
-  const wordsCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  // In dialogue mode the estimate covers the combined turns, not the single editor.
+  const dialogueCombinedText = dialogueSegments.map((segment) => segment.text).join(' ');
+  const estimateSourceText = mode === 'dialogue' ? dialogueCombinedText : text;
+  const wordsCount = estimateSourceText.trim() ? estimateSourceText.trim().split(/\s+/).length : 0;
   const estimatedSeconds = estimateTtsDurationSeconds(
-    text,
+    estimateSourceText,
     speed,
     sentencePauseMs,
     paragraphPauseMs,
   );
   const estimatedDuration = formatTtsEstimatedDuration(estimatedSeconds);
 
-  const formatCompletedDuration = () => {
-    if (durationSeconds === null) return '00:00';
-    const minutes = Math.floor(durationSeconds / 60);
-    const seconds = Math.round(durationSeconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  // The Generate button stays disabled until a dialogue is actually submittable.
+  const dialogueValid =
+    dialogueSegments.length >= DIALOGUE_MIN_SEGMENTS &&
+    dialogueSegments.every((segment) => segment.text.trim().length > 0) &&
+    dialogueTotalChars(dialogueSegments) <= DIALOGUE_MAX_CHARS;
+
+  const formatExpiryCountdown = (expires: string, now: number) => {
+    const remainingMs = Math.max(0, Date.parse(expires) - now);
+    const totalSeconds = Math.floor(remainingMs / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  // Keeps history expiry labels fresh while entries are listed.
+  useEffect(() => {
+    if (history.length === 0) return;
+    const timer = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, [history.length]);
+
+  // Ticks the expiry countdown once a second while completed audio is live.
+  // The expiry transition itself runs inside the interval callback (not in
+  // the effect body): when the server deletes the audio, the player is
+  // cleared the same way a polled 'expired' status would clear it.
+  useEffect(() => {
+    if (status !== 'completed' || !expiresAt) return;
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setNowMs(now);
+      if (Date.parse(expiresAt) - now > 0) return;
+      clearInterval(timer);
+      clearRunningTasks();
+      releaseAudioUrl();
+      setAudioUrl(null);
+      setIsPlaying(false);
+      setStatus('failed');
+      setProgressStage('expired');
+      setExpiresAt(null);
+      setErrorMsg('This audio file cache has expired. Please run synthesis again.');
+      clearPersistedTtsJob();
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [status, expiresAt]);
 
   // Renders descriptive label for the progress banner
   const getProgressLabel = () => {
@@ -742,7 +1205,63 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   return (
     <div className="w-full max-w-6xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        {/* Single voice / Dialogue mode toggle */}
+        <div
+          className="flex gap-1 rounded-xl border border-border bg-secondary/20 p-1"
+          role="group"
+          aria-label="Generation mode"
+        >
+          <button
+            type="button"
+            onClick={() => setMode('single')}
+            aria-pressed={mode === 'single'}
+            disabled={status === 'submitting' || status === 'polling'}
+            className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
+              mode === 'single'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary/50'
+            }`}
+          >
+            Single voice
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('dialogue')}
+            aria-pressed={mode === 'dialogue'}
+            disabled={status === 'submitting' || status === 'polling'}
+            className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
+              mode === 'dialogue'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary/50'
+            }`}
+          >
+            Dialogue · two or more voices
+          </button>
+        </div>
+
+        {/* Dialogue builder — one script, turns with their own voices */}
+        {mode === 'dialogue' && (
+          <div className="border border-border bg-card rounded-2xl shadow-xs overflow-hidden">
+            <div className="flex justify-between items-center bg-secondary/30 px-4 py-2 border-b border-border/80">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Dialogue Script
+              </span>
+            </div>
+            <div className="p-5">
+              <DialogueBuilder
+                segments={dialogueSegments}
+                onSegmentsChange={setDialogueSegments}
+                voices={pickerVoices}
+                selectedLanguage={selectedLanguage}
+                defaultVoiceId={resolvedVoiceId}
+                disabled={status === 'submitting' || status === 'polling'}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Editor Wrapper */}
+        {mode === 'single' && (
         <div className="border border-border bg-card rounded-2xl shadow-xs overflow-hidden">
           {/* Editor Header Toolbar */}
           <div className="flex justify-between items-center bg-secondary/30 px-4 py-2 border-b border-border/80">
@@ -785,10 +1304,19 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               id="tts-text-input"
               value={text}
               onChange={(e) => {
-                if (e.target.value.length <= charLimit) {
-                  setText(e.target.value);
-                  setErrorMsg(null);
+                const next = e.target.value;
+                if (next.length > charLimit) {
+                  // Trim instead of silently dropping the input: the user sees
+                  // exactly what was kept and how much was removed (below).
+                  setText(next.slice(0, charLimit));
+                  setTrimNotice(
+                    `Text trimmed to ${charLimit.toLocaleString()} characters — ${(next.length - charLimit).toLocaleString()} extra character${next.length - charLimit === 1 ? '' : 's'} removed.`,
+                  );
+                } else {
+                  setText(next);
+                  setTrimNotice(null);
                 }
+                setErrorMsg(null);
               }}
               disabled={status === 'submitting' || status === 'polling'}
               placeholder="Type or paste your text here to convert it to natural speech..."
@@ -796,6 +1324,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               aria-describedby={errorMsg ? 'tts-validation-error tts-char-count' : 'tts-char-count'}
             />
           </div>
+
+          {/* Trim notice / near-limit warning */}
+          {(trimNotice || (text.length >= charLimit - 100 && text.length < charLimit)) && (
+            <p role="status" className="px-5 pt-3 text-xs font-medium text-amber-600 dark:text-amber-400">
+              {trimNotice ?? 'Almost at the 2,000 character limit — remove some text or split it into a second generation.'}
+            </p>
+          )}
 
           {/* Editor Footer / Count */}
           <div className="flex justify-between items-center px-5 py-3 border-t border-border/60 bg-secondary/10">
@@ -814,9 +1349,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </span>
           </div>
         </div>
+        )}
 
 {/* Sample Scripts - Quick Start */}
-        {(!text || text.trim() === '') && status !== 'submitting' && status !== 'polling' ? (
+        {mode === 'single' && (!text || text.trim() === '') && status !== 'submitting' && status !== 'polling' ? (
           <div className="border border-border/50 bg-card/50 rounded-xl p-4">
             <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
@@ -829,6 +1365,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                   type="button"
                   onClick={() => {
                     setText(script.text);
+                    setTrimNotice(null);
                     setErrorMsg(null);
                     trackTtsSampleInserted('quick_start');
                   }}
@@ -905,26 +1442,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(15rem,0.75fr)] lg:items-start">
           {/* Voice Selector */}
           <VoicePicker
-            voices={availableVoices.map(v => ({
-              id: v.id,
-              displayName: v.displayName,
-              accent: v.accent,
-              gender: v.gender,
-              language: v.language,
-              recommended: v.recommended,
-              engine: v.engine,
-              // Use the API preview when present (Kokoro). Fallback voices
-              // carry no previewUrl, so build the conventional path for
-              // them. Edge voices are previewed by the API endpoint, which
-              // synthesizes a short line in the voice's own language and
-              // caches it server-side — the Listen button works for them
-              // without generating a job.
-              previewUrl: v.previewUrl
-                ? v.previewUrl
-                : v.engine === 'edge'
-                  ? `${API_BASE_URL}/tts/preview/${encodeURIComponent(v.id)}`
-                  : `/audio/voice-previews/${v.id}.mp3`,
-            }))}
+            voices={pickerVoices}
             selectedVoiceId={resolvedVoiceId}
             selectedLanguage={selectedLanguage}
             onSelectVoice={handleVoiceSelect}
@@ -1031,13 +1549,13 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </div>
           </div>
 
-          <details className="group border-t border-border/70 pt-5">
+          <details className="group border-t border-border/70 pt-5" open>
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
               <span className="inline-flex items-center gap-2">
                 <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
-                Advanced speech controls
+                Pauses &amp; text
               </span>
-              <span className="hidden text-xs font-normal text-muted-foreground group-open:hidden sm:inline">Pauses & text normalization</span>
+              <span className="hidden text-xs font-normal text-muted-foreground group-open:hidden sm:inline">Sentence &amp; paragraph pauses, text normalization</span>
               <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide controls</span>
             </summary>
 
@@ -1145,7 +1663,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               type="submit"
               size="lg"
               className="w-full sm:w-auto sm:min-w-64 cursor-pointer"
-              disabled={status === 'submitting' || status === 'polling' || availableVoices.length === 0}
+              disabled={status === 'submitting' || status === 'polling' || availableVoices.length === 0 || (mode === 'dialogue' && !dialogueValid)}
               aria-describedby="tts-submit-status"
             >
               {status === 'submitting' || status === 'polling' ? (
@@ -1153,7 +1671,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               ) : (
                 <Volume2 className="w-5 h-5" />
               )}
-              {status === 'submitting' || status === 'polling' ? 'Processing...' : 'Generate Speech'}
+              {status === 'submitting' || status === 'polling' ? 'Processing...' : mode === 'dialogue' ? 'Generate Dialogue' : 'Generate Speech'}
             </Button>
           </div>
 
@@ -1205,6 +1723,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     type="button"
                     onClick={() => {
                       setText(script.text);
+                      setTrimNotice(null);
                       setErrorMsg(null);
                       trackTtsSampleInserted('quick_start');
                     }}
@@ -1269,53 +1788,39 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 dateCreated: new Date().toISOString(),
               }} />
               <div className="space-y-4">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-secondary/20 rounded-xl">
-                {/* Audio HTML element (hidden visually but driven by refs and play controls) */}
-                <audio
-                  ref={audioPlayerRef}
-                  src={audioUrl}
-                  onEnded={handleAudioEnded}
-                  className="hidden"
-                  preload="auto"
-                />
+              {/* The audio element stays hidden here; the WaveformPlayer below
+                  drives it (play/pause, seek, speed) and visualises it. */}
+              <audio
+                ref={audioPlayerRef}
+                src={audioUrl}
+                onEnded={handleAudioEnded}
+                className="hidden"
+                preload="auto"
+              />
 
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                  <button
-                    onClick={togglePlayPause}
-                    aria-label={isPlaying ? 'Pause generated speech' : 'Play generated speech'}
-                    className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-5 h-5 fill-current" />
-                    ) : (
-                      <Play className="w-5 h-5 fill-current ml-0.5" />
-                    )}
-                  </button>
-
-                  <div className="text-left">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase block">
-                      Generated Speech File
-                    </span>
-                    <span className="text-sm font-semibold text-foreground mt-0.5 block leading-tight font-mono">
-                      Duration: {formatCompletedDuration()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 w-full md:w-auto justify-end">
-                  <a
-                    href={audioUrl}
-                    download={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
-                    className="flex-1 md:flex-none"
-                    onClick={() => trackTtsAudioDownloaded({ voice_id: resolvedVoiceId, format: outputFormat })}
-                  >
-                    <Button variant="primary" size="md" className="w-full gap-2 cursor-pointer">
-                      <Download className="w-4 h-4" />
-                      Download {outputFormat.toUpperCase()}
-                    </Button>
-                  </a>
-                </div>
+              <div className="flex flex-col gap-1 p-4 bg-secondary/20 rounded-xl">
+                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                  Generated Speech File
+                </span>
+                {expiresAt && (
+                  <span className="text-xs text-muted-foreground">
+                    Available for another {formatExpiryCountdown(expiresAt, nowMs)} — audio is deleted after 60 minutes.
+                  </span>
+                )}
               </div>
+
+              <WaveformPlayer
+                audioUrl={audioUrl}
+                audioRef={audioPlayerRef}
+                isPlaying={isPlaying}
+                onTogglePlay={togglePlayPause}
+                onEnded={handleAudioEnded}
+                durationSeconds={durationSeconds}
+                outputFormat={outputFormat}
+                downloadHref={audioUrl}
+                downloadFileName={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
+                onDownload={() => trackTtsAudioDownloaded({ voice_id: resolvedVoiceId, format: outputFormat })}
+              />
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 p-3 rounded-lg border border-primary/10">
                 <Sparkles className="w-4 h-4 text-primary shrink-0 animate-pulse" />
@@ -1326,6 +1831,62 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </div>
           </>)}
         </div>
+
+        {/* Recent generations — last 5, re-downloadable within 60 minutes */}
+        {history.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Recent generations</h3>
+            <ul className="space-y-2">
+              {history.map((entry) => {
+                const expired = Date.parse(entry.expiresAt) <= nowMs;
+                const busy = historyBusyId === entry.jobId;
+                const entryMinutes = entry.durationSeconds == null ? null : Math.floor(entry.durationSeconds / 60);
+                const entrySeconds = entry.durationSeconds == null ? null : Math.round(entry.durationSeconds % 60);
+                return (
+                  <li
+                    key={entry.jobId}
+                    className="flex flex-col gap-2 rounded-xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {entry.voiceName} · {entry.format.toUpperCase()}
+                        {entryMinutes != null && entrySeconds != null
+                          ? ` · ${entryMinutes}:${entrySeconds.toString().padStart(2, '0')}`
+                          : ''}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{entry.textSnippet}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {new Date(entry.createdAt).toLocaleString()}
+                        {expired ? ' · Expired' : ' · Available for 60 minutes from creation'}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void loadHistoryEntry(entry)}
+                        disabled={expired || busy}
+                      >
+                        {busy ? 'Loading…' : 'Load'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void downloadHistoryEntry(entry)}
+                        disabled={expired || busy}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

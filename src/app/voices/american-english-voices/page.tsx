@@ -20,7 +20,7 @@ import {
 export const metadata: Metadata = constructMetadata({
   title: 'American English AI Voices Available in Konthora | Konthora',
   description:
-    'Explore the 20 American English AI voices available in Konthora. Learn when to choose an American accent and how to preview and generate natural speech.',
+    'Explore the 37 American English AI voices available in Konthora. Learn when to choose an American accent and how to preview and generate natural speech.',
   path: '/voices/american-english-voices',
 });
 
@@ -54,7 +54,7 @@ export default function AmericanEnglishVoicesPage() {
   const faqs: FAQItem[] = [
     {
       question: "How many American English voices does Konthora have?",
-      answer: 'Konthora provides 20 American English voices.',
+      answer: 'Konthora provides 37 American English voices.',
     },
     {
       question: "Can I adjust the speed of the American voices?",
@@ -141,7 +141,7 @@ export default function AmericanEnglishVoicesPage() {
 
           {/* Search promise */}
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Explore the 20 American English AI voices available on the platform. Discover when to use them and how to generate natural-sounding speech for your projects.
+            Explore the 37 American English AI voices available on the platform. Discover when to use them and how to generate natural-sounding speech for your projects.
           </p>
         </Container>
       </section>
@@ -181,7 +181,7 @@ export default function AmericanEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  Konthora currently offers 20 American English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available directly in your browser without creating an account.
+                  Konthora currently offers 37 American English <Link href="/voices" className="text-primary hover:underline">voices</Link>. They are available directly in your browser without creating an account.
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Each voice has a dedicated page with a preview, voice specifications, and a link to generate speech.
@@ -268,7 +268,7 @@ export default function AmericanEnglishVoicesPage() {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                 <p>
-                  You can preview all 20 American English voices in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. Simply enter up to 2,000 characters of text, select your preferred voice, and generate your audio.
+                  You can preview all 37 American English voices in the <Link href="/text-to-speech" className="text-primary hover:underline">text to speech</Link> workspace. Simply enter up to 2,000 characters of text, select your preferred voice, and generate your audio.
                 </p>
                 <p>
                   Once generated, the voiceover must be downloaded during your active browser session as an <Link href="/formats/mp3-vs-wav" className="text-primary hover:underline">MP3 or WAV</Link> file.

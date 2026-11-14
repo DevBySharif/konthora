@@ -242,7 +242,7 @@ test('CTA targets exist as routes', () => {
   }
 });
 
-test('internal navigation never emits a ?voice= query URL', () => {
+test('internal navigation never hangs a ?voice= query off a language page', () => {
   // Search Console reported 12 crawled-but-not-indexed ?voice= URLs. They are
   // duplicates of the language page, and the canonical was already correct, so
   // all that traffic was wasted crawl budget.
@@ -250,12 +250,21 @@ test('internal navigation never emits a ?voice= query URL', () => {
   assert.doesNotMatch(
     voicePage,
     /`\$\{languagePage\}\?voice=/u,
-    'the voice page still builds a ?voice= link',
+    'the voice page still hangs a ?voice= query off a language page',
   );
+  // Feature #3 (Nov 2026) deliberately keeps ONE ?voice= link: the studio
+  // call-to-action, pointing at /text-to-speech — the studio, not a language
+  // page — so the workspace opens with the voice pre-selected.
   assert.match(
     voicePage,
-    /const generateSlug = languagePage;/u,
-    'the voice page should link to the plain language page',
+    /`\/text-to-speech\?voice=\$\{encodeURIComponent\(voice\.id\)\}`/u,
+    'the voice page must link the studio with ?voice=<voice id>',
+  );
+  // The plain language-page link still exists (the About paragraph).
+  assert.match(
+    voicePage,
+    /href=\{languagePage\}/u,
+    'the voice page should still link to the plain language page',
   );
 
   // The parameter still works for a visitor arriving from a shared link.

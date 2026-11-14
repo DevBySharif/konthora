@@ -202,10 +202,14 @@ test('voice picker shows Edge voices first and never labels them "Edge"', () => 
   const picker = read('src/components/tools/VoicePicker.tsx');
   assert.ok(!picker.includes("' · Edge'"), 'picker must not render a "· Edge" label');
   assert.ok(!picker.includes('" · Edge"'), 'picker must not render a "· Edge" label');
+  // The sort lives in src/lib/voicePicker.ts now (shared helper); the picker
+  // must use it, and the helper must put Edge voices first.
+  assert.ok(picker.includes('sortVoicesByEngine'), 'picker must sort via sortVoicesByEngine');
+  const voicePickerLib = read('src/lib/voicePicker.ts');
   assert.match(
-    picker,
-    /\.sort\(\(a, b\) => \(a\.engine === 'edge' \? 0 : 1\) - \(b\.engine === 'edge' \? 0 : 1\)\)/,
-    'picker must sort Edge voices before the rest',
+    voicePickerLib,
+    /\(a\.engine === 'edge' \? 0 : 1\) - \(b\.engine === 'edge' \? 0 : 1\)/,
+    'sortVoicesByEngine must sort Edge voices before the rest',
   );
   assert.ok(picker.includes("(Recommended)"), 'the (Recommended) marker must be kept');
 });

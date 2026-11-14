@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import Dict, List, Optional
 import secrets
 import hashlib
 
@@ -17,14 +17,20 @@ class TtsJob:
         paragraph_pause_ms: int,
         normalize_text: bool,
         engine: str = "kokoro",
+        segments: Optional[List[Dict[str, str]]] = None,
     ):
         self.job_id = job_id
         # Original text stored in memory for processing
         self.text: Optional[str] = text
         self.voice_id = voice_id
         self.accent = accent
-        # "kokoro" (default, self-hosted) or "edge" (Microsoft neural voices).
+        # "kokoro" (default, self-hosted), "edge" (Microsoft neural voices),
+        # or "dialogue" (multi-voice job; per-turn voices live in `segments`).
         self.engine = engine
+        # Dialogue jobs only: one resolved dict per turn —
+        # {"text", "voice_id", "engine", "accent", "language"}.
+        # None for normal single-voice jobs.
+        self.segments = segments
         self.speed = speed
         self.output_format = output_format
         self.sentence_pause_ms = sentence_pause_ms

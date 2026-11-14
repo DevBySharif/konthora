@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from loguru import logger
 
-from app.schemas.tts import TtsJobCreate, TtsJobResponse, TtsJobStatusResponse, VoiceInfo
+from app.schemas.tts import TtsJobCreate, TtsJobResponse, TtsJobStatusResponse, VoiceInfo, DialogueJobCreate
 from app.services.edge_tts_service import EdgeTTSService
 from app.services.job_service import JobService
 from app.services.kokoro_service import KokoroService
@@ -162,6 +162,84 @@ def create_tts_job(payload: TtsJobCreate, request: Request):
         paragraph_pause_ms=payload.paragraphPauseMs,
         normalize_text=payload.normalizeText,
         engine=voice["engine"],
+    )
+
+    # 5. Register active job before enqueuing to prevent race condition limits bypass
+    rate_limiter.register_active_job(client_ip, job.job_id)
+
+    # 6. Try to enqueue the task into the bounded queue
+    enqueued = queue_manager.try_enqueue_job(job.job_id)
+    if not enqueued:
+        # Cleanup registered states upon failure
+        rate_limiter.deregister_active_job(client_ip, job.job_id)
+        job.finalize_failure("QUEUE_FULL", "The task queue is currently full. Please try again later.")
+        raise QueueFullException()
+
+    resp = TtsJobResponse(
+        jobId=job.job_id,
+        accessToken=job.raw_access_token,
+        status=job.status
+    )
+    job.raw_access_token = None
+    return resp
+
+@router.post("/tts/dialogue-jobs", response_model=TtsJobResponse)
+def create_dialogue_job(payload: DialogueJobCreate, request: Request):
+    """
+    Creates a multi-voice dialogue job (interview/podcast style): 2-8
+    segments, each with its own voice (Kokoro or Edge, mixed allowed).
+    The worker synthesizes every segment and concatenates them into ONE
+    audio file. The response shape is identical to POST /tts/jobs, so the
+    existing polling (GET /tts/jobs/{jobId}) and download
+    (GET /tts/jobs/{jobId}/audio) endpoints serve dialogue jobs unchanged.
+    The whole dialogue counts ONCE against the 30/hr TTS quota.
+    """
+    rate_limiter = RateLimitService()
+    job_service = JobService()
+    queue_manager = TtsQueueManager()
+
+    client_ip = rate_limiter.get_client_ip(request)
+
+    # 1. Enforce the TTS rate limit ONCE for the whole dialogue (not per segment).
+    rate_limiter.check_tts_rate_limit(client_ip, request=request)
+
+    # 2. Enforce active jobs capacity per client IP (same as a normal job).
+    rate_limiter.check_tts_active_jobs_limit(client_ip, max_active=settings.TTS_MAX_CONCURRENT_PER_IP, request=request)
+
+    # 3. Validate every segment voice against the SERVED catalog and resolve
+    #    each segment's engine/accent/language from the voice itself, so a
+    #    stale client cannot smuggle in a mismatched engine.
+    voices = _served_voices()
+    resolved_segments = []
+    for segment in payload.segments:
+        voice = next((v for v in voices if v["id"] == segment.voiceId), None)
+        if voice is None:
+            raise InvalidRequestException("VOICE_UNSUPPORTED", f"Voice ID '{segment.voiceId}' is not supported.")
+        resolved_segments.append({
+            "text": segment.text,
+            "voice_id": segment.voiceId,
+            "engine": voice["engine"],
+            "accent": voice["accent"],
+            "language": voice.get("language", "en-US"),
+        })
+
+    # 4. Create the job in the SAME store as normal jobs (same 60-min
+    #    expiry, same status/progressStage values). The combined text is
+    #    stored so characterCount reflects the whole dialogue; the first
+    #    segment's voice/accent are the job-level display values.
+    combined_text = " ".join(segment.text for segment in payload.segments)
+    first = resolved_segments[0]
+    job = job_service.create_job(
+        text=combined_text,
+        voice_id=first["voice_id"],
+        accent=first["accent"],
+        speed=payload.speed,
+        output_format=payload.outputFormat,
+        sentence_pause_ms=payload.sentencePauseMs,
+        paragraph_pause_ms=payload.paragraphPauseMs,
+        normalize_text=payload.normalizeText,
+        engine="dialogue",
+        segments=resolved_segments,
     )
 
     # 5. Register active job before enqueuing to prevent race condition limits bypass
