@@ -31,7 +31,7 @@ export function SupportedLanguages() {
               title={
                 <>
                   AI voices in{' '}
-                  <span className="text-gradient">six languages</span>
+                  <span className="text-gradient">seven languages</span>
                 </>
               }
               description={`Konthora provides ${TOTAL_TTS_VOICES} AI voices across ${TTS_LANGUAGE_COUNT} text-to-speech languages: ${TTS_LANGUAGE_NAMES}. English includes American and British voice options.`}

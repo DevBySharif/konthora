@@ -245,7 +245,7 @@ export const ANSWER_PAGES: AnswerContent[] = [
     ],
     links: [
       { href: '/text-to-speech/how-does-text-to-speech-work', label: 'How Text to Speech Works', description: 'What the model does and why the script matters so much.' },
-      { href: '/voices', label: 'Browse the Voice Catalogue', description: 'Compare registers and accents across all 41 voices.' },
+      { href: '/voices', label: 'Browse the Voice Catalogue', description: 'Compare registers and accents across all 129 voices.' },
       { href: '/text-to-speech', label: 'Text to Speech Tool', description: 'Adjust speed, pauses, and normalisation, then export MP3 or WAV.' },
     ],
   },

@@ -47,6 +47,78 @@ def get_voices():
     """Returns the served voice catalogue (Kokoro + Edge when available)."""
     return _served_voices()
 
+# One-sentence preview line per language, keyed by the voice's language-code
+# prefix (e.g. 'bn' for bn-BD, 'en' for en-US). The user hears the voice in
+# its own language before spending a job on it. Unknown prefixes fall back
+# to the English line.
+_PREVIEW_LINES = {
+    "en": "Welcome to Konthora. This is how my voice sounds.",
+    "bn": "কণ্ঠরায় স্বাগতম। আমার কণ্ঠস্বর এমন শোনায়।",
+    "hi": "कंठोरा में आपका स्वागत है। मेरी आवाज़ ऐसी सुनाई देती है।",
+    "es": "Bienvenido a Konthora. Así suena mi voz.",
+    "fr": "Bienvenue sur Konthora. Voici comment sonne ma voix.",
+    "it": "Benvenuto su Konthora. Ecco come suona la mia voce.",
+    "pt": "Bem-vindo ao Konthora. É assim que soa a minha voz.",
+}
+
+
+@router.get("/tts/preview/{voice_id}")
+def get_voice_preview(voice_id: str, request: Request):
+    """
+    Serves a short listen-before-you-generate preview clip for one Edge
+    voice. The clip is synthesized once (one sentence, in the voice's own
+    language) and then cached on disk at {TTS_STORAGE_ROOT}/previews/
+    {voice_id}.mp3. Previews have their own rate-limit bucket (120/hr)
+    and never consume the TTS job quota.
+    """
+    rate_limiter = RateLimitService()
+    client_ip = rate_limiter.get_client_ip(request)
+
+    # 1. Own rate-limit bucket (previews are cheap; jobs keep their 30/hr).
+    rate_limiter.check_preview_rate_limit(client_ip, request=request)
+
+    # 2. Validate against the SERVED catalogue. Kokoro voices have no
+    #    on-demand preview (they are served from static clips elsewhere),
+    #    so anything that is not an Edge voice is a 404 here.
+    voices = _served_voices()
+    voice = next((v for v in voices if v["id"] == voice_id), None)
+    if voice is None or voice["engine"] != "edge":
+        raise TtsException(
+            "VOICE_UNSUPPORTED",
+            f"Voice ID '{voice_id}' is not supported.",
+            status_code=404,
+        )
+
+    # 3. Edge must actually be up right now (its voices can linger in the
+    #    catalogue while the availability cache is still warm).
+    edge = EdgeTTSService()
+    if not edge.is_available():
+        raise TtsException(
+            "SERVICE_UNAVAILABLE",
+            "Edge voice previews are currently unavailable.",
+            status_code=503,
+        )
+
+    # 4. Serve from the disk cache when present, otherwise synthesize once
+    #    and cache. The voice_id comes from the served catalogue, and
+    #    resolve_secure_path additionally blocks any traversal.
+    cache_path = resolve_secure_path(f"previews/{voice_id}.mp3")
+    if cache_path.exists():
+        audio = cache_path.read_bytes()
+    else:
+        language = voice.get("language") or ""
+        lang_prefix = language.split("-")[0].lower() if language else "en"
+        preview_text = _PREVIEW_LINES.get(lang_prefix, _PREVIEW_LINES["en"])
+        audio = edge.synthesize(preview_text, voice_id, 1.0)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_bytes(audio)
+
+    return Response(
+        content=audio,
+        media_type="audio/mpeg",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
 @router.post("/tts/jobs", response_model=TtsJobResponse)
 def create_tts_job(payload: TtsJobCreate, request: Request):
     """

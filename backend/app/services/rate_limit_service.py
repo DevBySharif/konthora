@@ -18,6 +18,9 @@ class RateLimitService:
             # Map client IP to set of active job IDs (queued or processing)
             cls._instance._active_jobs = {}
 
+            # Voice-preview Namespace Tracking (own bucket, separate from jobs)
+            cls._instance._preview_request_history = {}
+
             # Transcription Namespace Tracking
             cls._instance._trans_request_history = {}
             cls._instance._trans_active_jobs = {}
@@ -156,6 +159,44 @@ class RateLimitService:
             self._active_jobs[client_ip].discard(job_id)
             if not self._active_jobs[client_ip]:
                 self._active_jobs.pop(client_ip)
+
+    def check_preview_rate_limit(
+        self,
+        client_ip: str,
+        request: Optional[Request] = None,
+        bypass_key: Optional[str] = None,
+    ):
+        """
+        Enforces sliding-window request limits for voice previews.
+        Own bucket (120/hr by default) — previews never consume the TTS
+        job quota. Bypasses if a valid X-Dev-Bypass-Key matches
+        DEV_BYPASS_SECRET. Raises RateLimitExceededException if exceeded.
+        """
+        if self.is_dev_bypass(request=request, bypass_key=bypass_key):
+            logger.info(f"Rate limit bypassed via secret dev header for IP: {client_ip} (Preview)")
+            return
+
+        now = time.time()
+        window = settings.TTS_PREVIEW_RATE_LIMIT_WINDOW_SECONDS
+        max_requests = settings.TTS_PREVIEW_RATE_LIMIT_PER_HOUR
+
+        if client_ip not in self._preview_request_history:
+            self._preview_request_history[client_ip] = []
+
+        history = [ts for ts in self._preview_request_history[client_ip] if now - ts < window]
+        self._preview_request_history[client_ip] = history
+
+        if len(history) >= max_requests:
+            oldest_ts = history[0]
+            retry_after = int(window - (now - oldest_ts))
+            retry_after = max(1, retry_after)
+
+            logger.warning(f"Preview rate limit hit for IP: {client_ip}. Requests: {len(history)}. Retry-after: {retry_after}s")
+            raise RateLimitExceededException(
+                message=f"Rate limit exceeded. Please wait {retry_after} seconds before previewing more voices."
+            )
+
+        self._preview_request_history[client_ip].append(now)
 
     # ==========================================
     # Transcription Namespace Rate Limiting

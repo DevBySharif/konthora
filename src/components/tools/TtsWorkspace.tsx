@@ -24,6 +24,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import {
+  API_BASE_URL,
   fetchVoices,
   createTtsJob,
   getTtsJobStatus,
@@ -113,8 +114,26 @@ const PROGRESS_MESSAGES: Record<string, string> = {
   expired: 'Audio session expired.'
 };
 
-const SAMPLE_TEXT =
-  'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.';
+/**
+ * Demo text in the reader's language. The sample button and the language
+ * switcher both use the entry for the active language, so a Bengali voice
+ * demos Bengali text, a Hindi voice demos Hindi text, and so on — never an
+ * English paragraph read by a non-English voice.
+ */
+const SAMPLE_TEXTS: Record<SupportedLanguage, string> = {
+  'en-US':
+    'Welcome to Konthora. Experience fast, natural-sounding AI text-to-speech directly in your browser. Simply enter your text, choose a voice, adjust the playback speed, and generate high-quality speech in seconds. Explore different voices and accents to find the perfect sound for your content.',
+  'hi-IN':
+    'कंठोरा में आपका स्वागत है। अपने ब्राउज़र में ही तेज़ और प्राकृतिक AI टेक्स्ट-टू-स्पीच का अनुभव करें। बस अपना टेक्स्ट लिखें, आवाज़ चुनें, गति तय करें और कुछ ही सेकंड में उच्च गुणवत्ता वाली स्पीच तैयार करें। अलग-अलग आवाज़ों और लहजों को आज़माकर अपने कंटेंट के लिए सबसे उपयुक्त आवाज़ खोजें।',
+  es: 'Bienvenido a Konthora. Disfruta de una conversión de texto a voz con IA rápida y natural directamente en tu navegador. Solo escribe tu texto, elige una voz, ajusta la velocidad y genera voz de alta calidad en segundos. Explora distintas voces y acentos para encontrar el sonido perfecto para tu contenido.',
+  'fr-FR':
+    'Bienvenue sur Konthora. Découvrez la synthèse vocale IA rapide et naturelle directement dans votre navigateur. Saisissez votre texte, choisissez une voix, réglez la vitesse et générez une voix de haute qualité en quelques secondes. Explorez les différentes voix et accents pour trouver le son idéal pour votre contenu.',
+  it: 'Benvenuto su Konthora. Prova la sintesi vocale AI veloce e naturale direttamente nel tuo browser. Inserisci il testo, scegli una voce, regola la velocità e genera un audio di alta qualità in pochi secondi. Esplora voci e accenti diversi per trovare il suono perfetto per i tuoi contenuti.',
+  'pt-BR':
+    'Bem-vindo ao Konthora. Experimente a conversão de texto em fala com IA rápida e natural diretamente no seu navegador. Basta digitar o texto, escolher uma voz, ajustar a velocidade e gerar fala de alta qualidade em segundos. Explore diferentes vozes e sotaques para encontrar o som perfeito para o seu conteúdo.',
+  'bn-BD':
+    'কণ্ঠরায় স্বাগতম। ব্রাউজারেই দ্রুত ও প্রাকৃতিক শোনানো AI টেক্সট টু স্পিচ ব্যবহার করে দেখুন। শুধু আপনার লেখাটি দিন, একটি ভয়েস বেছে নিন, গতি ঠিক করুন, আর কয়েক সেকেন্ডেই উচ্চমানের স্পিচ তৈরি করুন। নানা ভয়েস ও অ্যাকসেন্ট ঘুরে দেখে আপনার কনটেন্টের জন্য পারফেক্ট সাউন্ডটি খুঁজে নিন।',
+};
 
 const SAMPLE_SCRIPTS = [
   {
@@ -263,6 +282,12 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
   const handleLanguageChange = (lang: SupportedLanguage) => {
     if (lang === selectedLanguage) return;
+    // If the box is empty or still holds the previous language's sample
+    // text, swap in the new language's sample so the demo matches the
+    // voice. Text the user typed themselves is never touched.
+    if (text.trim() === '' || text === SAMPLE_TEXTS[selectedLanguage]) {
+      setText(SAMPLE_TEXTS[lang]);
+    }
     setSelectedLanguage(lang);
     const lastVoice = lastVoiceByLanguage.current[lang];
     const fallback = voices.find(v => v.id === lastVoice)
@@ -418,7 +443,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   };
 
   const handleInsertSample = (source: 'input_action' | 'empty_state' = 'input_action') => {
-    setText(SAMPLE_TEXT);
+    setText(SAMPLE_TEXTS[selectedLanguage]);
     setErrorMsg(null);
     trackTtsSampleInserted(source);
   };
@@ -890,12 +915,14 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
               engine: v.engine,
               // Use the API preview when present (Kokoro). Fallback voices
               // carry no previewUrl, so build the conventional path for
-              // them. Edge voices have no preview clips — leave it empty
-              // and the Listen button hides.
+              // them. Edge voices are previewed by the API endpoint, which
+              // synthesizes a short line in the voice's own language and
+              // caches it server-side — the Listen button works for them
+              // without generating a job.
               previewUrl: v.previewUrl
                 ? v.previewUrl
                 : v.engine === 'edge'
-                  ? undefined
+                  ? `${API_BASE_URL}/tts/preview/${encodeURIComponent(v.id)}`
                   : `/audio/voice-previews/${v.id}.mp3`,
             }))}
             selectedVoiceId={resolvedVoiceId}

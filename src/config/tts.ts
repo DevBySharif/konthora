@@ -67,3 +67,21 @@ export const DEFAULT_VOICE_BY_LANGUAGE: Record<SupportedLanguage, string> =
     acc[lang.value] = lang.defaultVoiceId;
     return acc;
   }, {} as Record<SupportedLanguage, string>);
+
+/**
+ * Full hreflang set for the TTS language pages. Every language page (and the
+ * main /text-to-speech page) must list ALL variants plus x-default: partial
+ * maps taught crawlers the pages were unrelated, and the sitemap carried no
+ * alternates at all. Site-relative paths — constructMetadata and sitemap.ts
+ * resolve them against the canonical origin.
+ */
+export const TTS_LANGUAGE_ALTERNATES: Record<string, string> = {
+  'en-US': '/text-to-speech',
+  'hi-IN': '/text-to-speech/hindi',
+  'es-ES': '/text-to-speech/spanish',
+  'fr-FR': '/text-to-speech/french',
+  'it-IT': '/text-to-speech/italian',
+  'pt-BR': '/text-to-speech/portuguese',
+  'bn-BD': '/text-to-speech/bengali',
+  'x-default': '/text-to-speech',
+};

@@ -24,7 +24,7 @@ import { FileAudio, Volume2, Gauge, Mic, Music2, Globe } from 'lucide-react';
  * engines via Speakable schema. Keep it consistent with the visible copy.
  */
 const SPEAKABLE_TEXT_TO_MP3 =
-  'Konthora converts text into MP3 audio for free in the browser. Scripts of up to 2,000 characters can be synthesized with 41 neural voices across 6 languages, with adjustable speed, and downloaded as a compact MP3 file for narration and sharing.';
+  'Konthora converts text into MP3 audio for free in the browser. Scripts of up to 2,000 characters can be synthesized with 129 neural voices across 7 languages, with adjustable speed, and downloaded as a compact MP3 file for narration and sharing.';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Text to MP3 Converter Online Free | Konthora Narrator',
@@ -101,8 +101,8 @@ export default function TextToMp3Page() {
     },
     {
       icon: Volume2,
-      title: '6 languages, 41 voices',
-      desc: 'Pick from English, Spanish, French, Italian, Portuguese, and Hindi AI voices.',
+      title: '7 languages, 129 voices',
+      desc: 'Pick from English, Spanish, French, Italian, Portuguese, Hindi, and Bengali AI voices.',
     },
     {
       icon: Mic,
@@ -169,7 +169,7 @@ export default function TextToMp3Page() {
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Text to MP3' }]} />
           <PageHeader
             title="Text to MP3 Converter Online"
-            description="Type or paste any text and turn it into a natural-sounding MP3 file. Choose from 6 languages, adjust the speed, and download the finished audio in seconds."
+            description="Type or paste any text and turn it into a natural-sounding MP3 file. Choose from 7 languages, adjust the speed, and download the finished audio in seconds."
             badge="Narrator"
           />
           <TtsWorkspace />

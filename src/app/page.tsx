@@ -86,7 +86,7 @@ export default function HomePage() {
   // Short, self-contained blurb that voice assistants and AI answer engines may
   // read verbatim. Must stay concise and factual — it is quoted as-is.
   const speakableSummary =
-    'Konthora is a free browser-based AI audio studio. It converts text into natural speech using 41 neural voices across 6 languages, and converts audio and video into transcripts with sentence, paragraph, or word-level timestamps. No account is required.';
+    'Konthora is a free browser-based AI audio studio. It converts text into natural speech using 129 neural voices across 7 languages, and converts audio and video into transcripts with sentence, paragraph, or word-level timestamps. No account is required.';
 
   const speakableSchema = constructSpeakableSchema(siteConfig.url, speakableSummary);
 

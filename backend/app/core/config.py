@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     TTS_MAX_CONCURRENT_PER_IP: int = 2
     TTS_ACTIVE_JOBS_PER_CLIENT: int = 2
 
+    # Voice-preview rate limiting: previews are cheap one-sentence Edge
+    # syntheses served from a disk cache, so they get their own generous
+    # bucket (120/hr) and NEVER consume the TTS job quota (30/hr).
+    TTS_PREVIEW_RATE_LIMIT_PER_HOUR: int = 120
+    TTS_PREVIEW_RATE_LIMIT_WINDOW_SECONDS: int = 3600
+
     ESPEAK_PATH: str = ""
 
     # Secret developer key to bypass rate limits and concurrency caps

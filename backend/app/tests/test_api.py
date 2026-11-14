@@ -222,6 +222,7 @@ def test_hf_space_rate_limit_and_worker_caps():
     assert fields["TRANSCRIPTION_MAX_CONCURRENT_PER_IP"].default == 1
     assert fields["TTS_RATE_LIMIT_PER_HOUR"].default == 30
     assert fields["TTS_MAX_CONCURRENT_PER_IP"].default == 2
+    assert fields["TTS_PREVIEW_RATE_LIMIT_PER_HOUR"].default == 120
     assert fields["TTS_WORKER_COUNT"].default == 1
     assert fields["TRANSCRIPTION_WORKER_COUNT"].default == 1
 

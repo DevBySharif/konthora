@@ -193,7 +193,7 @@ export const TTS_USE_CASES: TtsContent[] = [
         heading: 'Matching voice energy to your format',
         paragraphs: [
           'The right voice depends entirely on what kind of video you are making. An explainer or tutorial needs energy, because the visuals are carrying the information and the voice has to keep attention on them. A documentary or essay does the opposite, and an energetic voice there is exhausting.',
-          'Register follows the same logic. A higher, brighter voice suits a product walkthrough. A lower, steadier one suits analysis. The 41-voice catalogue covers American and British English in both, so the choice is about intent rather than availability.',
+          'Register follows the same logic. A higher, brighter voice suits a product walkthrough. A lower, steadier one suits analysis. The 129-voice catalogue covers American and British English in both, so the choice is about intent rather than availability.',
           'Consistency across a channel matters more than picking the theoretically ideal voice. A channel that changes narration style between videos reads as inconsistent, and viewers notice that long before they can say why.',
         ],
       },

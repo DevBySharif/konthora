@@ -19,6 +19,23 @@ const DEFAULT_LAST_MODIFIED = '2026-08-01';
 
 /** Routes whose content changed in the SEO/AEO/GEO pass. */
 const RECENTLY_UPDATED: Record<string, string> = {
+  // Voice catalogue grew 41 → 129 (88 Edge voices) and 6 → 7 languages,
+  // Nov 2026: per-language sample text, Edge previews, hreflang completion.
+  '/': '2026-11-14',
+  '/text-to-speech': '2026-11-14',
+  '/text-to-speech/spanish': '2026-11-14',
+  '/text-to-speech/hindi': '2026-11-14',
+  '/text-to-speech/bengali': '2026-11-14',
+  '/text-to-speech/french': '2026-11-14',
+  '/text-to-speech/italian': '2026-11-14',
+  '/text-to-speech/portuguese': '2026-11-14',
+  '/text-to-speech/how-does-text-to-speech-work': '2026-11-14',
+  '/text-to-mp3': '2026-11-14',
+  '/voices': '2026-11-14',
+  '/entity/kokoro': '2026-11-14',
+  '/accessibility': '2026-11-14',
+  '/accessibility/tts-vs-screen-reader': '2026-11-14',
+
   // Rewritten as genuinely distinct pages rather than template clones.
   '/transcribe-podcast': '2026-10-01',
   '/transcribe-interview': '2026-10-01',
@@ -54,7 +71,6 @@ const STABLE: Record<string, string> = {
   '/privacy-policy': '2026-06-15',
   '/terms': '2026-06-15',
   '/copyright': '2026-06-15',
-  '/accessibility': '2026-07-20',
   '/contact': '2026-05-10',
 };
 

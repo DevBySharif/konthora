@@ -14,19 +14,15 @@ import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'French Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert French text to natural speech online for free. Generate French AI voiceover with a native French voice and download as MP3 or WAV.',
+    'Convert French text to natural speech online for free. Generate French AI voiceover with 14 native French voices and download as MP3 or WAV.',
   path: '/text-to-speech/french',
-  languages: {
-    'fr-FR': '/text-to-speech/french',
-    'en-US': '/text-to-speech',
-    'hi-IN': '/text-to-speech/hindi',
-    'bn-BD': '/text-to-speech/bengali',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function FrenchTtsPage() {
@@ -51,12 +47,12 @@ export default function FrenchTtsPage() {
     {
       question: 'Does Konthora support French text to speech?',
       answer:
-        'Yes. Konthora ships a native French neural voice (Siwis) that reads French text with correct pronunciation, liaison, and intonation.',
+        'Yes. Konthora ships 14 native French neural voices — Siwis from Kokoro, plus 13 Edge voices from France, Canada, Belgium, and Switzerland — that read French text with correct pronunciation, liaison, and intonation.',
     },
     {
       question: 'Which French voices are available?',
       answer:
-        'There is currently 1 French voice, Siwis (female). Select French in the workspace to use it.',
+        'There are currently 14 French voices: Siwis (female) from Kokoro, plus 13 Edge voices including Denise, Henri, and Eloise. Select French in the workspace to use them.',
     },
     {
       question: 'Can I download French voiceovers as MP3 or WAV?',
@@ -88,8 +84,8 @@ export default function FrenchTtsPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '1 French voice',
-      desc: 'Siwis, a female voice tuned for natural French pronunciation and flow.',
+      title: '14 French voices',
+      desc: 'Siwis from Kokoro plus 13 Edge voices from France, Canada, Belgium, and Switzerland.',
     },
     {
       icon: Volume2,

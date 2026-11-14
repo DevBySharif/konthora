@@ -14,18 +14,15 @@ import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Hindi Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert Hindi text to natural speech online for free. Generate Indian AI voiceover with 4 native Hindi voices (female and male) and download as MP3 or WAV.',
+    'Convert Hindi text to natural speech online for free. Generate Indian AI voiceover with 6 native Hindi voices (female and male) and download as MP3 or WAV.',
   path: '/text-to-speech/hindi',
-  languages: {
-    'hi-IN': '/text-to-speech/hindi',
-    'en-US': '/text-to-speech',
-    'bn-BD': '/text-to-speech/bengali',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function HindiTtsPage() {
@@ -50,12 +47,12 @@ export default function HindiTtsPage() {
     {
       question: 'Does Konthora support Hindi text to speech?',
       answer:
-        'Yes. Konthora ships native Hindi neural voices (Alpha, Beta, Omega, and Psi) that read Hindi text with correct Devanagari pronunciation and prosody.',
+        'Yes. Konthora ships native Hindi neural voices (Alpha, Beta, Omega, and Psi from Kokoro, plus Madhur and Swara from Edge) that read Hindi text with correct Devanagari pronunciation and prosody.',
     },
     {
       question: 'Which Hindi voices are available?',
       answer:
-        'There are currently 4 Hindi voices: Alpha (female), Beta (female), Omega (male), and Psi (male). Select Hindi in the workspace to browse them.',
+        'There are currently 6 Hindi voices: Alpha (female), Beta (female), Omega (male), and Psi (male) from Kokoro, plus Madhur (male) and Swara (female) from Edge. Select Hindi in the workspace to browse them.',
     },
     {
       question: 'Can I download Hindi voiceovers as MP3 or WAV?',
@@ -87,8 +84,8 @@ export default function HindiTtsPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '4 Hindi voices',
-      desc: 'Alpha, Beta, Omega, and Psi — female and male voices tuned for natural Hindi narration.',
+      title: '6 Hindi voices',
+      desc: 'Alpha, Beta, Omega, and Psi from Kokoro, plus Madhur and Swara from Edge — female and male voices tuned for natural Hindi narration.',
     },
     {
       icon: Volume2,

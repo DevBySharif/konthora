@@ -14,19 +14,15 @@ import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Italian Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert Italian text to natural speech online for free. Generate Italian AI voiceover with 2 native voices and download as MP3 or WAV.',
+    'Convert Italian text to natural speech online for free. Generate Italian AI voiceover with 6 native voices and download as MP3 or WAV.',
   path: '/text-to-speech/italian',
-  languages: {
-    'it-IT': '/text-to-speech/italian',
-    'en-US': '/text-to-speech',
-    'hi-IN': '/text-to-speech/hindi',
-    'bn-BD': '/text-to-speech/bengali',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function ItalianTtsPage() {
@@ -51,12 +47,12 @@ export default function ItalianTtsPage() {
     {
       question: 'Does Konthora support Italian text to speech?',
       answer:
-        'Yes. Konthora ships native Italian neural voices (Sara and Nicola) that read Italian text with correct pronunciation and cadence.',
+        'Yes. Konthora ships native Italian neural voices (Sara and Nicola from Kokoro, plus Giuseppe, Diego, Elsa, and Isabella from Edge) that read Italian text with correct pronunciation and cadence.',
     },
     {
       question: 'Which Italian voices are available?',
       answer:
-        'There are currently 2 Italian voices: Sara (female) and Nicola (male). Select Italian in the workspace to browse them.',
+        'There are currently 6 Italian voices: Sara (female) and Nicola (male) from Kokoro, plus Giuseppe (male), Diego (male), Elsa (female), and Isabella (female) from Edge. Select Italian in the workspace to browse them.',
     },
     {
       question: 'Can I download Italian voiceovers as MP3 or WAV?',
@@ -88,8 +84,8 @@ export default function ItalianTtsPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '2 Italian voices',
-      desc: 'Sara (female) and Nicola (male) — voices tuned for natural Italian narration.',
+      title: '6 Italian voices',
+      desc: 'Sara and Nicola from Kokoro, plus Giuseppe, Diego, Elsa, and Isabella from Edge — voices tuned for natural Italian narration.',
     },
     {
       icon: Volume2,

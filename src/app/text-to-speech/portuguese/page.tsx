@@ -14,19 +14,15 @@ import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Portuguese Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert Portuguese text to natural speech online for free. Generate Brazilian Portuguese AI voiceover with 3 native voices and download as MP3 or WAV.',
+    'Convert Portuguese text to natural speech online for free. Generate Brazilian Portuguese AI voiceover with 6 native voices and download as MP3 or WAV.',
   path: '/text-to-speech/portuguese',
-  languages: {
-    'pt-BR': '/text-to-speech/portuguese',
-    'en-US': '/text-to-speech',
-    'hi-IN': '/text-to-speech/hindi',
-    'bn-BD': '/text-to-speech/bengali',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function PortugueseTtsPage() {
@@ -51,12 +47,12 @@ export default function PortugueseTtsPage() {
     {
       question: 'Does Konthora support Portuguese text to speech?',
       answer:
-        'Yes. Konthora ships native Brazilian Portuguese neural voices (Dora, Alex, and Santa) that read Portuguese text with correct Brazilian pronunciation and rhythm.',
+        'Yes. Konthora ships native Brazilian Portuguese neural voices (Dora, Alex, and Santa from Kokoro, plus Thalita, Antonio, and Francisca from Edge) that read Portuguese text with correct Brazilian pronunciation and rhythm.',
     },
     {
       question: 'Which Portuguese voices are available?',
       answer:
-        'There are 3 Brazilian Portuguese voices: Dora (female), Alex (male), and Santa (male). Select Portuguese in the workspace to browse them.',
+        'There are 6 Brazilian Portuguese voices: Dora (female), Alex (male), and Santa (male) from Kokoro, plus Thalita (female), Antonio (male), and Francisca (female) from Edge. Select Portuguese in the workspace to browse them.',
     },
     {
       question: 'Can I download Portuguese voiceovers as MP3 or WAV?',
@@ -88,8 +84,8 @@ export default function PortugueseTtsPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '3 Portuguese voices',
-      desc: 'Dora (female), Alex (male), and Santa (male) — Brazilian voices for natural narration.',
+      title: '6 Portuguese voices',
+      desc: 'Dora, Alex, and Santa from Kokoro, plus Thalita, Antonio, and Francisca from Edge — Brazilian voices for natural narration.',
     },
     {
       icon: Volume2,

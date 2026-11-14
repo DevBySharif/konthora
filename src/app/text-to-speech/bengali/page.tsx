@@ -13,6 +13,7 @@ import { TtsWorkspaceWithPreset } from '@/components/tools/TtsWorkspaceWithPrese
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
@@ -20,12 +21,7 @@ export const metadata: Metadata = constructMetadata({
   description:
     'Convert Bengali (Bangla) text to natural speech online for free. Generate Bengali AI voiceover in 4 native voices, then download as MP3 or WAV.',
   path: '/text-to-speech/bengali',
-  languages: {
-    'bn-BD': '/text-to-speech/bengali',
-    'en-US': '/text-to-speech',
-    'hi-IN': '/text-to-speech/hindi',
-    'es-ES': '/text-to-speech/spanish',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function BengaliTtsPage() {

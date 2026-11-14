@@ -379,8 +379,8 @@ test('Landing pages and voice profiles have high-intent titles and synchronized 
   // Verify /voices
   const voicesHtml = fs.readFileSync(path.join(htmlDir, 'voices.html'), 'utf8');
   assert.ok(
-    voicesHtml.includes('<title>41 AI Voice Profiles &amp; Accents | Kokoro Neural Voices</title>') ||
-      voicesHtml.includes('<title>41 AI Voice Profiles & Accents | Kokoro Neural Voices</title>'),
+    voicesHtml.includes('<title>129 AI Voice Profiles | Kokoro &amp; Edge Voices</title>') ||
+      voicesHtml.includes('<title>129 AI Voice Profiles | Kokoro & Edge Voices</title>'),
     '/voices must have targeted title'
   );
 

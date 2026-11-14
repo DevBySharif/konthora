@@ -14,19 +14,15 @@ import { LanguageVoiceLinks } from '@/components/tools/LanguageVoiceLinks';
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Mic2, Volume2, Gauge, Languages, Globe } from 'lucide-react';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Spanish Text to Speech Online Free | Konthora AI Voices',
   description:
-    'Convert Spanish text to natural speech online for free. Generate Spanish AI voiceover in 3 native voices, then download as MP3 or WAV.',
+    'Convert Spanish text to natural speech online for free. Generate Spanish AI voiceover in 48 native voices, then download as MP3 or WAV.',
   path: '/text-to-speech/spanish',
-  languages: {
-    'es-ES': '/text-to-speech/spanish',
-    'en-US': '/text-to-speech',
-    'hi-IN': '/text-to-speech/hindi',
-    'bn-BD': '/text-to-speech/bengali',
-  },
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function SpanishTtsPage() {
@@ -51,12 +47,12 @@ export default function SpanishTtsPage() {
     {
       question: 'Does Konthora support Spanish text to speech?',
       answer:
-        'Yes. Konthora ships native Spanish neural voices (Dora, Alex, and Santa) that read Spanish text with correct pronunciation, accent, and intonation.',
+        'Yes. Konthora ships 48 native Spanish neural voices — Dora, Alex, and Santa from Kokoro, plus 45 Edge voices from 21 Spanish-speaking locales — that read Spanish text with correct pronunciation, accent, and intonation.',
     },
     {
       question: 'Which Spanish voices are available?',
       answer:
-        'There are currently 3 Spanish voices: Dora (female), Alex (male), and Santa (male). Select Spanish in the workspace to browse them.',
+        'There are currently 48 Spanish voices: Dora (female), Alex (male), and Santa (male) from Kokoro, plus 45 Edge voices from 21 Spanish-speaking locales. Select Spanish in the workspace to browse them.',
     },
     {
       question: 'Can I download Spanish voiceovers as MP3 or WAV?',
@@ -88,8 +84,8 @@ export default function SpanishTtsPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '3 Spanish voices',
-      desc: 'Dora, Alex, and Santa — female and male characters for natural Spanish narration.',
+      title: '48 Spanish voices',
+      desc: 'Dora, Alex, and Santa from Kokoro, plus 45 Edge voices from 21 Spanish-speaking locales.',
     },
     {
       icon: Volume2,

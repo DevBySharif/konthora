@@ -17,6 +17,7 @@ import { TtsWorkspaceWithPreset } from '@/components/tools/TtsWorkspaceWithPrese
 import { InfoSection, StepsSection, CrossLinks, InfoCard } from '@/components/tools/ToolInfoSections';
 import { JsonLd } from '@/components/JsonLd';
 import { siteConfig } from '@/config/site';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
 
 
@@ -25,13 +26,14 @@ import { Volume2, Mic2, Gauge, FileAudio } from 'lucide-react';
  * engines via Speakable schema. Keep it consistent with the visible copy.
  */
 const SPEAKABLE_TEXT_TO_SPEECH =
-  'Konthora converts text into natural AI speech for free in the browser. You can generate up to 2,000 characters per job using 41 neural voices across 6 languages, adjust the speed between 0.75 and 1.25 times, configure sentence and paragraph pauses, and download the result as MP3 or WAV. No account is required.';
+  'Konthora converts text into natural AI speech for free in the browser. You can generate up to 2,000 characters per job using 129 neural voices across 7 languages, adjust the speed between 0.75 and 1.25 times, configure sentence and paragraph pauses, and download the result as MP3 or WAV. No account is required.';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Free AI Text to Speech Online | Kokoro TTS Studio',
   description:
-    'Free AI text to speech with 41 neural voices in 6 languages. Convert text to natural speech and export as MP3 or WAV, powered by the Kokoro voice model.',
+    'Free AI text to speech with 129 neural voices in 7 languages. Convert text to natural speech and export as MP3 or WAV.',
   path: '/text-to-speech',
+  languages: TTS_LANGUAGE_ALTERNATES,
 });
 
 export default function TextToSpeechPage() {
@@ -65,7 +67,7 @@ export default function TextToSpeechPage() {
     {
       question: 'Which voices and accents are supported?',
       answer:
-        'Konthora provides 41 AI voices across English, Hindi, Spanish, French, Italian, and Portuguese, with American and British English options among the catalogue.',
+        'Konthora provides 129 AI voices across English, Hindi, Spanish, French, Italian, Portuguese, and Bengali, with American and British English options among the catalogue.',
     },
     {
       question: 'Which audio formats can I download?',
@@ -114,7 +116,7 @@ export default function TextToSpeechPage() {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
     name: 'How to Generate AI Speech with Konthora',
-    description: 'Free browser-based text-to-speech with 41 neural voices, adjustable speed, and MP3/WAV download.',
+    description: 'Free browser-based text-to-speech with 129 neural voices, adjustable speed, and MP3/WAV download.',
     url: pageUrl,
     totalTime: 'PT2M',
     supply: [
@@ -136,13 +138,13 @@ export default function TextToSpeechPage() {
   const capabilityCards: InfoCard[] = [
     {
       icon: Mic2,
-      title: '41 AI voices',
+      title: '129 AI voices',
       desc: 'A growing voice catalogue with clear preview controls and language-specific selections.',
     },
     {
       icon: Volume2,
-      title: '6 languages',
-      desc: 'Create speech in English, Hindi, Spanish, French, Italian, and Portuguese.',
+      title: '7 languages',
+      desc: 'Create speech in English, Hindi, Spanish, French, Italian, Portuguese, and Bengali.',
     },
     {
       icon: Gauge,
@@ -195,7 +197,7 @@ export default function TextToSpeechPage() {
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'Text to Speech' }]} />
           <PageHeader
             title="Free AI Text to Speech Online"
-            description="Convert written scripts into natural-sounding speech in six languages, with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."
+            description="Convert written scripts into natural-sounding speech in seven languages, with customizable voices, adjustable speeds, and a one-click MP3 or WAV download."
             badge="Speech Workbench"
           />
           <TtsWorkspaceWithPreset />

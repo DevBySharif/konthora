@@ -40,6 +40,7 @@ def reset_in_memory_states():
     limiter = RateLimitService()
     limiter._request_history.clear()
     limiter._active_jobs.clear()
+    limiter._preview_request_history.clear()
     limiter._trans_request_history.clear()
     limiter._trans_active_jobs.clear()
 

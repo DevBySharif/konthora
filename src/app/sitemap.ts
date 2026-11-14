@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { getAllVoices, getVoiceUrl } from '@/config/voices';
+import { TTS_LANGUAGE_ALTERNATES } from '@/config/tts';
 import { getLastModifiedDate } from '@/config/freshness';
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -12,6 +13,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ).replace(/\/+$/, '');
 
   const voiceRoutes = getAllVoices().map((voice) => getVoiceUrl(voice.slug));
+
+  const ttsLanguageRoutes = new Set([
+    '/text-to-speech',
+    '/text-to-speech/spanish',
+    '/text-to-speech/hindi',
+    '/text-to-speech/bengali',
+    '/text-to-speech/french',
+    '/text-to-speech/italian',
+    '/text-to-speech/portuguese',
+  ]);
+
+  // hreflang alternates for the sitemap: every TTS language page lists all
+  // variants, so crawlers see one language family instead of seven rivals.
+  const ttsAlternates = Object.fromEntries(
+    Object.entries(TTS_LANGUAGE_ALTERNATES).map(([locale, path]) => [
+      locale,
+      `${baseUrl}${path}`,
+    ]),
+  );
 
   const routes = [
     '',
@@ -47,6 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/transcribe-webinar',
     '/text-to-speech-timestamps-explained',
     '/ai-voice-sounds-robotic',
+    '/accessibility',
     '/accessibility/tts-vs-screen-reader',
     '/about',
     '/contact',
@@ -121,6 +142,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: getLastModifiedDate(route),
       changeFrequency,
       priority,
+      ...(ttsLanguageRoutes.has(route)
+        ? { alternates: { languages: ttsAlternates } }
+        : {}),
     };
   });
 }

@@ -14,7 +14,15 @@ export const SUPPORTED_TTS_LANGUAGES = [
   'Bengali',
 ] as const;
 
-export const TOTAL_TTS_VOICES = getAllVoices().length;
+/**
+ * Edge (Microsoft) voices served live by the API. Verified against the live
+ * catalogue on 2026-11-14: 88 voices (45 Spanish, 17 English, 13 French,
+ * 4 Bengali, 4 Italian, 3 Portuguese, 2 Hindi). The live list is the
+ * authority — bump this when it changes.
+ */
+export const EDGE_TTS_VOICES = 88;
+
+export const TOTAL_TTS_VOICES = getAllVoices().length + EDGE_TTS_VOICES;
 export const TTS_LANGUAGE_COUNT = SUPPORTED_TTS_LANGUAGES.length;
 export const TTS_LANGUAGE_NAMES = SUPPORTED_TTS_LANGUAGES.join(', ');
 export const TRANSCRIPTION_LANGUAGE = 'English' as const;

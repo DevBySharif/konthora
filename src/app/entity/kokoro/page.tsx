@@ -72,7 +72,7 @@ export default function KokoroEntityPage() {
     },
     {
       question: "How many voices does Kokoro support on Konthora?",
-      answer: 'Konthora currently exposes 41 verified Kokoro voices across English, Hindi, Spanish, French, Italian, and Portuguese. The English catalogue includes 20 American and 8 British English voices.',
+      answer: 'Konthora currently exposes 41 verified Kokoro voices across English, Hindi, Spanish, French, Italian, and Portuguese. The English catalogue includes 20 American and 8 British English voices. The site also serves 88 additional Edge voices, for 129 voices in total across seven languages.',
     },
     {
       question: "What license does Kokoro use?",
@@ -261,7 +261,7 @@ export default function KokoroEntityPage() {
                   languages for its browser-based tool.
                 </p>
                 <p>
-                  Currently, Konthora provides 41 integrated voices powered by the Kokoro model. The catalogue includes English, Hindi, Spanish, French, Italian, and Portuguese.
+                  Currently, Konthora provides 41 integrated voices powered by the Kokoro model. The catalogue includes English, Hindi, Spanish, French, Italian, and Portuguese. Konthora also serves 88 Edge voices, bringing the full voice catalogue to 129 voices across seven languages.
                 </p>
                 
                 <div className="grid sm:grid-cols-2 gap-4 mt-4">
@@ -323,8 +323,8 @@ export default function KokoroEntityPage() {
                   model through a free, browser-based application. 
                 </p>
                 <p>
-                  Users can type or paste text into the Konthora interface, select from 41 available
-                  voices across six languages, and generate MP3 or WAV audio without needing to configure the underlying
+                  Users can type or paste text into the Konthora interface, select from 129 available
+                  voices (41 Kokoro and 88 Edge) across seven languages, and generate MP3 or WAV audio without needing to configure the underlying
                   machine learning environment.
                 </p>
               </div>

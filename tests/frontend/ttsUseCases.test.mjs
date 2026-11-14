@@ -184,7 +184,9 @@ test('per-route freshness dates are valid ISO and in the past', () => {
   const source = read('src/config/freshness.ts');
   const dates = [...source.matchAll(/'(\d{4}-\d{2}-\d{2})'/g)].map((m) => m[1]);
   assert.ok(dates.length > 0, 'no dates found in the freshness registry');
-  const today = new Date('2026-10-01');
+  const today = new Date();
+  // Date-only comparison: a stamp of today is current, not future.
+  today.setUTCHours(0, 0, 0, 0);
   for (const date of dates) {
     const parsed = new Date(date);
     assert.ok(!Number.isNaN(parsed.getTime()), `${date} is not a valid date`);
