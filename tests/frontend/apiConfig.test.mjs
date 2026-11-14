@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 function resolveApiUrls(envApiUrl, nodeEnv) {
   const hostUrl = (
@@ -89,4 +90,19 @@ test('withDevBypassHeaders includes X-Dev-Bypass-Key when NEXT_PUBLIC_DEV_BYPASS
       delete process.env.NEXT_PUBLIC_DEV_BYPASS_KEY;
     }
   }
+});
+
+test('CSP media-src allows the API origin so Edge voice previews can play', () => {
+  // Regression: Nov 15 2026 — the Listen button for Edge voices showed
+  // "Preview unavailable" because media-src was "'self' blob:" and the
+  // preview MP3 streams cross-origin from the API (HF Space). A media
+  // element blocked by CSP fires error code 4 and no request is ever made.
+  // connect-src already allows the same origin; media-src must too.
+  const config = readFileSync(new URL('../../next.config.ts', import.meta.url), 'utf8');
+  // Match the directive itself (a comment above it also mentions media-src).
+  assert.ok(
+    config.includes("`media-src 'self' blob: ${apiOrigin}`"),
+    'media-src must allow the API origin (${apiOrigin}) alongside \'self\' and blob:',
+  );
+  assert.match(config, /connect-src[^,\n]*\$\{apiOrigin\}/, 'connect-src must keep allowing the API origin');
 });

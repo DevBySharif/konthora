@@ -54,7 +54,11 @@ const csp = [
   // GA4 collects to google-analytics.com and its regional hostnames
   // (region1/region2/...); Clarity collects to *.clarity.ms.
   `connect-src 'self' ${apiOrigin}${isLocalApi ? LOCAL_ORIGINS : ""} https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com https://*.analytics.google.com https://*.clarity.ms https://c.clarity.ms https://*.bing.com`,
-  "media-src 'self' blob:",
+  // Edge voice previews stream their MP3 from the API origin (the preview
+  // endpoint synthesizes and serves the clip); 'self' alone blocks them
+  // with "Refused to load media ... violates media-src" and the Listen
+  // button shows "Preview unavailable". Same origin variable as connect-src.
+  `media-src 'self' blob: ${apiOrigin}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
