@@ -97,14 +97,15 @@ def test_map_voice():
     assert voice["previewUrl"] == ""
     assert voice["recommended"] is True
 
-    # Multilingual suffix is stripped from the display name.
+    # Multilingual twins keep a ' Multilingual' marker so their display
+    # name stays distinct from the plain Neural twin's ("Ava (Female)").
     ava = _map_voice({
         "ShortName": "en-US-AvaMultilingualNeural",
         "Gender": "Female",
         "Locale": "en-US",
         "LocaleName": "English (United States)",
     })
-    assert ava["displayName"] == "Ava (Female)"
+    assert ava["displayName"] == "Ava Multilingual (Female)"
 
     # Unsupported locales are dropped entirely.
     assert _map_voice({

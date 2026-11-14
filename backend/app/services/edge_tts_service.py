@@ -89,14 +89,22 @@ def _map_locale(locale: str) -> Optional[str]:
 
 
 def _voice_name_from_short_name(short_name: str, locale: str) -> str:
-    """'en-US-AvaMultilingualNeural' -> 'Ava'; 'bn-BD-NabanitaNeural' -> 'Nabanita'."""
+    """'en-US-AvaMultilingualNeural' -> 'Ava Multilingual'; 'bn-BD-NabanitaNeural' -> 'Nabanita'.
+
+    The MultilingualNeural twins (Andrew/Ava/Emma/Brian) share their plain
+    Neural twin's base name, so the ' Multilingual' marker keeps their
+    display names distinct in the picker ("Ava Multilingual (Female)").
+    """
     name = short_name
     if locale and name.startswith(locale + "-"):
         name = name[len(locale) + 1:]
+    multilingual = name.endswith("MultilingualNeural")
     for suffix in ("MultilingualNeural", "Neural"):
         if name.endswith(suffix):
             name = name[: -len(suffix)]
             break
+    if multilingual:
+        name = f"{name} Multilingual"
     return name or short_name
 
 

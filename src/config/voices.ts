@@ -2095,7 +2095,7 @@ export const VOICE_PAGE_CONFIGS: VoicePageConfig[] = [
   }),
   buildVoice({
     id: 'it-IT-GiuseppeMultilingualNeural',
-    displayName: 'Giuseppe (Male)',
+    displayName: 'Giuseppe Multilingual (Male)',
     gender: 'male',
     accent: 'Italian (Italy)',
     language: 'it',
@@ -2195,7 +2195,7 @@ export const VOICE_PAGE_CONFIGS: VoicePageConfig[] = [
   }),
   buildVoice({
     id: 'pt-BR-ThalitaMultilingualNeural',
-    displayName: 'Thalita (Female)',
+    displayName: 'Thalita Multilingual (Female)',
     gender: 'female',
     accent: 'Portuguese (Brazil)',
     language: 'pt-BR',
