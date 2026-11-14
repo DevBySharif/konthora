@@ -191,7 +191,9 @@ function parseRetryAfter(response: Response): number | undefined {
 export const API_HOST_URL = (
   process.env.NEXT_PUBLIC_API_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'https://api.konthora.dev.bd'
+    // Production API is the Hugging Face Space (see DEPLOYMENT.md).
+    // api.konthora.dev.bd does not respond — never fall back to it.
+    ? 'https://devsharif-konthora-api.hf.space'
     : 'http://localhost:8000')
 ).replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
 

@@ -9,8 +9,9 @@ import type { NextConfig } from "next";
  * edit rather than a silent breakage.
  *
  * `connect-src` allows the FastAPI backend. Set NEXT_PUBLIC_API_URL to the
- * production origin (https://api.konthora.dev.bd); the localhost entries are
- * development conveniences and are ignored by browsers on https pages.
+ * production origin (https://devsharif-konthora-api.hf.space); the localhost
+ * entries are development conveniences and are ignored by browsers on https
+ * pages.
  */
 /**
  * next.config is evaluated once at build time and cached into

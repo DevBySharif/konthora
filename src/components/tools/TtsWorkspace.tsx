@@ -789,10 +789,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 {/* Sample Scripts - Quick Start */}
         {(!text || text.trim() === '') && status !== 'submitting' && status !== 'polling' ? (
           <div className="border border-border/50 bg-card/50 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               Quick start — click a script to load it
-            </h3>
+            </h2>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {SAMPLE_SCRIPTS.map((script) => (
                 <button
@@ -810,7 +810,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                       <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h4>
+                      <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h3>
                       <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
                       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
@@ -1154,10 +1154,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           {/* Sample Scripts - shown when no audio generated yet */}
           {status !== 'completed' && status !== 'failed' && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-primary" />
                 Quick start — click a script to load it
-              </h3>
+              </h2>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {SAMPLE_SCRIPTS.map((script) => (
                   <button
@@ -1176,7 +1176,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                         <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h4>
+                        <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h3>
                         <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>

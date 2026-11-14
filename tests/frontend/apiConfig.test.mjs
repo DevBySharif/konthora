@@ -5,7 +5,7 @@ function resolveApiUrls(envApiUrl, nodeEnv) {
   const hostUrl = (
     envApiUrl ||
     (nodeEnv === 'production'
-      ? 'https://api.konthora.dev.bd'
+      ? 'https://devsharif-konthora-api.hf.space'
       : 'http://localhost:8000')
   ).replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
 
@@ -13,10 +13,10 @@ function resolveApiUrls(envApiUrl, nodeEnv) {
   return { hostUrl, baseUrl };
 }
 
-test('resolves production fallback to api.konthora.dev.bd without localhost in production', () => {
+test('resolves production fallback to the Hugging Face Space without localhost in production', () => {
   const { hostUrl, baseUrl } = resolveApiUrls(undefined, 'production');
-  assert.equal(hostUrl, 'https://api.konthora.dev.bd');
-  assert.equal(baseUrl, 'https://api.konthora.dev.bd/api/v1');
+  assert.equal(hostUrl, 'https://devsharif-konthora-api.hf.space');
+  assert.equal(baseUrl, 'https://devsharif-konthora-api.hf.space/api/v1');
   assert.equal(baseUrl.includes('localhost'), false);
 });
 

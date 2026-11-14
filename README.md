@@ -21,17 +21,21 @@ The application launches with:
 | [deploy/scripts/](deploy/scripts/) | Idempotent provisioning (`deploy.sh`, incl. TLS + model warm-up + frontend build), update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
 | [.env.example](.env.example) / [.env.production.example](.env.production.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates (`.env.production.example` → `/etc/konthora/web.env`). |
 
-> **Architecture:** The **entire stack is self-hosted** on a single **AWS EC2**
-> instance running **Ubuntu 24.04** behind **Nginx + Let's Encrypt**, supervised
-> by **systemd**. `konthora.dev.bd` / `www.konthora.dev.bd` serve the Next.js
-> frontend on `127.0.0.1:3000`; `api.konthora.dev.bd` serves the FastAPI backend
-> on `127.0.0.1:8000`. Continuous integration runs in GitHub Actions (CI only —
-> no automatic deployments).
+> **Architecture:** The frontend (Next.js) runs on an **AWS EC2** instance
+> (`konthora.dev.bd` / `www.konthora.dev.bd`, Nginx + Let's Encrypt, supervised
+> by **systemd**). The FastAPI backend runs as a hosted **Hugging Face Space**
+> (`DEVSHARIF/konthora-api`, CPU) at
+> `https://devsharif-konthora-api.hf.space` — the built frontend bakes that URL
+> in as `NEXT_PUBLIC_API_URL`. `api.konthora.dev.bd` currently does not respond,
+> so nothing in production depends on it. Continuous integration runs in GitHub
+> Actions (CI only — no automatic deployments).
 
 > **Deploying:** `sudo bash deploy/scripts/deploy.sh` provisions a fresh Ubuntu
 > host end-to-end (packages, repo, venv, **spaCy + Kokoro + Faster Whisper model
 > warm-up**, secrets, **Next.js frontend build**, Nginx, Let's Encrypt TLS,
-> both systemd units) and is safe to re-run. See [DEPLOYMENT.md](DEPLOYMENT.md).
+> both systemd units) and is safe to re-run. That script provisions the EC2/VPS
+> path; the live API (Hugging Face Space) is deployed from its own repository.
+> See the warning at the top of [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
@@ -123,7 +127,7 @@ graph TD
 * **English Only**: The platform is restricted to English inputs (using `en-US` and `en-GB` accents). "Auto Detect" currently resolves to English.
 * **Character Ceiling**: Strict limit of **2,000 characters** per guest synthesis session.
 * **In-Memory Queue**: Submissions are scheduled in a bounded FIFO queue of size 10. Duplicate submissions above capacity receive an immediate `503 Service Unavailable (QUEUE_FULL)`.
-* **Guest Rate Limiting**: Limit of **10 job creations per hour** per client IP.
+* **Guest Rate Limiting**: **30 TTS job creations per hour** and **15 transcription jobs per hour** per client IP.
 * **Retention Policy**: Generated audio files and metadata expire and are deleted automatically after **60 minutes**.
 * **State Loss on Restart**: All job states are in-memory. Restarting the backend wipes all jobs, although cached storage directories are cleaned on startup.
 * **Temporary Local Storage**: Files are stored on local disk under `backend/storage` and expire automatically.
