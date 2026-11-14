@@ -20,8 +20,13 @@ faster-whisper
 # edge-tts is pinned: EdgeTTSService uses its internal modules (TTSConfig,
 # mkssml, DRM), which may change across major versions. websockets is the
 # transport for Edge synthesis (edge-tts' own aiohttp client fails behind
-# TLS-intercepting egress proxies). assemblyai and google-genai stay removed:
+# TLS-intercepting egress proxies). websockets is a RANGE, not a pin: the
+# Hugging Face Space runs Python 3.10, and websockets 17.x needs >=3.11,
+# which broke the Space build (BUILD_ERROR, Nov 14). The range lets pip pick
+# the newest version the runtime supports (16.x on 3.10, 17.x on 3.11+).
+# EdgeTTSService only uses the stable connect()/exception API, which is
+# unchanged across websockets 14-17. assemblyai and google-genai stay removed:
 # they were pulled in for the realtime voice-agent feature, which has been
 # removed from both the frontend and the API surface.
 edge-tts==7.3.1
-websockets==17.4
+websockets>=14.1,<18
