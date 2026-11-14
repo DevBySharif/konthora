@@ -193,3 +193,19 @@ test('per-route freshness dates are valid ISO and in the past', () => {
     assert.ok(parsed <= today, `${date} is in the future`);
   }
 });
+
+test('voice picker shows Edge voices first and never labels them "Edge"', () => {
+  // Nov 15 2026: Nemo asked for Edge voices on top of the picker and for the
+  // "· Edge" text next to voice names to go (the engine is an implementation
+  // detail; "(Recommended)" stays). Default-voice resolution is upstream and
+  // must not change with this display order.
+  const picker = read('src/components/tools/VoicePicker.tsx');
+  assert.ok(!picker.includes("' · Edge'"), 'picker must not render a "· Edge" label');
+  assert.ok(!picker.includes('" · Edge"'), 'picker must not render a "· Edge" label');
+  assert.match(
+    picker,
+    /\.sort\(\(a, b\) => \(a\.engine === 'edge' \? 0 : 1\) - \(b\.engine === 'edge' \? 0 : 1\)\)/,
+    'picker must sort Edge voices before the rest',
+  );
+  assert.ok(picker.includes("(Recommended)"), 'the (Recommended) marker must be kept');
+});

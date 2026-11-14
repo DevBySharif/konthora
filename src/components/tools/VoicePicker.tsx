@@ -32,9 +32,15 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
     stopPreview();
   }, [selectedLanguage, stopPreview]);
 
-  const availableVoices = voices.filter(
-    (voice) => voice.language === selectedLanguage || (!voice.language && selectedLanguage === 'en-US')
-  );
+  // Edge voices first in the picker (they are the newest catalogue and the
+  // recommended default for Bengali); Kokoro voices follow. Stable sort, so
+  // the order inside each engine group is unchanged. The default voice is
+  // resolved upstream and is not affected by this display order.
+  const availableVoices = voices
+    .filter(
+      (voice) => voice.language === selectedLanguage || (!voice.language && selectedLanguage === 'en-US')
+    )
+    .sort((a, b) => (a.engine === 'edge' ? 0 : 1) - (b.engine === 'edge' ? 0 : 1));
 
   const selectedVoice = availableVoices.find((v) => v.id === selectedVoiceId) || availableVoices[0];
 
@@ -51,7 +57,8 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
   };
 
   const isPreviewing = activePreviewId === selectedVoice?.id;
-  // Edge voices have no preview clips, so there is nothing to play.
+  // The Listen button shows only when the selected voice has a preview:
+  // Kokoro voices use a static clip, Edge voices use the preview endpoint.
   const hasPreview = Boolean(selectedVoice?.previewUrl);
 
   return (
@@ -76,7 +83,6 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
             availableVoices.map((voice) => (
               <option key={voice.id} value={voice.id}>
                 {voice.displayName} — {voice.accent}
-                {voice.engine === 'edge' ? ' · Edge' : ''}
                 {voice.recommended ? ' (Recommended)' : ''}
               </option>
             ))
