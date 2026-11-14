@@ -11,7 +11,6 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const analyticsSource = read('src/components/analytics/Analytics.tsx');
 const claritySource = read('src/components/analytics/ClarityAnalytics.tsx');
 const layoutSource = read('src/app/layout.tsx');
-const deployScript = read('deploy/scripts/deploy.sh');
 const envTemplate = read('.env.production.example');
 
 test('the root layout renders the analytics component', () => {
@@ -77,42 +76,6 @@ test('the CSP allows every Clarity host the tag actually uses', () => {
   assert.match(csp, /connect-src[^\n]*https:\/\/c\.clarity\.ms/u);
 });
 
-test('the deploy script fails the build when a configured id is not emitted', () => {
-  // This is the regression guard. Analytics ids are inlined at build time, so
-  // an id missing from the env file silently produces a site with no analytics
-  // and no error. The deploy must verify the emitted HTML and abort.
-  assert.match(
-    deployScript,
-    /GA_ID="\$\{NEXT_PUBLIC_GA_MEASUREMENT_ID:-\}"/u,
-    'deploy must read the GA id from the env file',
-  );
-  assert.match(
-    deployScript,
-    /grep -qF "\$GA_ID" "\$HOMEPAGE_HTML"/u,
-    'deploy must check the GA id in the prerendered HTML',
-  );
-  assert.match(
-    deployScript,
-    /grep -rqF "\$CLARITY_ID" "\$REPO_DIR\/\.next\/static"/u,
-    'deploy must check the Clarity id in the client chunks, where it is actually inlined',
-  );
-  assert.match(deployScript, /exit 1/u, 'a missing id must abort the deploy');
-  assert.match(
-    deployScript,
-    /no analytics ids in \\\$WEB_ENV_FILE|WARN: no analytics ids/u,
-    'deploy must warn loudly when no ids are configured at all',
-  );
-});
-
-test('the deploy script sources the env file before building', () => {
-  // Ordering matters: NEXT_PUBLIC_* must be exported before `npm run build`.
-  const sourceIdx = deployScript.indexOf('source "$WEB_ENV_FILE"');
-  const buildIdx = deployScript.indexOf('npm run build');
-  assert.ok(sourceIdx !== -1, 'deploy must source the web env file');
-  assert.ok(buildIdx !== -1, 'deploy must run the build');
-  assert.ok(sourceIdx < buildIdx, 'the env file must be sourced before the build inlines it');
-});
-
 test('the env template ships both analytics ids filled in', () => {
   // An empty value in the template is what produced an unmeasurable site.
   const ga = envTemplate.match(/^NEXT_PUBLIC_GA_MEASUREMENT_ID=(.*)$/mu);
@@ -132,11 +95,11 @@ test('a build carries both analytics ids where each one actually lands', () => {
   // chunks. Asserting the Clarity id is in the HTML is wrong and made this
   // suite fail against a perfectly good build.
   //
-  // Both ids come from .env.local / web.env, which is gitignored. A clean CI
-  // checkout has neither, so the build there has no analytics at all and there
-  // is nothing to assert. The deploy-time check in deploy/scripts/deploy.sh is
-  // what guards production; this test only verifies the split when the ids
-  // happen to be present.
+  // Both ids come from the Render dashboard env vars (or .env.local), which
+  // is gitignored. A clean checkout has neither, so the build there has no
+  // analytics at all and there is nothing to assert. If the ids are missing
+  // from the dashboard, production ships without analytics; this test only
+  // verifies the split when the ids happen to be present.
   const htmlPath = path.join(root, '.next', 'server', 'app', 'index.html');
   if (!fs.existsSync(htmlPath)) {
     return;

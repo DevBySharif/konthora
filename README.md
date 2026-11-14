@@ -10,32 +10,19 @@ The application launches with:
 
 | Document | Purpose |
 | :--- | :--- |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Full production setup: AWS EC2 / Ubuntu 24.04, Python, Node, Git, FFmpeg, eSpeak NG, venv, systemd, Nginx, Let's Encrypt, updates, rollback, troubleshooting. |
-| [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) | Step-by-step go-live checklist (AWS, EC2, Elastic IP, Security Group, DNS, Vercel, SSL, Search Console, analytics, backups). |
-| [deploy/AWS.md](deploy/AWS.md) | AWS recommendations: credit-budget tiers, benchmark-before-sizing, public IPv4 pricing, Security Groups, IAM, cost model (by region), scaling path. |
-| [deploy/MONITORING.md](deploy/MONITORING.md) | Health endpoint, uptime, disk/RAM/CPU and log monitoring recommendations. |
-| [deploy/SECURITY.md](deploy/SECURITY.md) | Security review: CORS, trusted hosts, headers, rate limiting, uploads, tokens, storage, log sanitization. |
-| [deploy/PERFORMANCE.md](deploy/PERFORMANCE.md) | Performance review: queue, memory, startup, model loading, compression, caching. |
-| [deploy/nginx/](deploy/nginx/) | Production Nginx configuration (TLS, security headers, uploads, timeouts). |
-| [deploy/systemd/](deploy/systemd/) | `konthora.service` and `konthora-web.service` systemd units (backend + frontend). |
-| [deploy/scripts/](deploy/scripts/) | Idempotent provisioning (`deploy.sh`, incl. TLS + model warm-up + frontend build), update, restart, stop, backup, cleanup, logs, healthcheck and rollback scripts. |
-| [.env.example](.env.example) / [.env.production.example](.env.production.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates (`.env.production.example` → `/etc/konthora/web.env`). |
+| [.env.example](.env.example) / [.env.production.example](.env.production.example) / [backend/.env.example](backend/.env.example) / [backend/.env.production.example](backend/.env.production.example) | Environment variable templates. |
 
-> **Architecture:** The frontend (Next.js) runs on an **AWS EC2** instance
-> (`konthora.dev.bd` / `www.konthora.dev.bd`, Nginx + Let's Encrypt, supervised
-> by **systemd**). The FastAPI backend runs as a hosted **Hugging Face Space**
-> (`DEVSHARIF/konthora-api`, CPU) at
+> **Architecture:** The frontend (Next.js) runs on **Render**
+> (`konthora.dev.bd`, behind Cloudflare). The FastAPI backend runs as a hosted
+> **Hugging Face Space** (`DEVSHARIF/konthora-api`, CPU) at
 > `https://devsharif-konthora-api.hf.space` — the built frontend bakes that URL
-> in as `NEXT_PUBLIC_API_URL`. `api.konthora.dev.bd` currently does not respond,
-> so nothing in production depends on it. Continuous integration runs in GitHub
-> Actions (CI only — no automatic deployments).
+> in as `NEXT_PUBLIC_API_URL`. There is no AWS infrastructure in the live path.
 
-> **Deploying:** `sudo bash deploy/scripts/deploy.sh` provisions a fresh Ubuntu
-> host end-to-end (packages, repo, venv, **spaCy + Kokoro + Faster Whisper model
-> warm-up**, secrets, **Next.js frontend build**, Nginx, Let's Encrypt TLS,
-> both systemd units) and is safe to re-run. That script provisions the EC2/VPS
-> path; the live API (Hugging Face Space) is deployed from its own repository.
-> See the warning at the top of [DEPLOYMENT.md](DEPLOYMENT.md).
+> **Deploying:** Frontend — the Render dashboard, from `main` (auto-deploy if
+> enabled in the service settings, otherwise Manual Deploy). Backend — commit
+> the `backend/` files to the Space repository (Hub commit API); the Space
+> rebuilds on push. There is no CI: run the frontend and backend test suites
+> locally before pushing.
 
 ---
 

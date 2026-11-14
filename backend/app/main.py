@@ -81,9 +81,9 @@ app = FastAPI(
 
 # Middleware stack. Starlette wraps in reverse order, so the LAST added middleware
 # is the OUTERMOST. Order (outer -> inner): TrustedHost -> CORS -> GZip.
-# Security response headers are emitted solely by Nginx at the edge (see
-# deploy/nginx/security_headers.conf) to avoid duplication; Nginx is also the
-# only layer that covers CORS preflight responses.
+# Security response headers are emitted by the edge proxy, not by the app,
+# to avoid duplication; the edge is also the only layer that covers CORS
+# preflight responses.
 if settings.COMPRESSION_ENABLED:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
 

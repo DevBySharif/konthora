@@ -158,9 +158,9 @@ python -m pip check
 
 ## Production Configuration
 
-Deployment target: an **AWS EC2** instance running **Ubuntu 24.04** behind
-Nginx, managed by systemd.
-See the repository-level [DEPLOYMENT.md](../DEPLOYMENT.md) for the full procedure.
+Deployment target: a hosted **Hugging Face Space** (`DEVSHARIF/konthora-api`,
+CPU). Deploy by committing the `backend/` files to the Space repository; the
+Space rebuilds on push.
 
 Production-specific settings (see `app/core/config.py` and
 `.env.production.example`):
@@ -169,31 +169,30 @@ Production-specific settings (see `app/core/config.py` and
 | --- | --- | --- |
 | `APP_ENV` | `production` | Enables HSTS, disables dev behaviour |
 | `TRUST_PROXY_HEADERS` | `true` | Client IP from `X-Forwarded-For` for rate limiting |
-| `TRUSTED_HOSTS` | `api.konthora.dev.bd` | Host-header allowlist (anti DNS-rebinding) |
+| `TRUSTED_HOSTS` | `devsharif-konthora-api.hf.space` | Host-header allowlist (anti DNS-rebinding) |
 | `CORS_ORIGINS` | `https://konthora.dev.bd` | Exact browser origin allowed |
-| `LOG_DIR` | `/var/log/konthora` | Rotating file logs (50 MB × 7 days, zipped) |
-| `TTS_STORAGE_ROOT` | `/opt/konthora/repo/backend/storage` | Job output location on the instance |
+| `LOG_DIR` | *(unset)* | Logs to stdout when empty |
+| `TTS_STORAGE_ROOT` | `./storage` | Job output location (relative; the Space filesystem is non-persistent) |
 
-Startup command (also baked into the systemd unit):
-
-```bash
-.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 \
-  --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --http httptools
-```
+The Space runs the app via `app.py` (Gradio SDK entrypoint). There is no
+systemd unit or uvicorn command to run by hand.
 
 ### Logging & Privacy
 
-- Console/stderr logs go to journald under systemd; when `LOG_DIR` is set,
+- Console/stderr logs go to stdout (captured by the Space runtime); when `LOG_DIR` is set,
   loguru also writes a rotating `konthora.log` (50 MB rotation, 7-day retention,
   zipped).
 - The application **never logs**: access tokens, submitted text/transcripts,
   uploaded filenames, `Authorization` headers, or absolute machine paths.
-- `pip check`, `pytest`, lint, `tsc` and `next build` run automatically in
-  GitHub Actions (`../.github/workflows/ci.yml`).
+- `pip check`, `pytest`, lint, `tsc` and `next build` run locally before
+  pushing. There is no CI.
 
 ## Known Limitations
 
-* **English-only**: Launch scope is English (en-US / en-GB accents). "Auto Detect" currently resolves to English.
+* **Languages**: Kokoro voices are English-only. Edge TTS (second engine)
+  adds Bengali (Nabanita, Pradeep, Bashkar, Tanishaa) plus Hindi, Spanish,
+  French, Italian and Portuguese voices; Edge voices appear only while Edge
+  is reachable.
 * **Temporary local storage**: Files and jobs are stored on local disk under `backend/storage` and are deleted after the retention window (default 60 minutes).
 * **In-memory jobs**: All job state lives in process memory and is lost on restart.
 * **Single-server MVP**: Uses an in-process queue and local storage; not designed for horizontal scaling.

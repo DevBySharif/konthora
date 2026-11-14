@@ -27,15 +27,15 @@ test('resolves development fallback to localhost:8000 when unset', () => {
 });
 
 test('handles explicit NEXT_PUBLIC_API_URL with /api/v1 without path duplication', () => {
-  const { hostUrl, baseUrl } = resolveApiUrls('https://api.konthora.dev.bd/api/v1', 'production');
-  assert.equal(hostUrl, 'https://api.konthora.dev.bd');
-  assert.equal(baseUrl, 'https://api.konthora.dev.bd/api/v1');
+  const { hostUrl, baseUrl } = resolveApiUrls('https://devsharif-konthora-api.hf.space/api/v1', 'production');
+  assert.equal(hostUrl, 'https://devsharif-konthora-api.hf.space');
+  assert.equal(baseUrl, 'https://devsharif-konthora-api.hf.space/api/v1');
 });
 
 test('handles explicit NEXT_PUBLIC_API_URL without /api/v1 and appends correctly', () => {
-  const { hostUrl, baseUrl } = resolveApiUrls('https://api.konthora.dev.bd', 'production');
-  assert.equal(hostUrl, 'https://api.konthora.dev.bd');
-  assert.equal(baseUrl, 'https://api.konthora.dev.bd/api/v1');
+  const { hostUrl, baseUrl } = resolveApiUrls('https://devsharif-konthora-api.hf.space', 'production');
+  assert.equal(hostUrl, 'https://devsharif-konthora-api.hf.space');
+  assert.equal(baseUrl, 'https://devsharif-konthora-api.hf.space/api/v1');
 });
 
 test('handles trailing slashes on custom endpoints (e.g. HuggingFace Spaces)', () => {

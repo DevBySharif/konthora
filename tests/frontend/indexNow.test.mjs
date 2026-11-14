@@ -25,7 +25,7 @@ test('deduplicates multiple canonical URLs', () => {
 
 test('rejects external, malformed, query, and fragment URLs', () => {
   assert.throws(() => normalizeIndexNowUrl('https://example.com/about'), /only https:\/\/konthora\.dev\.bd URLs/u);
-  assert.throws(() => normalizeIndexNowUrl('https://api.konthora.dev.bd/api/v1/health'), /only https:\/\/konthora\.dev\.bd URLs/u);
+  assert.throws(() => normalizeIndexNowUrl('https://example.com/api/v1/health'), /only https:\/\/konthora\.dev\.bd URLs/u);
   assert.throws(() => normalizeIndexNowUrl('/text-to-speech?voice=af_heart'), /query strings/u);
   assert.throws(() => normalizeIndexNowUrl('/about#team'), /query strings and fragments/u);
   assert.throws(() => normalizeIndexNowUrl('not a URL'), /malformed URL/u);

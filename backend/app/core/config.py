@@ -8,19 +8,19 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     # Comma-separated list of allowed browser origins (no wildcards in production).
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://konthora.dev.bd"
-    # Set to true ONLY when running behind a trusted reverse proxy (Nginx) so that
+    # Set to true ONLY when running behind a trusted reverse proxy so that
     # X-Forwarded-For / X-Forwarded-Proto headers are honored for rate limiting and
     # URL building. Never enable when the API is directly reachable by clients.
     TRUST_PROXY_HEADERS: bool = False
     # Comma-separated allowlist of valid Host headers. Empty string allows any host
-    # (development only). In production set to "api.konthora.dev.bd".
+    # (development only). In production set to "devsharif-konthora-api.hf.space".
     TRUSTED_HOSTS: str = ""
     # Enable GZip compression for JSON API responses (audio files are never compressed).
     COMPRESSION_ENABLED: bool = True
     # Minimum log severity emitted to console/file sinks.
     LOG_LEVEL: str = "INFO"
     # Directory for rotating log files. Leave empty to log to stdout/stderr only
-    # (captured by journald under systemd). In production set e.g. /var/log/konthora.
+    # (captured by the platform). Leave empty on the Space to log to stdout only.
     LOG_DIR: str = ""
     # Seconds between periodic expired-job cleanup sweeps.
     CLEANUP_INTERVAL_SECONDS: int = 60
