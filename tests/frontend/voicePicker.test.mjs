@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   filterVoicesForLanguage,
   groupVoicesByEngine,
@@ -110,4 +113,22 @@ test('engine grouping is Edge first, omits empty groups, and counts per group', 
   assert.equal(searched.length, 1);
   assert.equal(searched[0].engine, 'kokoro');
   assert.equal(searched[0].voices.length, 1);
+});
+
+test('voice row select button can shrink so Listen/favorite buttons never clip', () => {
+  // Regression: on narrow screens the row select button (flex-1, nowrap
+  // name) refused to shrink below its text width, pushing the Listen and
+  // favorite buttons 8-11px past the card edge on mobile (live, Layout A).
+  // min-w-0 on the button lets it shrink; the name inside already
+  // truncates with an ellipsis instead of pushing its siblings out.
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const pickerPath = path.join(here, '..', '..', 'src', 'components', 'tools', 'VoicePicker.tsx');
+  const pickerSource = fs.readFileSync(pickerPath, 'utf8');
+  const selectButton = pickerSource.match(/id=\{`tts-voice-\$\{voice\.id\}`\}[\s\S]{0,400}?className="([^"]*)"/);
+  assert.ok(selectButton, 'expected the row select button');
+  assert.ok(
+    selectButton[1].includes('min-w-0'),
+    `expected min-w-0 on the row select button, got: ${selectButton[1]}`,
+  );
+  assert.ok(selectButton[1].includes('flex-1'), 'select button must stay flex-1');
 });

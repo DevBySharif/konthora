@@ -209,7 +209,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
                           aria-pressed={isSelected}
                           onClick={() => handleSelectVoice(voice.id)}
                           disabled={disabled}
-                          className="flex min-h-11 flex-1 items-center gap-2 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50 disabled:cursor-not-allowed"
+                          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50 disabled:cursor-not-allowed"
                         >
                           <span
                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${

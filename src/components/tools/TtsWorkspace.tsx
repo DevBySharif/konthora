@@ -1204,13 +1204,76 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
 
   return (
     <div className="w-full">
-      {/* Split Studio (Layout A): two columns on desktop — editor and
-          controls on the left, voice picker, generated audio and recent
-          history on the right; a single stacked column on mobile, editor
-          first. min-w-0 on both columns keeps long content (voice rows,
+      {/* Three-column (Layout J): language + voice picker on the left,
+          editor + generated audio in the center, settings + recent
+          history on the right. On mobile the grid stacks to a single
+          column with the center (editor) first via order classes.
+          min-w-0 on all three columns keeps long content (voice rows,
           history snippets) from pushing the grid past the viewport. */}
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <div className="min-w-0">
+      <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)_300px]">
+        {/* Left column: language + voice picker. */}
+        <div className="order-2 min-w-0 space-y-6 lg:order-1">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+            {/* Language Selector */}
+            <div className="flex flex-col gap-3">
+              <div
+                id="tts-language-label"
+                className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
+              >
+                <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                  <Volume2 className="w-3.5 h-3.5 text-primary" />
+                </span>
+                Language
+              </div>
+              <div
+                className="grid grid-cols-2 gap-2"
+                role="group"
+                aria-labelledby="tts-language-label"
+              >
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.value}
+                    type="button"
+                    onClick={() => handleLanguageChange(lang.value as SupportedLanguage)}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    aria-pressed={selectedLanguage === lang.value}
+                    className={`min-h-11 rounded-lg border text-sm font-semibold tracking-wide transition-colors cursor-pointer py-2 px-3 ${
+                      selectedLanguage === lang.value
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                    }`}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                {SUPPORTED_LANGUAGES.find(l => l.value === selectedLanguage)?.description || ''}
+              </p>
+            </div>
+          </div>
+
+          {/* Voice — searchable picker (Edge first, favorites pinned),
+              moved out of the controls card into its own card, as in the
+              three-column mockup. */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+            <VoicePicker
+              voices={pickerVoices}
+              selectedVoiceId={resolvedVoiceId}
+              selectedLanguage={selectedLanguage}
+              onSelectVoice={handleVoiceSelect}
+              disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
+            />
+            {availableVoices.length === 0 && (
+              <p className="text-[11px] text-destructive leading-snug">
+                No voices are available for this language right now. Please pick another language.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Center column: mode, editor, generate, generated audio. */}
+        <div className="order-1 min-w-0 space-y-6 lg:order-2">
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Single voice / Dialogue mode toggle */}
         <div
@@ -1406,241 +1469,6 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           />
         )}
 
-        {/* Controls Layout */}
-        <div className="space-y-6 p-5 sm:p-6 lg:p-7 border border-border bg-card rounded-2xl shadow-xs">
-          {/* Language Selector */}
-          <div className="flex flex-col gap-3">
-            <div
-              id="tts-language-label"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
-            >
-              <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
-                <Volume2 className="w-3.5 h-3.5 text-primary" />
-              </span>
-              Language
-            </div>
-            <div
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2"
-              role="group"
-              aria-labelledby="tts-language-label"
-            >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <button
-                  key={lang.value}
-                  type="button"
-                  onClick={() => handleLanguageChange(lang.value as SupportedLanguage)}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  aria-pressed={selectedLanguage === lang.value}
-                  className={`min-h-11 rounded-lg border text-sm font-semibold tracking-wide transition-colors cursor-pointer py-2 px-3 ${
-                    selectedLanguage === lang.value
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-              {SUPPORTED_LANGUAGES.find(l => l.value === selectedLanguage)?.description || ''}
-            </p>
-          </div>
-
-          {/* The voice picker lives in the right column (its own card);
-              this card holds language, speed, format and pauses only. */}
-          <div className="grid gap-5">
-          {/* Speed Slider */}
-          <div className="flex flex-col gap-2 border-t border-border/70 pt-5">
-            <div className="flex justify-between items-center">
-              <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
-                  <Settings2 className="w-3.5 h-3.5 text-primary" />
-                </span>
-                Speech Speed
-              </label>
-              <span className="text-xs font-mono font-bold text-primary">
-                {speed === 1.0 ? 'Normal (1.00×)' : speed < 1.0 ? `Slow (${speed.toFixed(2)}×)` : `Fast (${speed.toFixed(2)}×)`}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2" aria-label="Speech speed presets">
-              {TTS_SPEED_PRESETS.map(({ label, value: presetSpeed }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => {
-                    setSpeed(presetSpeed);
-                    trackTtsSpeedChanged(presetSpeed);
-                  }}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  aria-pressed={speed === presetSpeed}
-                  className={`min-h-11 rounded-lg border px-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                    speed === presetSpeed
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
-                  }`}
-                >
-                  {label} <span className="font-mono">{presetSpeed.toFixed(2)}×</span>
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center h-10">
-              <input
-                id="speed-slider"
-                type="range"
-                min="0.75"
-                max="1.25"
-                step="0.05"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                onPointerUp={() => trackTtsSpeedChanged(speed)}
-                onKeyUp={() => trackTtsSpeedChanged(speed)}
-                disabled={status === 'submitting' || status === 'polling'}
-                className="w-full accent-primary bg-secondary h-1.5 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {/* Format Selector */}
-          <div className="flex flex-col gap-2">
-            <div
-              id="tts-format-label"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
-            >
-              <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
-                <FileAudio className="w-3.5 h-3.5 text-primary" />
-              </span>
-              Output Format
-            </div>
-            <div
-              className="grid grid-cols-2 gap-2 min-h-11"
-              role="group"
-              aria-labelledby="tts-format-label"
-            >
-              {(['mp3', 'wav'] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  type="button"
-                  onClick={() => {
-                    setOutputFormat(fmt);
-                    trackTtsFormatChanged(fmt);
-                  }}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  aria-pressed={outputFormat === fmt}
-                  className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                    outputFormat === fmt
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
-                  }`}
-                >
-                  {fmt}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-              {outputFormat === 'mp3'
-                ? 'MP3: 24 kHz high-quality VBR audio for web, sharing, and everyday use.'
-                : 'WAV: 24 kHz, 16-bit PCM audio for editing and lossless workflows.'}
-            </p>
-          </div>
-          </div>
-
-          <details className="group border-t border-border/70 pt-5" open>
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
-              <span className="inline-flex items-center gap-2">
-                <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
-                Pauses &amp; text
-              </span>
-              <span className="hidden text-xs font-normal text-muted-foreground group-open:hidden sm:inline">Sentence &amp; paragraph pauses, text normalization</span>
-              <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide controls</span>
-            </summary>
-
-            <div className="mt-4 grid gap-5 rounded-xl border border-border/70 bg-secondary/10 p-4 sm:grid-cols-2">
-              <div className="min-w-0 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <label htmlFor="sentence-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Sentence pause
-                  </label>
-                  <output htmlFor="sentence-pause" className="font-mono text-xs font-bold text-primary">
-                    {sentencePauseMs} ms
-                  </output>
-                </div>
-                <input
-                  id="sentence-pause"
-                  type="range"
-                  min={TTS_SENTENCE_PAUSE_CONTROL.min}
-                  max={TTS_SENTENCE_PAUSE_CONTROL.max}
-                  step={TTS_SENTENCE_PAUSE_CONTROL.step}
-                  value={sentencePauseMs}
-                  onChange={(event) => setSentencePauseMs(Number(event.target.value))}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
-                />
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  Added at sentence chunk boundaries. Production default: 220 ms.
-                </p>
-              </div>
-
-              <div className="min-w-0 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <label htmlFor="paragraph-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Paragraph pause
-                  </label>
-                  <output htmlFor="paragraph-pause" className="font-mono text-xs font-bold text-primary">
-                    {paragraphPauseMs} ms
-                  </output>
-                </div>
-                <input
-                  id="paragraph-pause"
-                  type="range"
-                  min={TTS_PARAGRAPH_PAUSE_CONTROL.min}
-                  max={TTS_PARAGRAPH_PAUSE_CONTROL.max}
-                  step={TTS_PARAGRAPH_PAUSE_CONTROL.step}
-                  value={paragraphPauseMs}
-                  onChange={(event) => setParagraphPauseMs(Number(event.target.value))}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
-                />
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  Added between paragraph chunks. Production default: 500 ms.
-                </p>
-              </div>
-
-              <div className="flex min-w-0 items-start gap-3 rounded-lg border border-border/70 bg-background p-3 sm:col-span-2">
-                <input
-                  id="normalize-text"
-                  type="checkbox"
-                  checked={normalizeText}
-                  onChange={(event) => setNormalizeText(event.target.checked)}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
-                />
-                <label htmlFor="normalize-text" className="min-w-0 text-sm text-foreground">
-                  <span className="block font-semibold">Normalize text for speech</span>
-                  <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-                    Conservatively expands common English abbreviations, dollar amounts, and percentages and standardizes punctuation. Disable it to synthesize the submitted text without those speech-focused replacements.
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex flex-col gap-3 border-t border-border/70 pt-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[11px] leading-snug text-muted-foreground">
-                  These controls, language, voice, speed, and format are saved in this browser. Script text and generated audio are never saved as preferences.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResetPreferences}
-                  disabled={status === 'submitting' || status === 'polling'}
-                  className="w-full shrink-0 sm:w-auto"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Reset preferences
-                </Button>
-              </div>
-            </div>
-          </details>
-        </div>
 
         {/* Generate Button and Duration Block */}
         <div className="space-y-3">
@@ -1695,218 +1523,399 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           />
         )}
       </form>
-        </div>
 
-        {/* Right column: voice picker, generated audio, recent history. */}
-        <div className="min-w-0 space-y-6">
-          {/* Voice — searchable picker (Edge first, favorites pinned),
-              moved out of the controls card into its own card, as in the
-              Split Studio mockup. */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-            <VoicePicker
-              voices={pickerVoices}
-              selectedVoiceId={resolvedVoiceId}
-              selectedLanguage={selectedLanguage}
-              onSelectVoice={handleVoiceSelect}
-              disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
-            />
-            {availableVoices.length === 0 && (
-              <p className="text-[11px] text-destructive leading-snug">
-                No voices are available for this language right now. Please pick another language.
-              </p>
-            )}
+          {/* Output Results Area */}
+          <div className="min-w-0">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-bold text-foreground">Generated Audio</h2>
+              {status === 'completed' && <span className="text-xs font-semibold text-primary">Ready to play or download</span>}
+            </div>
+
+            <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
+              {/* Sample Scripts - shown when no audio generated yet */}
+              {status !== 'completed' && status !== 'failed' && (
+                <div className="mb-6">
+                  <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Quick start — click a script to load it
+                  </h2>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {SAMPLE_SCRIPTS.map((script) => (
+                      <button
+                        key={script.id}
+                        type="button"
+                        onClick={() => {
+                          setText(script.text);
+                          setTrimNotice(null);
+                          setErrorMsg(null);
+                          trackTtsSampleInserted('quick_start');
+                        }}
+                        disabled={status === 'submitting' || status === 'polling'}
+                        className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                            <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h3>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground">{script.duration}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state / Error state / Results */}
+              {status !== 'completed' && (
+                <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
+                  <div className="mb-3 text-muted-foreground">
+                    {status === 'failed' ? (
+                      <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
+                    ) : (
+                      <Music className="w-8 h-8 opacity-40" />
+                    )}
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+                    {status === 'failed'
+                      ? 'There was an error generating your speech. Check the error message above.'
+                      : 'Enter your script above and click Generate Speech. Your audio will appear here when ready.'}
+                  </p>
+                </div>
+              )}
+
+              {status === 'completed' && audioUrl && (
+                <>
+                  <JsonLd schema={{
+                    '@context': 'https://schema.org',
+                    '@type': 'AudioObject',
+                    name: `Konthora Speech — ${resolvedVoiceId}`,
+                    description: `AI-generated speech using ${resolvedVoiceId} voice, ${outputFormat.toUpperCase()} format`,
+                    contentUrl: audioUrl,
+                    encodingFormat: `audio/${outputFormat}`,
+                    duration: durationSeconds ? `PT${Math.floor(durationSeconds)}S` : undefined,
+                    author: {
+                      '@type': 'Organization',
+                      name: 'Konthora',
+                      url: 'https://konthora.dev.bd',
+                    },
+                    dateCreated: new Date().toISOString(),
+                  }} />
+                  <div className="space-y-4">
+                  {/* The audio element stays hidden here; the WaveformPlayer below
+                      drives it (play/pause, seek, speed) and visualises it. */}
+                  <audio
+                    ref={audioPlayerRef}
+                    src={audioUrl}
+                    onEnded={handleAudioEnded}
+                    className="hidden"
+                    preload="auto"
+                  />
+
+                  <div className="flex flex-col gap-1 p-4 bg-secondary/20 rounded-xl">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">
+                      Generated Speech File
+                    </span>
+                    {expiresAt && (
+                      <span className="text-xs text-muted-foreground">
+                        Available for another {formatExpiryCountdown(expiresAt, nowMs)} — audio is deleted after 60 minutes.
+                      </span>
+                    )}
+                  </div>
+
+                  <WaveformPlayer
+                    audioUrl={audioUrl}
+                    audioRef={audioPlayerRef}
+                    isPlaying={isPlaying}
+                    onTogglePlay={togglePlayPause}
+                    onEnded={handleAudioEnded}
+                    durationSeconds={durationSeconds}
+                    outputFormat={outputFormat}
+                    downloadHref={audioUrl}
+                    downloadFileName={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
+                    onDownload={() => trackTtsAudioDownloaded({ voice_id: resolvedVoiceId, format: outputFormat })}
+                  />
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 p-3 rounded-lg border border-primary/10">
+                    <Sparkles className="w-4 h-4 text-primary shrink-0 animate-pulse" />
+                    <span>
+                      Neural synthesis complete! Click the play button to preview or download the high-fidelity {outputFormat.toUpperCase()} file to your device.
+                    </span>
+                  </div>
+                </div>
+              </>)}
+            </div>
           </div>
-
-      {/* Output Results Area */}
-      <div className="min-w-0">
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="text-lg font-bold text-foreground">Generated Audio</h2>
-          {status === 'completed' && <span className="text-xs font-semibold text-primary">Ready to play or download</span>}
         </div>
 
-        <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
-          {/* Sample Scripts - shown when no audio generated yet */}
-          {status !== 'completed' && status !== 'failed' && (
-            <div className="mb-6">
-              <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                Quick start — click a script to load it
-              </h2>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {SAMPLE_SCRIPTS.map((script) => (
+        {/* Right column: settings + recent history. */}
+        <div className="order-3 min-w-0 space-y-6">
+          <div className="space-y-6 rounded-2xl border border-border bg-card p-5 shadow-xs">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Settings
+            </div>
+
+            <div className="grid gap-5">
+            {/* Speed Slider */}
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                  <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                    <Settings2 className="w-3.5 h-3.5 text-primary" />
+                  </span>
+                  Speech Speed
+                </label>
+                <span className="text-xs font-mono font-bold text-primary">
+                  {speed === 1.0 ? 'Normal (1.00×)' : speed < 1.0 ? `Slow (${speed.toFixed(2)}×)` : `Fast (${speed.toFixed(2)}×)`}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2" aria-label="Speech speed presets">
+                {TTS_SPEED_PRESETS.map(({ label, value: presetSpeed }) => (
                   <button
-                    key={script.id}
+                    key={label}
                     type="button"
                     onClick={() => {
-                      setText(script.text);
-                      setTrimNotice(null);
-                      setErrorMsg(null);
-                      trackTtsSampleInserted('quick_start');
+                      setSpeed(presetSpeed);
+                      trackTtsSpeedChanged(presetSpeed);
                     }}
                     disabled={status === 'submitting' || status === 'polling'}
-                    className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    aria-pressed={speed === presetSpeed}
+                    className={`min-h-11 rounded-lg border px-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      speed === presetSpeed
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                    }`}
                   >
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h3>
-                        <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
-                          <span className="text-[10px] font-mono text-muted-foreground">{script.duration}</span>
-                        </div>
-                      </div>
-                    </div>
+                    {label} <span className="font-mono">{presetSpeed.toFixed(2)}×</span>
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Empty state / Error state / Results */}
-          {status !== 'completed' && (
-            <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
-              <div className="mb-3 text-muted-foreground">
-                {status === 'failed' ? (
-                  <AlertCircle className="w-8 h-8 text-red-500 opacity-60 animate-pulse" />
-                ) : (
-                  <Music className="w-8 h-8 opacity-40" />
-                )}
+              <div className="flex items-center h-10">
+                <input
+                  id="speed-slider"
+                  type="range"
+                  min="0.75"
+                  max="1.25"
+                  step="0.05"
+                  value={speed}
+                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                  onPointerUp={() => trackTtsSpeedChanged(speed)}
+                  onKeyUp={() => trackTtsSpeedChanged(speed)}
+                  disabled={status === 'submitting' || status === 'polling'}
+                  className="w-full accent-primary bg-secondary h-1.5 rounded-lg appearance-none cursor-pointer"
+                />
               </div>
-              <h3 className="text-lg font-semibold text-foreground">
-                {status === 'failed' ? 'Synthesis failed' : 'No audio generated'}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-                {status === 'failed'
-                  ? 'There was an error generating your speech. Check the error message above.'
-                  : 'Enter your script above and click Generate Speech. Your audio will appear here when ready.'}
+            </div>
+
+            {/* Format Selector */}
+            <div className="flex flex-col gap-2">
+              <div
+                id="tts-format-label"
+                className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
+              >
+                <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+                  <FileAudio className="w-3.5 h-3.5 text-primary" />
+                </span>
+                Output Format
+              </div>
+              <div
+                className="grid grid-cols-2 gap-2 min-h-11"
+                role="group"
+                aria-labelledby="tts-format-label"
+              >
+                {(['mp3', 'wav'] as const).map((fmt) => (
+                  <button
+                    key={fmt}
+                    type="button"
+                    onClick={() => {
+                      setOutputFormat(fmt);
+                      trackTtsFormatChanged(fmt);
+                    }}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    aria-pressed={outputFormat === fmt}
+                    className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                      outputFormat === fmt
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
+                    }`}
+                  >
+                    {fmt}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                {outputFormat === 'mp3'
+                  ? 'MP3: 24 kHz high-quality VBR audio for web, sharing, and everyday use.'
+                  : 'WAV: 24 kHz, 16-bit PCM audio for editing and lossless workflows.'}
               </p>
             </div>
-          )}
-
-          {status === 'completed' && audioUrl && (
-            <>
-              <JsonLd schema={{
-                '@context': 'https://schema.org',
-                '@type': 'AudioObject',
-                name: `Konthora Speech — ${resolvedVoiceId}`,
-                description: `AI-generated speech using ${resolvedVoiceId} voice, ${outputFormat.toUpperCase()} format`,
-                contentUrl: audioUrl,
-                encodingFormat: `audio/${outputFormat}`,
-                duration: durationSeconds ? `PT${Math.floor(durationSeconds)}S` : undefined,
-                author: {
-                  '@type': 'Organization',
-                  name: 'Konthora',
-                  url: 'https://konthora.dev.bd',
-                },
-                dateCreated: new Date().toISOString(),
-              }} />
-              <div className="space-y-4">
-              {/* The audio element stays hidden here; the WaveformPlayer below
-                  drives it (play/pause, seek, speed) and visualises it. */}
-              <audio
-                ref={audioPlayerRef}
-                src={audioUrl}
-                onEnded={handleAudioEnded}
-                className="hidden"
-                preload="auto"
-              />
-
-              <div className="flex flex-col gap-1 p-4 bg-secondary/20 rounded-xl">
-                <span className="text-xs font-semibold text-muted-foreground uppercase">
-                  Generated Speech File
-                </span>
-                {expiresAt && (
-                  <span className="text-xs text-muted-foreground">
-                    Available for another {formatExpiryCountdown(expiresAt, nowMs)} — audio is deleted after 60 minutes.
-                  </span>
-                )}
-              </div>
-
-              <WaveformPlayer
-                audioUrl={audioUrl}
-                audioRef={audioPlayerRef}
-                isPlaying={isPlaying}
-                onTogglePlay={togglePlayPause}
-                onEnded={handleAudioEnded}
-                durationSeconds={durationSeconds}
-                outputFormat={outputFormat}
-                downloadHref={audioUrl}
-                downloadFileName={`konthora-speech-${jobId ? jobId.slice(0, 8) : 'export'}.${outputFormat}`}
-                onDownload={() => trackTtsAudioDownloaded({ voice_id: resolvedVoiceId, format: outputFormat })}
-              />
-
-              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 p-3 rounded-lg border border-primary/10">
-                <Sparkles className="w-4 h-4 text-primary shrink-0 animate-pulse" />
-                <span>
-                  Neural synthesis complete! Click the play button to preview or download the high-fidelity {outputFormat.toUpperCase()} file to your device.
-                </span>
-              </div>
             </div>
-          </>)}
-        </div>
 
-        {/* Recent generations — last 5, re-downloadable within 60 minutes.
-            Its own card in the right column, as in the Split Studio mockup. */}
-        {history.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-xs">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Recent generations</h3>
-            <ul className="space-y-2">
-              {history.map((entry) => {
-                const expired = Date.parse(entry.expiresAt) <= nowMs;
-                const busy = historyBusyId === entry.jobId;
-                const entryMinutes = entry.durationSeconds == null ? null : Math.floor(entry.durationSeconds / 60);
-                const entrySeconds = entry.durationSeconds == null ? null : Math.round(entry.durationSeconds % 60);
-                return (
-                  <li
-                    key={entry.jobId}
-                    className="flex flex-col gap-2 rounded-xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between"
+            <details className="group border-t border-border/70 pt-5" open>
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+                <span className="inline-flex items-center gap-2">
+                  <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                  Pauses &amp; text
+                </span>
+                <span className="hidden text-xs font-normal text-muted-foreground group-open:hidden sm:inline">Sentence &amp; paragraph pauses, text normalization</span>
+                <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide controls</span>
+              </summary>
+
+              <div className="mt-4 grid gap-5 rounded-xl border border-border/70 bg-secondary/10 p-4">
+                <div className="min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <label htmlFor="sentence-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Sentence pause
+                    </label>
+                    <output htmlFor="sentence-pause" className="font-mono text-xs font-bold text-primary">
+                      {sentencePauseMs} ms
+                    </output>
+                  </div>
+                  <input
+                    id="sentence-pause"
+                    type="range"
+                    min={TTS_SENTENCE_PAUSE_CONTROL.min}
+                    max={TTS_SENTENCE_PAUSE_CONTROL.max}
+                    step={TTS_SENTENCE_PAUSE_CONTROL.step}
+                    value={sentencePauseMs}
+                    onChange={(event) => setSentencePauseMs(Number(event.target.value))}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+                  />
+                  <p className="text-[11px] leading-snug text-muted-foreground">
+                    Added at sentence chunk boundaries. Production default: 220 ms.
+                  </p>
+                </div>
+
+                <div className="min-w-0 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <label htmlFor="paragraph-pause" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Paragraph pause
+                    </label>
+                    <output htmlFor="paragraph-pause" className="font-mono text-xs font-bold text-primary">
+                      {paragraphPauseMs} ms
+                    </output>
+                  </div>
+                  <input
+                    id="paragraph-pause"
+                    type="range"
+                    min={TTS_PARAGRAPH_PAUSE_CONTROL.min}
+                    max={TTS_PARAGRAPH_PAUSE_CONTROL.max}
+                    step={TTS_PARAGRAPH_PAUSE_CONTROL.step}
+                    value={paragraphPauseMs}
+                    onChange={(event) => setParagraphPauseMs(Number(event.target.value))}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    className="h-11 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+                  />
+                  <p className="text-[11px] leading-snug text-muted-foreground">
+                    Added between paragraph chunks. Production default: 500 ms.
+                  </p>
+                </div>
+
+                <div className="flex min-w-0 items-start gap-3 rounded-lg border border-border/70 bg-background p-3">
+                  <input
+                    id="normalize-text"
+                    type="checkbox"
+                    checked={normalizeText}
+                    onChange={(event) => setNormalizeText(event.target.checked)}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-primary"
+                  />
+                  <label htmlFor="normalize-text" className="min-w-0 text-sm text-foreground">
+                    <span className="block font-semibold">Normalize text for speech</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                      Conservatively expands common English abbreviations, dollar amounts, and percentages and standardizes punctuation. Disable it to synthesize the submitted text without those speech-focused replacements.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex flex-col gap-3 border-t border-border/70 pt-3">
+                  <p className="text-[11px] leading-snug text-muted-foreground">
+                    These controls, language, voice, speed, and format are saved in this browser. Script text and generated audio are never saved as preferences.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetPreferences}
+                    disabled={status === 'submitting' || status === 'polling'}
+                    className="w-full shrink-0"
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">
-                        {entry.voiceName} · {entry.format.toUpperCase()}
-                        {entryMinutes != null && entrySeconds != null
-                          ? ` · ${entryMinutes}:${entrySeconds.toString().padStart(2, '0')}`
-                          : ''}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{entry.textSnippet}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {new Date(entry.createdAt).toLocaleString()}
-                        {expired ? ' · Expired' : ' · Available for 60 minutes from creation'}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void loadHistoryEntry(entry)}
-                        disabled={expired || busy}
-                      >
-                        {busy ? 'Loading…' : 'Load'}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void downloadHistoryEntry(entry)}
-                        disabled={expired || busy}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Download
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+                    <RotateCcw className="h-4 w-4" />
+                    Reset preferences
+                  </Button>
+                </div>
+              </div>
+            </details>
           </div>
-        )}
+
+          {/* Recent generations — last 5, re-downloadable within 60 minutes.
+              Its own card in the right column, as in the three-column mockup. */}
+          {history.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Recent generations</h3>
+              <ul className="space-y-2">
+                {history.map((entry) => {
+                  const expired = Date.parse(entry.expiresAt) <= nowMs;
+                  const busy = historyBusyId === entry.jobId;
+                  const entryMinutes = entry.durationSeconds == null ? null : Math.floor(entry.durationSeconds / 60);
+                  const entrySeconds = entry.durationSeconds == null ? null : Math.round(entry.durationSeconds % 60);
+                  return (
+                    <li
+                      key={entry.jobId}
+                      className="flex flex-col gap-2 rounded-xl border border-border/70 bg-card p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {entry.voiceName} · {entry.format.toUpperCase()}
+                          {entryMinutes != null && entrySeconds != null
+                            ? ` · ${entryMinutes}:${entrySeconds.toString().padStart(2, '0')}`
+                            : ''}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{entry.textSnippet}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {new Date(entry.createdAt).toLocaleString()}
+                          {expired ? ' · Expired' : ' · Available for 60 minutes from creation'}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void loadHistoryEntry(entry)}
+                          disabled={expired || busy}
+                        >
+                          {busy ? 'Loading…' : 'Load'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void downloadHistoryEntry(entry)}
+                          disabled={expired || busy}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          Download
+                        </Button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  </div>
   );
 }
