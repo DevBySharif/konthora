@@ -10,7 +10,7 @@ interface SoftwareAppProps {
  * `dateModified` is one of the strongest freshness signals an AI answer engine
  * or Google can use, so it belongs in structured data and not only the sitemap.
  */
-export const CONTENT_LAST_MODIFIED = '2026-08-01';
+export const CONTENT_LAST_MODIFIED = '2026-11-15';
 
 export function constructSoftwareAppSchema({ name, url }: SoftwareAppProps) {
   return {

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { TTS_USE_CASES, getTtsUseCase } from '../../src/config/ttsUseCases.ts';
+import { getLastModified } from '../../src/config/freshness.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..', '..');
@@ -192,6 +193,20 @@ test('per-route freshness dates are valid ISO and in the past', () => {
     assert.ok(!Number.isNaN(parsed.getTime()), `${date} is not a valid date`);
     assert.ok(parsed <= today, `${date} is in the future`);
   }
+});
+
+test('per-voice pages carry the catalogue-change date, not the site default', () => {
+  // Nov 15 2026: all 129 /voices/* pages still stamped 2026-08-01 in the
+  // sitemap even though their content changed twice since — 41 → 129 voices
+  // on Nov 14, Multilingual labels on Nov 15. The prefix rule stamps them
+  // with the catalogue change instead of 129 registry entries.
+  assert.equal(getLastModified('/voices/af-heart'), '2026-11-15');
+  assert.equal(getLastModified('/voices/bn-bd-nabanitaneural'), '2026-11-15');
+  assert.equal(getLastModified('/voices/american-english-voices'), '2026-11-15');
+  assert.equal(getLastModified('/'), '2026-11-15');
+  assert.equal(getLastModified('/voices'), '2026-11-15');
+  // Unlisted routes still fall back to the site-wide default.
+  assert.equal(getLastModified('/formats/mp3-vs-wav'), '2026-08-01');
 });
 
 test('voice picker shows Edge voices first and never labels them "Edge"', () => {

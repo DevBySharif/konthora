@@ -21,7 +21,9 @@ const DEFAULT_LAST_MODIFIED = '2026-08-01';
 const RECENTLY_UPDATED: Record<string, string> = {
   // Voice catalogue grew 41 → 129 (88 Edge voices) and 6 → 7 languages,
   // Nov 2026: per-language sample text, Edge previews, hreflang completion.
-  '/': '2026-11-14',
+  // Footer voice chips + /voices cards changed again Nov 15 (Multilingual
+  // display-name fix), so the home and voice-index stamps are Nov 15.
+  '/': '2026-11-15',
   '/text-to-speech': '2026-11-14',
   '/text-to-speech/spanish': '2026-11-14',
   '/text-to-speech/hindi': '2026-11-14',
@@ -31,7 +33,7 @@ const RECENTLY_UPDATED: Record<string, string> = {
   '/text-to-speech/portuguese': '2026-11-14',
   '/text-to-speech/how-does-text-to-speech-work': '2026-11-14',
   '/text-to-mp3': '2026-11-14',
-  '/voices': '2026-11-14',
+  '/voices': '2026-11-15',
   '/entity/kokoro': '2026-11-14',
   '/accessibility': '2026-11-14',
   '/accessibility/tts-vs-screen-reader': '2026-11-14',
@@ -76,6 +78,11 @@ const STABLE: Record<string, string> = {
 
 export function getLastModified(route: string): string {
   const normalised = route === '' ? '/' : route.replace(/\/+$/, '') || '/';
+  // Every per-voice page changed with the catalogue itself: 41 → 129 voices
+  // on Nov 14 (Edge voices, Listen buttons, related-voice links) and the
+  // Multilingual display-name fix on Nov 15. One rule covers all 129 instead
+  // of 129 registry entries that would rot on the next catalogue change.
+  if (normalised.startsWith('/voices/')) return '2026-11-15';
   return RECENTLY_UPDATED[normalised] ?? STABLE[normalised] ?? DEFAULT_LAST_MODIFIED;
 }
 

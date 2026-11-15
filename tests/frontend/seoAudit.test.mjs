@@ -334,6 +334,12 @@ test('Landing pages and voice profiles have high-intent titles and synchronized 
     homeHtml.includes('<title>Konthora — Free AI Voice &amp; Transcription Studio</title>'),
     'Homepage must have targeted title'
   );
+  // The H1 must carry the exact "text to speech" phrase (spaces, not the
+  // hyphenated form) — the head query's words, in the page's top heading.
+  assert.ok(
+    homeHtml.includes('Natural text to speech'),
+    'Homepage H1 must contain the exact phrase "text to speech"'
+  );
   assert.ok(
     homeHtml.includes('content="Konthora — Free AI Voice &amp; Transcription Studio"'),
     'Homepage og:title must match canonical title'

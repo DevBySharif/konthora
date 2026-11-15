@@ -57,7 +57,7 @@ export function Hero() {
               className="mt-6 text-4xl font-medium leading-[1.12] tracking-[-0.045em] text-foreground sm:text-5xl md:text-6xl"
             >
               <span className="headline-line">
-                Natural text-to-speech.{' '}
+                Natural text to speech.{' '}
                 <span className="serif-accent serif-accent-anim text-muted-foreground">Precise transcripts.</span>{' '}
                 In your browser.
               </span>
