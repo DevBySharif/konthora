@@ -1203,7 +1203,14 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
+    <div className="w-full">
+      {/* Split Studio (Layout A): two columns on desktop — editor and
+          controls on the left, voice picker, generated audio and recent
+          history on the right; a single stacked column on mobile, editor
+          first. min-w-0 on both columns keeps long content (voice rows,
+          history snippets) from pushing the grid past the viewport. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+        <div className="min-w-0">
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Single voice / Dialogue mode toggle */}
         <div
@@ -1439,23 +1446,11 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </p>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(15rem,0.75fr)] lg:items-start">
-          {/* Voice Selector */}
-          <VoicePicker
-            voices={pickerVoices}
-            selectedVoiceId={resolvedVoiceId}
-            selectedLanguage={selectedLanguage}
-            onSelectVoice={handleVoiceSelect}
-            disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
-          />
-          {availableVoices.length === 0 && (
-            <p className="text-[11px] text-destructive leading-snug">
-              No voices are available for this language right now. Please pick another language.
-            </p>
-          )}
-
+          {/* The voice picker lives in the right column (its own card);
+              this card holds language, speed, format and pauses only. */}
+          <div className="grid gap-5">
           {/* Speed Slider */}
-          <div className="flex flex-col gap-2 lg:order-2 lg:col-span-2 border-t border-border/70 pt-5">
+          <div className="flex flex-col gap-2 border-t border-border/70 pt-5">
             <div className="flex justify-between items-center">
               <label htmlFor="speed-slider" className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <span className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
@@ -1506,7 +1501,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </div>
 
           {/* Format Selector */}
-          <div className="flex flex-col gap-2 lg:order-1">
+          <div className="flex flex-col gap-2">
             <div
               id="tts-format-label"
               className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"
@@ -1700,9 +1695,30 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           />
         )}
       </form>
+        </div>
+
+        {/* Right column: voice picker, generated audio, recent history. */}
+        <div className="min-w-0 space-y-6">
+          {/* Voice — searchable picker (Edge first, favorites pinned),
+              moved out of the controls card into its own card, as in the
+              Split Studio mockup. */}
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
+            <VoicePicker
+              voices={pickerVoices}
+              selectedVoiceId={resolvedVoiceId}
+              selectedLanguage={selectedLanguage}
+              onSelectVoice={handleVoiceSelect}
+              disabled={status === 'submitting' || status === 'polling' || loadingVoices || availableVoices.length === 0}
+            />
+            {availableVoices.length === 0 && (
+              <p className="text-[11px] text-destructive leading-snug">
+                No voices are available for this language right now. Please pick another language.
+              </p>
+            )}
+          </div>
 
       {/* Output Results Area */}
-      <div className="mt-8 pt-7 border-t border-border/60">
+      <div className="min-w-0">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="text-lg font-bold text-foreground">Generated Audio</h2>
           {status === 'completed' && <span className="text-xs font-semibold text-primary">Ready to play or download</span>}
@@ -1716,7 +1732,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 <Sparkles className="w-4 h-4 text-primary" />
                 Quick start — click a script to load it
               </h2>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {SAMPLE_SCRIPTS.map((script) => (
                   <button
                     key={script.id}
@@ -1832,9 +1848,10 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
           </>)}
         </div>
 
-        {/* Recent generations — last 5, re-downloadable within 60 minutes */}
+        {/* Recent generations — last 5, re-downloadable within 60 minutes.
+            Its own card in the right column, as in the Split Studio mockup. */}
         {history.length > 0 && (
-          <div className="mt-6">
+          <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-xs">
             <h3 className="text-sm font-semibold text-foreground mb-3">Recent generations</h3>
             <ul className="space-y-2">
               {history.map((entry) => {
@@ -1887,7 +1904,9 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </ul>
           </div>
         )}
+        </div>
       </div>
     </div>
+  </div>
   );
 }
