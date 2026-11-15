@@ -34,7 +34,9 @@ Transport note:
 import asyncio
 import json
 import os
+import shutil
 import ssl
+import subprocess
 import threading
 import time
 import urllib.request
@@ -226,6 +228,7 @@ class EdgeTTSService:
             if k.lower() != "sec-websocket-version"
         }
         audio = bytearray()
+        saw_turn_end = False
         async with ws_client.connect(
             uri,
             proxy=self._proxy(),
@@ -250,6 +253,7 @@ class EdgeTTSService:
                 async for msg in ws:
                     if isinstance(msg, str):
                         if "Path:turn.end" in msg:
+                            saw_turn_end = True
                             break
                         continue
                     if len(msg) < 2:
@@ -259,10 +263,16 @@ class EdgeTTSService:
                     if params.get(b"Path") == b"audio" and data:
                         audio.extend(data)
             except ConnectionClosed:
-                # The server/proxy sometimes drops the socket without a close
-                # frame right after turn.end; audio already received is usable.
-                if not audio:
-                    raise
+                # A drop inside this loop means turn.end was NEVER seen:
+                # the loop breaks on turn.end, so a drop "right after
+                # turn.end" cannot happen here. The stream is incomplete
+                # by construction — never return partial audio as success.
+                # Re-raise so the caller fails cleanly (and retries).
+                raise
+        if not saw_turn_end:
+            raise RuntimeError(
+                f"Edge TTS stream ended before turn.end for voice {voice_id}"
+            )
         if not audio:
             raise RuntimeError(f"Edge TTS returned no audio for voice {voice_id}")
         return bytes(audio)
@@ -362,6 +372,44 @@ class EdgeTTSService:
                 return voice
         return None
 
+    def _validate_mp3_bytes(self, data: bytes, voice_id: str) -> None:
+        """
+        Fails fast on truncated/corrupt MP3 bytes instead of serving cut-off
+        audio as "completed" (or feeding it to the dialogue concat, where it
+        dies as a mystery FFmpeg failure). Raises TtsException so the
+        caller's retry engages. Fails open — skips validation — only when
+        ffprobe is not installed.
+        """
+        if not data:
+            raise TtsException(
+                "EDGE_TTS_FAILED",
+                f"Edge TTS returned no audio for voice '{voice_id}'",
+            )
+        ffprobe = shutil.which("ffprobe")
+        if not ffprobe:
+            return
+        try:
+            result = subprocess.run(
+                [
+                    ffprobe,
+                    "-v", "error",
+                    "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1",
+                    "-",
+                ],
+                input=data,
+                capture_output=True,
+                timeout=15,
+            )
+            duration = float(result.stdout.decode().strip())
+            if duration <= 0:
+                raise ValueError("non-positive duration")
+        except (ValueError, subprocess.SubprocessError, OSError) as e:
+            raise TtsException(
+                "EDGE_TTS_FAILED",
+                f"Edge TTS returned invalid audio for voice '{voice_id}': {e}",
+            ) from e
+
     def synthesize(
         self,
         text: str,
@@ -380,13 +428,17 @@ class EdgeTTSService:
             else timeout_seconds
         )
         try:
-            return self._run_sync(
+            audio = self._run_sync(
                 asyncio.wait_for(
                     self._synthesize_async(text, voice_id, speed), timeout=timeout
                 )
             )
+        except TtsException:
+            raise
         except Exception as e:  # noqa: BLE001 — surfaced as a clean job failure
             raise TtsException(
                 "EDGE_TTS_FAILED",
                 f"Edge speech synthesis failed for voice '{voice_id}': {e}",
             ) from e
+        self._validate_mp3_bytes(audio, voice_id)
+        return audio

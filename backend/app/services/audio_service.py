@@ -270,6 +270,16 @@ class AudioService:
         if output_format not in ("mp3", "wav"):
             raise GenerationFailedException(f"Unsupported output format: {output_format}")
 
+        # Fail fast with a segment-specific error instead of a generic
+        # ffmpeg failure: a truncated/corrupt segment file (e.g. from a
+        # dropped Edge stream) kills the concat filter with no indication
+        # of which input was bad.
+        for i, path in enumerate(input_paths):
+            if not self._is_valid_audio_file(path):
+                raise GenerationFailedException(
+                    f"Dialogue segment {i + 1} audio is invalid/empty."
+                )
+
         gap_seconds = max(0, gap_ms) / 1000.0
 
         # [i:a]aresample=24000[a{i}] per input; one generated silence source
@@ -326,6 +336,32 @@ class AudioService:
         if output_format == "mp3":
             return self.get_mp3_duration(output_path)
         return sf.info(str(output_path)).duration
+
+    def _is_valid_audio_file(self, path: Path) -> bool:
+        """True when the file exists, is non-empty, and ffprobe reads a
+        positive duration from it. Falls back to the size check alone when
+        ffprobe is not installed."""
+        if not path.exists() or path.stat().st_size == 0:
+            return False
+        if not self.ffprobe_path:
+            return True
+        try:
+            result = subprocess.run(
+                [
+                    self.ffprobe_path,
+                    "-v", "error",
+                    "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1",
+                    str(path),
+                ],
+                capture_output=True,
+                check=True,
+                shell=False,
+                timeout=15,
+            )
+            return float(result.stdout.decode().strip()) > 0
+        except Exception:  # noqa: BLE001 — any probe failure means invalid
+            return False
 
     def get_mp3_duration(self, mp3_path: Path) -> float:
         """

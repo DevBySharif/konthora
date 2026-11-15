@@ -15,12 +15,16 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from app.core.exceptions import TtsException
+from app.core.exceptions import GenerationFailedException, TtsException
 from app.core.queue import TtsQueueManager
 from app.services.audio_service import AudioService
 from app.services.edge_tts_service import EdgeTTSService
 from app.services.job_service import JobService
 from app.services.rate_limit_service import RateLimitService
+
+# The autouse fixture patches EdgeTTSService.synthesize; tests that exercise
+# the real synthesize()/validation path restore this reference.
+_REAL_SYNTHESIZE = EdgeTTSService.synthesize
 
 DIALOGUE_URL = "/api/v1/tts/dialogue-jobs"
 
@@ -255,6 +259,22 @@ def test_concatenate_audio_files_joins_with_gap(tmp_path):
     assert info.channels == 1
 
 
+def test_concatenate_rejects_invalid_segment(tmp_path):
+    """Defence in depth: a truncated/corrupt segment file must fail the
+    concat with a segment-specific error, not a generic ffmpeg failure."""
+    service = AudioService()
+    service.ffmpeg_path = (True, _use_real_ffmpeg())
+
+    good = tmp_path / "good.wav"
+    _make_tone_wav(good, duration_seconds=1.0)
+    bad = tmp_path / "bad.mp3"
+    bad.write_bytes(b"\x00" * 100)  # garbage: ffprobe cannot read a duration
+
+    out = tmp_path / "out.mp3"
+    with pytest.raises(GenerationFailedException, match="segment 2"):
+        service.concatenate_audio_files([good, bad], out, "mp3")
+
+
 def test_concatenate_mixed_wav_and_mp3(tmp_path):
     service = AudioService()
     service.ffmpeg_path = (True, _use_real_ffmpeg())
@@ -410,9 +430,9 @@ def test_dialogue_segment_failure_fails_job_without_partial_file(client, monkeyp
     assert audio.status_code == 400
 
 
-def test_dialogue_edge_segment_retries_once_after_transient_drop(client, monkeypatch, tmp_path):
-    """Edge's websocket sometimes drops with no close frame; a retry seconds
-    later succeeds (same resilience as the normal Edge job path). One
+def test_dialogue_edge_segment_retries_after_transient_drop(client, monkeypatch, tmp_path):
+    """Edge's websocket sometimes drops with no close frame; retries seconds
+    later succeed (same resilience as the normal Edge job path). One
     transient failure must NOT fail the dialogue."""
     _make_edge_available(monkeypatch)
     _use_real_ffmpeg()
@@ -445,3 +465,85 @@ def test_dialogue_edge_segment_retries_once_after_transient_drop(client, monkeyp
     status = _status(client, job_id, token).json()
     assert status["status"] == "completed", status
     assert calls["n"] == 2  # first attempt dropped, the retry succeeded
+
+
+def test_dialogue_edge_segment_retries_twice_after_repeated_drops(client, monkeypatch, tmp_path):
+    """The transient drop is time-varying: a segment that drops twice must
+    still complete on the second retry (initial attempt + 2 retries)."""
+    _make_edge_available(monkeypatch)
+    _use_real_ffmpeg()
+
+    real_mp3 = tmp_path / "edge-segment.mp3"
+    _make_tone_mp3(real_mp3, duration_seconds=1.0)
+    mp3_bytes = real_mp3.read_bytes()
+
+    calls = {"n": 0}
+
+    def _flaky_synthesize(self, text, voice_id, speed=1.0, timeout_seconds=None):
+        calls["n"] += 1
+        if calls["n"] <= 2:
+            raise TtsException("EDGE_TTS_FAILED", "no close frame received or sent")
+        return mp3_bytes
+
+    monkeypatch.setattr(EdgeTTSService, "synthesize", _flaky_synthesize)
+
+    response = client.post(DIALOGUE_URL, json={
+        "segments": [
+            {"text": "First turn.", "voiceId": "af_heart"},
+            {"text": "Second turn.", "voiceId": "en-US-AndrewNeural"},
+        ],
+    })
+    assert response.status_code == 200, response.json()
+    job_id, token = response.json()["jobId"], response.json()["accessToken"]
+
+    _run_worker(job_id)
+
+    status = _status(client, job_id, token).json()
+    assert status["status"] == "completed", status
+    assert calls["n"] == 3  # two drops, second retry succeeded
+
+
+def test_dialogue_corrupt_edge_segment_fails_as_edge_tts_failed(client, monkeypatch):
+    """Regression (Nov 16 live bug): an Edge segment returning truncated/
+    corrupt MP3 bytes must fail the job as EDGE_TTS_FAILED — NOT as the
+    generic GENERATION_FAILED from the concat — after all retries, and no
+    partial file may be served. The real synthesize() (with its ffprobe
+    validation) runs here; only the websocket layer is stubbed to return
+    garbage bytes."""
+    _make_edge_available(monkeypatch)
+    _use_real_ffmpeg()
+
+    monkeypatch.setattr(EdgeTTSService, "synthesize", _REAL_SYNTHESIZE)
+
+    calls = {"n": 0}
+
+    async def _corrupt_async(self, text, voice_id, speed):
+        calls["n"] += 1
+        return b"\x00" * 100
+
+    monkeypatch.setattr(EdgeTTSService, "_synthesize_async", _corrupt_async)
+
+    response = client.post(DIALOGUE_URL, json={
+        "segments": [
+            {"text": "First turn is fine.", "voiceId": "af_heart"},
+            {"text": "Second turn is corrupt.", "voiceId": "en-US-AndrewNeural"},
+        ],
+    })
+    assert response.status_code == 200, response.json()
+    job_id, token = response.json()["jobId"], response.json()["accessToken"]
+
+    _run_worker(job_id)
+
+    status = _status(client, job_id, token).json()
+    assert status["status"] == "failed"
+    assert status["errorCode"] == "EDGE_TTS_FAILED"
+    assert status["errorMessage"]
+    assert status["downloadUrl"] is None
+    assert calls["n"] == 3  # initial attempt + 2 retries, all rejected
+
+    # No partial file is served as success.
+    audio = client.get(
+        f"/api/v1/tts/jobs/{job_id}/audio",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert audio.status_code == 400

@@ -390,32 +390,33 @@ class TtsQueueManager:
                     # Same as the normal Edge branch: one call for the whole
                     # segment (well within Edge's limits at the 2000-char cap).
                     # Edge's websocket occasionally drops mid-stream with no
-                    # close frame (transient; a retry seconds later succeeds
-                    # — the normal job path retries per chunk the same way),
-                    # so a failed segment gets exactly one retry before the
-                    # job fails.
+                    # close frame (transient and time-varying — a retry
+                    # seconds later usually succeeds), so a failed segment
+                    # gets two retries (2s, then 5s) before the job fails.
+                    # A drop now raises EDGE_TTS_FAILED instead of returning
+                    # partial audio, so these retries actually engage.
                     edge_service = EdgeTTSService()
-                    try:
-                        mp3_bytes = await loop.run_in_executor(
-                            self._executor,
-                            edge_service.synthesize,
-                            normalized,
-                            voice_id,
-                            job.speed,
-                        )
-                    except TtsException:
-                        logger.warning(
-                            f"Edge segment synthesis failed for Dialogue Job "
-                            f"{job.job_id}; retrying once."
-                        )
-                        await asyncio.sleep(2)
-                        mp3_bytes = await loop.run_in_executor(
-                            self._executor,
-                            edge_service.synthesize,
-                            normalized,
-                            voice_id,
-                            job.speed,
-                        )
+                    mp3_bytes = None
+                    for attempt in range(3):  # initial attempt + 2 retries
+                        try:
+                            mp3_bytes = await loop.run_in_executor(
+                                self._executor,
+                                edge_service.synthesize,
+                                normalized,
+                                voice_id,
+                                job.speed,
+                            )
+                            break
+                        except TtsException:
+                            if attempt == 2:
+                                raise
+                            backoff = 2 if attempt == 0 else 5
+                            logger.warning(
+                                f"Edge segment synthesis failed for Dialogue Job "
+                                f"{job.job_id}; retrying in {backoff}s "
+                                f"(attempt {attempt + 2}/3)."
+                            )
+                            await asyncio.sleep(backoff)
                     seg_path = Path(tmpdir) / f"segment-{idx}.mp3"
                     seg_path.write_bytes(mp3_bytes)
                 else:
