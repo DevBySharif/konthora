@@ -22,7 +22,7 @@ export const SUPPORTED_TTS_LANGUAGES = [
  */
 export const EDGE_TTS_VOICES = 88;
 
-export const TOTAL_TTS_VOICES = getAllVoices().length + EDGE_TTS_VOICES;
+export const TOTAL_TTS_VOICES = getAllVoices().length;
 export const TTS_LANGUAGE_COUNT = SUPPORTED_TTS_LANGUAGES.length;
 export const TTS_LANGUAGE_NAMES = SUPPORTED_TTS_LANGUAGES.join(', ');
 export const TRANSCRIPTION_LANGUAGE = 'English' as const;
