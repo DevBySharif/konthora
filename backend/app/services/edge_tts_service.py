@@ -37,6 +37,7 @@ import os
 import shutil
 import ssl
 import subprocess
+import tempfile
 import threading
 import time
 import urllib.request
@@ -379,6 +380,14 @@ class EdgeTTSService:
         dies as a mystery FFmpeg failure). Raises TtsException so the
         caller's retry engages. Fails open — skips validation — only when
         ffprobe is not installed.
+
+        Probing MUST go through a temp file, never stdin: ffprobe cannot
+        estimate the duration of a headerless MP3 (Edge streams carry no
+        Xing header) from a non-seekable pipe — it reports duration N/A
+        for perfectly valid audio, which this validator used to reject,
+        hiding ALL Edge voices. A seekable file lets ffprobe estimate from
+        size/bitrate, so valid audio passes while garbage/truncated files
+        still fail (ffprobe exits nonzero on them).
         """
         if not data:
             raise TtsException(
@@ -388,16 +397,19 @@ class EdgeTTSService:
         ffprobe = shutil.which("ffprobe")
         if not ffprobe:
             return
+        tmp_path = None
         try:
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                tmp.write(data)
+                tmp_path = tmp.name
             result = subprocess.run(
                 [
                     ffprobe,
                     "-v", "error",
                     "-show_entries", "format=duration",
                     "-of", "default=noprint_wrappers=1:nokey=1",
-                    "-",
+                    tmp_path,
                 ],
-                input=data,
                 capture_output=True,
                 timeout=15,
             )
@@ -409,6 +421,12 @@ class EdgeTTSService:
                 "EDGE_TTS_FAILED",
                 f"Edge TTS returned invalid audio for voice '{voice_id}': {e}",
             ) from e
+        finally:
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
     def synthesize(
         self,

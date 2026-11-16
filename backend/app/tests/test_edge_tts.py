@@ -338,16 +338,16 @@ def _require_ffprobe():
     return ffprobe
 
 
-def _make_tone_mp3(path, duration_seconds: float = 1.0):
-    subprocess.run(
-        [
-            shutil.which("ffmpeg"), "-y",
-            "-f", "lavfi", "-i", f"sine=frequency=660:duration={duration_seconds}",
-            "-codec:a", "libmp3lame", "-q:a", "2",
-            str(path),
-        ],
-        capture_output=True, check=True,
-    )
+def _make_tone_mp3(path, duration_seconds: float = 1.0, write_xing: bool = True):
+    args = [
+        shutil.which("ffmpeg"), "-y",
+        "-f", "lavfi", "-i", f"sine=frequency=660:duration={duration_seconds}",
+        "-codec:a", "libmp3lame", "-q:a", "2",
+    ]
+    if not write_xing:
+        args += ["-write_xing", "0"]
+    args.append(str(path))
+    subprocess.run(args, capture_output=True, check=True)
 
 
 def test_synthesize_returns_audio_on_complete_stream(monkeypatch):
@@ -412,6 +412,32 @@ def test_validate_mp3_bytes_accepts_real_mp3(monkeypatch, tmp_path):
     mp3_path = tmp_path / "real.mp3"
     _make_tone_mp3(mp3_path, duration_seconds=1.0)
     # Must not raise for a valid MP3.
+    EdgeTTSService()._validate_mp3_bytes(mp3_path.read_bytes(), "en-US-AndrewNeural")
+
+
+def test_validate_mp3_bytes_accepts_headerless_mp3(monkeypatch, tmp_path):
+    """Regression: Edge streams carry no Xing header, and ffprobe reports
+    duration N/A for such MP3s from a non-seekable pipe — the first
+    version of this validator rejected ALL real Edge audio that way and
+    hid every Edge voice. Validation must probe via a seekable file, where
+    ffprobe estimates duration from size/bitrate."""
+    _require_ffprobe()
+    mp3_path = tmp_path / "headerless.mp3"
+    _make_tone_mp3(mp3_path, duration_seconds=1.0, write_xing=False)
+    # Sanity: this fixture really is headerless (pipe probe says N/A).
+    piped = subprocess.run(
+        [
+            shutil.which("ffprobe"),
+            "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            "-",
+        ],
+        input=mp3_path.read_bytes(),
+        capture_output=True,
+    )
+    assert piped.stdout.decode().strip() == "N/A"
+    # ...yet validation must accept it.
     EdgeTTSService()._validate_mp3_bytes(mp3_path.read_bytes(), "en-US-AndrewNeural")
 
 
