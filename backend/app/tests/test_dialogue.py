@@ -290,6 +290,71 @@ def test_concatenate_mixed_wav_and_mp3(tmp_path):
     assert duration == pytest.approx(2.3, abs=0.15)
 
 
+def _dominant_freq(samples: np.ndarray, sr: int) -> float:
+    """Dominant frequency of a mono sample window (for order checks)."""
+    windowed = samples * np.hanning(len(samples))
+    spectrum = np.abs(np.fft.rfft(windowed))
+    freqs = np.fft.rfftfreq(len(samples), d=1 / sr)
+    return float(freqs[int(np.argmax(spectrum))])
+
+
+def test_concatenate_three_segments_duration(tmp_path):
+    """Regression: >=3 segments must not corrupt the filtergraph.
+
+    The gap silence source used to be a single [sil] label reused between
+    every pair; an ffmpeg filter output may only be consumed once, so the
+    3-segment concat silently duplicated audio (4.30s instead of 3.60s).
+    """
+    service = AudioService()
+    service.ffmpeg_path = (True, _use_real_ffmpeg())
+
+    segs = []
+    for i in range(3):
+        p = tmp_path / f"seg{i}.wav"
+        _make_tone_wav(p, duration_seconds=1.0, freq=440.0 + i * 100)
+        segs.append(p)
+
+    out = tmp_path / "out.wav"
+    duration = service.concatenate_audio_files(segs, out, "wav")
+    # 3 x 1.0s + 2 x 0.3s gaps = 3.6s.
+    assert duration == pytest.approx(3.6, abs=0.05)
+
+
+def test_concatenate_five_segments_duration_and_order(tmp_path):
+    """Regression: 5 segments, each once, in order, with 0.3s gaps.
+
+    Each segment is a distinct tone; the dominant frequency in each
+    1.0s segment window of the output must match that segment's tone,
+    proving no segment is duplicated or dropped.
+    """
+    service = AudioService()
+    service.ffmpeg_path = (True, _use_real_ffmpeg())
+
+    freqs = [440.0, 550.0, 660.0, 770.0, 880.0]
+    segs = []
+    for i, freq in enumerate(freqs):
+        p = tmp_path / f"seg{i}.wav"
+        _make_tone_wav(p, duration_seconds=1.0, freq=freq)
+        segs.append(p)
+
+    out = tmp_path / "out.wav"
+    duration = service.concatenate_audio_files(segs, out, "wav")
+    # 5 x 1.0s + 4 x 0.3s gaps = 6.2s (was 8.30s with the shared [sil]).
+    assert duration == pytest.approx(6.2, abs=0.05)
+
+    data, sr = sf.read(str(out), dtype="float32")
+    assert sr == 24000
+    for i, freq in enumerate(freqs):
+        # Segment i starts at i * 1.3s; sample the middle 0.6s to avoid gaps.
+        start = int((i * 1.3 + 0.2) * sr)
+        window = data[start:start + int(0.6 * sr)]
+        assert _dominant_freq(window, sr) == pytest.approx(freq, abs=15.0)
+
+    out_mp3 = tmp_path / "out.mp3"
+    duration_mp3 = service.concatenate_audio_files(segs, out_mp3, "mp3")
+    assert duration_mp3 == pytest.approx(6.2, abs=0.2)
+
+
 # ── end-to-end (mocked synthesis, real concat) ─────────────────────────────
 
 def test_dialogue_kokoro_only_completes_as_one_file(client):

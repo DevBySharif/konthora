@@ -283,18 +283,21 @@ class AudioService:
         gap_seconds = max(0, gap_ms) / 1000.0
 
         # [i:a]aresample=24000[a{i}] per input; one generated silence source
-        # reused between every pair; concat joins segment, gap, segment...
+        # PER GAP with a distinct label ([sil0], [sil1], ...). A filter
+        # output label may only be consumed once, so reusing a single [sil]
+        # between every pair corrupts the filtergraph for >=3 segments
+        # (the Space's ffmpeg rejects it; local ffmpeg silently duplicates
+        # audio). Concat joins segment, gap, segment, gap, ...
         filter_parts = []
         concat_inputs = []
         for i in range(len(input_paths)):
             filter_parts.append(f"[{i}:a]aresample=24000[a{i}]")
             concat_inputs.append(f"[a{i}]")
             if i < len(input_paths) - 1:
-                concat_inputs.append("[sil]")
-        if len(input_paths) > 1:
-            filter_parts.append(
-                f"anullsrc=r=24000:cl=mono,atrim=0:{gap_seconds:.3f}[sil]"
-            )
+                filter_parts.append(
+                    f"anullsrc=r=24000:cl=mono,atrim=0:{gap_seconds:.3f}[sil{i}]"
+                )
+                concat_inputs.append(f"[sil{i}]")
         filter_parts.append(
             f"{''.join(concat_inputs)}concat=n={len(concat_inputs)}:v=0:a=1[out]"
         )
