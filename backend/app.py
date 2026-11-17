@@ -10,23 +10,18 @@ def zerogpu_warmup():
 # Mandatory immediate top-level invocation for ZeroGPU AST scanner
 _warmup_val = zerogpu_warmup()
 
-import os
 import sys
 import gradio as gr
-from fastapi.middleware.cors import CORSMiddleware
 from app.main import app as fastapi_app
 from app.services.kokoro_service import KokoroService
 
-os.environ.setdefault("CORS_ORIGINS", "*")
-os.environ.setdefault("TRUSTED_HOSTS", "*")
-
-fastapi_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# NOTE (C1): no CORS middleware is added here. The API's CORS policy lives
+# only in app.main, which allowlists CORS_ORIGINS (production site +
+# localhost dev origins) with allow_credentials=False. A second wildcard
+# CORSMiddleware used to be registered here; Starlette applies the
+# last-added middleware outermost, so it overrode the allowlist and any
+# website could call the API from a visitor's browser. Do not re-add
+# CORSMiddleware in this file.
 
 # ---------------------------------------------------------------------------
 # ZeroGPU Kokoro Inference Task

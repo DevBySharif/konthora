@@ -50,13 +50,13 @@ export function ProductFacts() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href={siteConfig.links.textToSpeech}
-                className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="inline-flex items-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Open speech workspace
               </Link>
               <Link
                 href={siteConfig.links.audioToText}
-                className="inline-flex items-center rounded-md border border-border bg-card/60 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="inline-flex items-center rounded-md border border-border bg-card/60 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Open transcription workspace
               </Link>

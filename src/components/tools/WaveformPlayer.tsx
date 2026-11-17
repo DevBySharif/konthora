@@ -377,7 +377,7 @@ export function WaveformPlayer({
                 aria-pressed={playbackRate === rate}
                 className={`h-9 min-w-14 rounded-lg border px-2.5 text-xs font-semibold transition-colors cursor-pointer ${
                   playbackRate === rate
-                    ? 'border-primary bg-primary/5 text-primary'
+                    ? 'border-accent bg-accent/10 text-accent'
                     : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
                 }`}
               >
@@ -387,16 +387,20 @@ export function WaveformPlayer({
           </div>
         </div>
 
-        <a
+        {/* The download control is the <a> itself, styled as the button:
+            an <a> wrapping a <button> is invalid HTML with two focus
+            stops for one action (audit M16). */}
+        <Button
+          variant="primary"
+          size="md"
           href={downloadHref}
           download={downloadFileName}
           onClick={onDownload}
+          className="gap-2 cursor-pointer"
         >
-          <Button variant="primary" size="md" className="gap-2 cursor-pointer">
-            <Download className="w-4 h-4" aria-hidden="true" />
-            Download {outputFormat.toUpperCase()}
-          </Button>
-        </a>
+          <Download className="w-4 h-4" aria-hidden="true" />
+          Download {outputFormat.toUpperCase()}
+        </Button>
       </div>
 
       <p className="text-[11px] leading-snug text-muted-foreground">

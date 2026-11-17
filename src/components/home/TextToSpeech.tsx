@@ -34,7 +34,7 @@ export function TextToSpeech() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="tts-heading">
       <div className="orb bottom-[-10rem] left-[-6rem] h-[22rem] w-[22rem] bg-primary/10" aria-hidden="true" />
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}
           <div>
@@ -65,7 +65,7 @@ export function TextToSpeech() {
             <Reveal delay={0.1} className="mt-8">
               <Link
                 href={siteConfig.links.textToSpeech}
-                className="group inline-flex items-center gap-2 rounded-md text-base font-semibold text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="group inline-flex items-center gap-2 rounded-md text-base font-semibold text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Open the speech workspace
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />

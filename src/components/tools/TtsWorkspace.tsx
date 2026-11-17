@@ -1239,7 +1239,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     aria-pressed={selectedLanguage === lang.value}
                     className={`min-h-11 rounded-lg border text-sm font-semibold tracking-wide transition-colors cursor-pointer py-2 px-3 ${
                       selectedLanguage === lang.value
-                        ? 'border-primary bg-primary/5 text-primary'
+                        ? 'border-accent bg-accent/10 text-accent'
                         : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
                     }`}
                   >
@@ -1288,7 +1288,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             disabled={status === 'submitting' || status === 'polling'}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
               mode === 'single'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-accent text-accent-foreground'
                 : 'text-muted-foreground hover:bg-secondary/50'
             }`}
           >
@@ -1301,7 +1301,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             disabled={status === 'submitting' || status === 'polling'}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
               mode === 'dialogue'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-accent text-accent-foreground'
                 : 'text-muted-foreground hover:bg-secondary/50'
             }`}
           >
@@ -1334,17 +1334,19 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
         {mode === 'single' && (
         <div className="border border-border bg-card rounded-2xl shadow-xs overflow-hidden">
           {/* Editor Header Toolbar */}
-          <div className="flex justify-between items-center bg-secondary/30 px-4 py-2 border-b border-border/80">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Speech Text Editor
+          <div className="flex justify-between items-center gap-2 bg-secondary/30 px-4 py-2 border-b border-border/80">
+            <span className="shrink-0 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              {/* Short label below sm so the header fits on one line at 390px. */}
+              <span className="sm:hidden">Script</span>
+              <span className="hidden sm:inline">Speech Text Editor</span>
             </span>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 type="button"
                 onClick={() => handleInsertSample('input_action')}
-                className="text-xs h-8 px-2.5 cursor-pointer"
+                className="text-[11px] h-8 px-2 sm:text-xs sm:px-2.5 cursor-pointer"
                 disabled={status === 'submitting' || status === 'polling'}
                 aria-label="Insert sample text"
               >
@@ -1356,7 +1358,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                 size="sm"
                 type="button"
                 onClick={handleClear}
-                className="text-xs h-8 px-2.5 text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                className="text-[11px] h-8 px-2 sm:text-xs sm:px-2.5 text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
                 aria-label="Clear all editor text"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -1439,7 +1441,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     setErrorMsg(null);
                     trackTtsSampleInserted('quick_start');
                   }}
-                  className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -1507,7 +1509,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>
               Your text is processed securely and automatically deleted after 60 minutes.{' '}
-              <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">Privacy</a>
+              <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Privacy</a>
             </span>
             </div>
           </div>
@@ -1532,46 +1534,6 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </div>
 
             <div className="bg-card border border-border p-4 sm:p-5 rounded-2xl shadow-xs">
-              {/* Sample Scripts - shown when no audio generated yet */}
-              {status !== 'completed' && status !== 'failed' && (
-                <div className="mb-6">
-                  <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    Quick start — click a script to load it
-                  </h2>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {SAMPLE_SCRIPTS.map((script) => (
-                      <button
-                        key={script.id}
-                        type="button"
-                        onClick={() => {
-                          setText(script.text);
-                          setTrimNotice(null);
-                          setErrorMsg(null);
-                          trackTtsSampleInserted('quick_start');
-                        }}
-                        disabled={status === 'submitting' || status === 'polling'}
-                        className="group relative p-3 border border-border/70 bg-background rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className="w-8 h-8 shrink-0 rounded bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                            <script.icon className="w-4 h-4 text-primary" aria-hidden="true" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{script.title}</h3>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{script.description}</p>
-                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{script.category}</span>
-                              <span className="text-[10px] font-mono text-muted-foreground">{script.duration}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Empty state / Error state / Results */}
               {status !== 'completed' && (
                 <div className="flex flex-col items-center justify-center text-center p-6 sm:p-8 border border-dashed border-border rounded-xl bg-card/30">
@@ -1691,7 +1653,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     aria-pressed={speed === presetSpeed}
                     className={`min-h-11 rounded-lg border px-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                       speed === presetSpeed
-                        ? 'border-primary bg-primary/5 text-primary'
+                        ? 'border-accent bg-accent/10 text-accent'
                         : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
                     }`}
                   >
@@ -1744,7 +1706,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
                     aria-pressed={outputFormat === fmt}
                     className={`rounded-lg border text-sm font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
                       outputFormat === fmt
-                        ? 'border-primary bg-primary/5 text-primary'
+                        ? 'border-accent bg-accent/10 text-accent'
                         : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
                     }`}
                   >
@@ -1761,7 +1723,7 @@ export function TtsWorkspace({ initialVoiceId }: { initialVoiceId?: string | nul
             </div>
 
             <details className="group border-t border-border/70 pt-5" open>
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <span className="inline-flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
                   Pauses &amp; text

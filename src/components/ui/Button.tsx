@@ -4,6 +4,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  /**
+   * When set, the Button renders as an <a> styled exactly like the button
+   * — one focusable element for link-actions such as downloads (audit
+   * M16: an <a> wrapping a <button> is invalid HTML with two focus stops).
+   * `download` is forwarded to the anchor.
+   */
+  href?: string;
+  download?: string | boolean;
 }
 
 export function Button({
@@ -14,13 +22,16 @@ export function Button({
   className = '',
   disabled,
   type = 'button',
+  href,
+  download,
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'shine inline-flex items-center justify-center font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer';
+    'shine inline-flex items-center justify-center font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer';
 
   const variants = {
-    primary: 'solid-metal rounded-lg',
+    // Primary actions use the warm-gold accent surface (audit P2-11).
+    primary: 'solid-gold rounded-lg',
     secondary: 'glass-ghost rounded-lg',
     outline: 'glass-ghost rounded-lg',
     ghost: 'rounded-lg text-foreground hover:bg-secondary/60',
@@ -33,12 +44,27 @@ export function Button({
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';
+  const mergedClassName = `${baseStyles} ${variants[variant]} ${sizes[size]} ${widthStyle} ${className}`;
+
+  if (href !== undefined) {
+    return (
+      <a
+        href={href}
+        download={download}
+        aria-disabled={disabled ? true : undefined}
+        className={`${mergedClassName}${disabled ? ' pointer-events-none opacity-50' : ''}`}
+        {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
     <button
       type={type}
       disabled={disabled}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthStyle} ${className}`}
+      className={mergedClassName}
       {...props}
     >
       {children}

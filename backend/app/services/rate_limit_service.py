@@ -1,4 +1,5 @@
 import hmac
+import ipaddress
 import time
 from typing import Dict, List, Set, Optional
 from fastapi import Request
@@ -29,15 +30,34 @@ class RateLimitService:
     def get_client_ip(self, request: Request) -> str:
         """
         Extracts the client IP address safely based on proxy trust configuration.
+
+        When proxy headers are trusted, only the LAST X-Forwarded-For entry
+        is used: each proxy appends the address it received the connection
+        from, so the last entry is the one written by the proxy we directly
+        receive from. A client can prepend arbitrary entries to spoof its
+        identity, but it cannot forge the entry our own proxy appended —
+        trusting the first entry (the old behaviour) handed every client a
+        fresh rate-limit quota per request. A malformed last entry is not
+        trusted either: fall back to the direct peer instead of promoting
+        an earlier, client-controlled entry.
         """
         if settings.TRUST_PROXY_HEADERS:
             # Parse X-Forwarded-For header
             x_forwarded_for = request.headers.get("X-Forwarded-For")
             if x_forwarded_for:
-                # Get the first IP in the chain (real client)
-                ip = x_forwarded_for.split(",")[0].strip()
-                if ip:
-                    return ip
+                # Get the last IP in the chain (appended by our trusted proxy)
+                entries = [entry.strip() for entry in x_forwarded_for.split(",")]
+                entries = [entry for entry in entries if entry]
+                if entries:
+                    last = entries[-1]
+                    try:
+                        ipaddress.ip_address(last)
+                    except ValueError:
+                        logger.warning(
+                            f"Ignoring malformed last X-Forwarded-For entry: {last!r}"
+                        )
+                    else:
+                        return last
 
         # Fallback to direct client host
         if request.client:

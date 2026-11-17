@@ -78,7 +78,7 @@ export function Hero() {
             >
               <Link
                 href={siteConfig.links.textToSpeech}
-                className="shine solid-metal group inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="shine solid-gold group inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <AudioLines className="h-5 w-5" aria-hidden="true" />
                 Generate Speech
@@ -86,7 +86,7 @@ export function Hero() {
               </Link>
               <Link
                 href={siteConfig.links.audioToText}
-                className="shine glass-ghost inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="shine glass-ghost inline-flex h-12 items-center justify-center gap-2 rounded-lg px-6 text-base font-medium tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 <Mic2 className="h-5 w-5" aria-hidden="true" />
                 Transcribe Audio

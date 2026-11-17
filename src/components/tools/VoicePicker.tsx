@@ -148,14 +148,14 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
           disabled={isListDisabled}
           placeholder="Search voices…"
           aria-label="Search voices"
-          className="min-h-11 w-full rounded-lg border border-border bg-background pl-9 pr-9 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-11 w-full rounded-lg border border-border bg-background pl-9 pr-9 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-white disabled:cursor-not-allowed disabled:opacity-50"
         />
         {query && !isListDisabled && (
           <button
             type="button"
             onClick={() => setQuery('')}
             aria-label="Clear search"
-            className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -200,7 +200,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
                           favorite buttons sit beside it. */}
                       <div
                         className={`flex items-center gap-1 border-b border-border/60 last:border-b-0 ${
-                          isSelected ? 'bg-primary/10' : 'hover:bg-secondary/40'
+                          isSelected ? 'bg-accent/10' : 'hover:bg-secondary/40'
                         }`}
                       >
                         <button
@@ -209,12 +209,12 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
                           aria-pressed={isSelected}
                           onClick={() => handleSelectVoice(voice.id)}
                           disabled={disabled}
-                          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50 disabled:cursor-not-allowed"
+                          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary disabled:cursor-not-allowed"
                         >
                           <span
                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                               isSelected
-                                ? 'border-primary bg-primary text-primary-foreground'
+                                ? 'border-accent bg-accent text-accent-foreground'
                                 : 'border-border text-transparent'
                             }`}
                             aria-hidden="true"
@@ -242,7 +242,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
                                 ? `Pause ${voice.displayName}`
                                 : `Listen to ${voice.displayName}`
                             }
-                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/30 text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/30 text-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {isPreviewing && previewStatus === 'loading' ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
@@ -266,7 +266,7 @@ export function VoicePicker({ voices, selectedVoiceId, selectedLanguage = 'en-US
                               ? `Remove ${voice.displayName} from favorites`
                               : `Add ${voice.displayName} to favorites`
                           }
-                          className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/30 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="mr-2 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-secondary/30 text-muted-foreground transition-colors hover:bg-secondary/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Star
                             className={`h-4 w-4 ${isFavorited ? 'fill-amber-400 text-amber-400' : ''}`}

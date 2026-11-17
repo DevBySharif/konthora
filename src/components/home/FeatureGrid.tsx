@@ -41,7 +41,7 @@ export function FeatureGrid() {
   return (
     <section className="relative overflow-hidden bg-secondary/25" aria-labelledby="features-heading">
       <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-primary/10" aria-hidden="true" />
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <SectionHeading
           eyebrow="Features"
           title={

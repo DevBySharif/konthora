@@ -8,7 +8,7 @@ import { siteConfig } from '@/config/site';
 export function FinalCTA() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="cta-heading">
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <Reveal>
           <div className="relative overflow-hidden rounded-[2.5rem] border border-border/70 bg-card px-6 py-16 text-center shadow-card md:px-16 md:py-20">
             {/* gradient backdrop */}
@@ -25,14 +25,14 @@ export function FinalCTA() {
               <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href={siteConfig.links.textToSpeech}
-                  className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-brand-from to-brand-to px-6 py-3 text-base font-semibold text-white shadow-glow transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="shine solid-gold inline-flex items-center gap-2 rounded-md px-6 py-3 text-base font-semibold shadow-glow transition-all duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Generate speech now
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
                 <Link
                   href={siteConfig.links.audioToText}
-                  className="inline-flex items-center rounded-md border border-border/70 bg-background/50 px-6 py-3 text-base font-semibold text-foreground transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="inline-flex items-center rounded-md border border-border/70 bg-background/50 px-6 py-3 text-base font-semibold text-foreground transition-colors hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Transcribe audio
                 </Link>

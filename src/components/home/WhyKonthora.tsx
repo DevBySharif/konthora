@@ -34,7 +34,7 @@ const reasons = [
 export function WhyKonthora() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="why-heading">
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <SectionHeading
           eyebrow="Why Konthora"
           title={

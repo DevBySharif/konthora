@@ -19,7 +19,7 @@ export function KonthoraBrand({ variant = 'header' }: KonthoraBrandProps) {
     <Link
       href={siteConfig.links.home}
       aria-label="Konthora home"
-      className={`group flex items-center ${gapClass} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg px-1 py-1`}
+      className={`group flex items-center ${gapClass} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg px-1 py-1`}
     >
       <span
         className={`relative inline-flex shrink-0 transition-transform duration-200 group-hover:scale-105 ${containerClass}`}

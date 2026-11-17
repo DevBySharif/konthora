@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional, Set
 from loguru import logger
 
 from app.core.config import settings
+from app.services.rate_limit_service import RateLimitService
 from app.services.transcription_job_service import TranscriptionJobService
 from app.services.transcription_service import TranscriptionService
 from app.services.media_service import MediaService
@@ -120,6 +121,23 @@ class TranscriptionQueueManager:
                 logger.error(f"Uncaught exception in Transcription Worker-{worker_id} loop: {e}")
                 await asyncio.sleep(1.0) # avoid rapid spinning
 
+    def _release_transcription_slot(self, job_id: str) -> None:
+        """Deregister the per-IP concurrency slot for a finished job.
+
+        Mirrors the TTS worker: the slot is released when the worker
+        finishes (success or failure), not when the client next polls
+        status — a client that never polls must not hold its single slot
+        until the job record expires (60 min). Idempotent: the status
+        endpoint may deregister the same job later, and discard() is a
+        no-op then. No-op if the job was never registered (e.g. already
+        released by an admission-failure cleanup).
+        """
+        rate_limiter = RateLimitService()
+        for client_ip, active in list(rate_limiter._trans_active_jobs.items()):
+            if job_id in active:
+                rate_limiter.deregister_transcription_active_job(client_ip, job_id)
+                return
+
     def _process_job_sync(self, job_id: str) -> None:
         """
         Synchronous job processing steps. Runs inside the ThreadPoolExecutor.
@@ -133,6 +151,7 @@ class TranscriptionQueueManager:
             job = job_service.get_job(job_id)
         except Exception:
             logger.error(f"Worker could not find Job ID: {job_id}")
+            self._release_transcription_slot(job_id)
             return
 
         logger.info(f"Processing Job {job_id} | Stage: inspecting_media")
@@ -363,6 +382,13 @@ class TranscriptionQueueManager:
                         p.unlink()
                     except Exception:
                         pass
+
+        finally:
+            # Always release the per-IP concurrency slot when the worker
+            # finishes — success, failure, or early return (H4). The
+            # status endpoint's deregister-on-poll stays as a backstop;
+            # a second deregister is a no-op.
+            self._release_transcription_slot(job_id)
 
     def _cleanup_audio_files(self, source_path: Path, wav_path: Path):
         """Idempotent clean of source upload and extracted WAV files."""

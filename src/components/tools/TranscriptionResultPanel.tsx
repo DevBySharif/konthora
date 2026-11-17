@@ -379,7 +379,7 @@ export function TranscriptionResultPanel({
           </div>
 
           <details className="group rounded-xl border border-border/70 bg-secondary/10">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               <span className="inline-flex items-center gap-2"><Search className="h-4 w-4 text-primary" /> Find and replace</span>
               <span className="inline-flex items-center gap-2 text-xs font-normal text-muted-foreground">
                 {matches.length} match{matches.length === 1 ? '' : 'es'}
@@ -395,7 +395,7 @@ export function TranscriptionResultPanel({
                   onChange={(event) => dispatch({ type: 'set-search-query', value: event.target.value })}
                   onKeyDown={handleSearchKeyDown}
                   placeholder="Search transcript"
-                  className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
               </label>
               <div className="flex items-end gap-1">
@@ -416,7 +416,7 @@ export function TranscriptionResultPanel({
                   value={state.replaceText}
                   onChange={(event) => dispatch({ type: 'set-replace-text', value: event.target.value })}
                   placeholder="Replacement text"
-                  className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
               </label>
               <div className="flex flex-wrap items-end gap-2">
@@ -447,14 +447,14 @@ export function TranscriptionResultPanel({
                     if (element) segmentRefs.current.set(segment.id, element);
                     else segmentRefs.current.delete(segment.id);
                   }}
-                  className={`flex min-w-0 flex-col gap-1 rounded-lg px-2 py-2 sm:flex-row sm:gap-3 ${isActive ? 'bg-primary/10 ring-1 ring-primary/30' : state.displayMode === 'paragraphs' ? 'bg-secondary/20' : ''}`}
+                  className={`flex min-w-0 flex-col gap-1 rounded-lg px-2 py-2 sm:flex-row sm:gap-3 ${isActive ? 'bg-accent/10 ring-1 ring-accent' : state.displayMode === 'paragraphs' ? 'bg-secondary/20' : ''}`}
                   aria-current={isActive ? 'true' : undefined}
                 >
                   <button
                     type="button"
                     onClick={() => seekToSegment(segment.start)}
                     disabled={!sourceUrl || !hasUsableTimings}
-                    className="min-h-11 shrink-0 self-start rounded px-1 text-left text-[11px] font-semibold tabular-nums text-primary/80 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-default disabled:opacity-70 sm:w-32"
+                    className="min-h-11 shrink-0 self-start rounded px-1 text-left text-[11px] font-semibold tabular-nums text-primary/80 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-default disabled:opacity-70 sm:w-32"
                     aria-label={`Play source media from ${formatDisplayTimestamp(segment.start, state.timestampStyle)}`}
                   >
                     {formatDisplayTimestamp(segment.start, state.timestampStyle)} → {formatDisplayTimestamp(segment.end, state.timestampStyle)}
@@ -465,7 +465,7 @@ export function TranscriptionResultPanel({
                       onChange={(event) => dispatch({ type: 'edit-segment', segmentIndex, text: event.target.value })}
                       rows={Math.min(8, Math.max(2, Math.ceil(segment.text.length / 80)))}
                       aria-label={`Edit transcript segment ${segmentIndex + 1}`}
-                      className="min-w-0 flex-1 resize-y break-words rounded-lg border border-border bg-card p-2 font-sans text-sm leading-relaxed text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      className="min-w-0 flex-1 resize-y break-words rounded-lg border border-border bg-card p-2 font-sans text-sm leading-relaxed text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     />
                   ) : (
                     <span className="min-w-0 max-w-full break-words font-sans leading-relaxed text-foreground [overflow-wrap:anywhere]">
@@ -495,7 +495,7 @@ export function TranscriptionResultPanel({
                 onChange={(event) => dispatch({ type: 'set-export-base-name', value: event.target.value })}
                 onBlur={() => dispatch({ type: 'set-export-base-name', value: sanitizeExportBaseName(state.exportBaseName) })}
                 aria-describedby="export-name-help"
-                className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm font-normal normal-case tracking-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="mt-1 h-11 w-full rounded-lg border border-border bg-background px-3 text-sm font-normal normal-case tracking-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               <span id="export-name-help" className="mt-1 block text-[11px] font-normal normal-case tracking-normal">1–80 characters. The selected extension is added automatically.</span>
             </label>

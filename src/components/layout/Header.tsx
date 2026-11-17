@@ -59,7 +59,7 @@ export function Header() {
                 href={link.href}
                 aria-current={isActive ? 'page' : undefined}
                 className={`metal-pill h-10 px-[18px] text-sm tracking-[-0.01em] ${
-                  isActive ? 'border-white/70' : ''
+                  isActive ? 'border-accent' : ''
                 }`}
               >
                 {link.label}
@@ -72,7 +72,7 @@ export function Header() {
         <div className="flex items-center gap-2.5">
           <Link
             href={siteConfig.links.textToSpeech}
-            className="shine solid-metal group hidden lg:inline-flex items-center justify-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="shine solid-gold group hidden lg:inline-flex items-center justify-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Get Started
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
@@ -85,7 +85,7 @@ export function Header() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
             aria-label="Toggle main menu"
-            className="shine glass-ghost inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 cursor-pointer"
+            className="shine glass-ghost inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -146,8 +146,8 @@ export function Header() {
                           href={link.href}
                           onClick={handleLinkClick}
                           aria-current={isActive ? 'page' : undefined}
-                          className={`metal-pill flex items-center justify-between rounded-lg px-4 py-3 text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
-                            isActive ? 'border-white/70' : ''
+                          className={`metal-pill flex items-center justify-between rounded-lg px-4 py-3 text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                            isActive ? 'border-accent' : ''
                           }`}
                         >
                           {link.label}
@@ -161,7 +161,7 @@ export function Header() {
                   <Link
                     href={siteConfig.links.textToSpeech}
                     onClick={handleLinkClick}
-                    className="shine solid-metal inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                    className="shine solid-gold inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     Get Started
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />

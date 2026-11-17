@@ -276,7 +276,7 @@ export default function SpeechToTextPage() {
                   Konthora uses the{' '}
                   <Link
                     href="/entity/whisper"
-                    className="font-medium text-foreground hover:underline underline-offset-4 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    className="font-medium text-foreground hover:underline underline-offset-4 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Whisper
                   </Link>{' '}

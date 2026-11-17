@@ -132,7 +132,7 @@ export default function HomePage() {
 
         {/* FAQ Section */}
         <section className="relative overflow-hidden" aria-labelledby="faq-heading">
-          <Container className="py-20 md:py-28">
+          <Container className="py-14 md:py-20">
             <div className="text-center mb-12">
               <h2 id="faq-heading" className="text-3xl font-bold tracking-tight text-foreground">
                 Frequently Asked Questions

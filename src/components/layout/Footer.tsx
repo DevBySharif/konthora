@@ -59,7 +59,7 @@ export function Footer() {
             {/* Contact Card */}
             <a
               href={`mailto:support@konthora.dev.bd`}
-              className="mt-8 inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:bg-card hover:text-foreground hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="mt-8 inline-flex items-center gap-2.5 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-sm transition-all hover:border-primary/30 hover:bg-card hover:text-foreground hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Mail className="h-4 w-4 text-muted-foreground/80" aria-hidden="true" />
               support@konthora.dev.bd
@@ -69,7 +69,7 @@ export function Footer() {
               href="https://www.producthunt.com/products/konthora?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-konthora"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-block max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="mt-6 inline-block max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -85,7 +85,7 @@ export function Footer() {
             <a
               href="https://www.launchory.app/startups/konthora?ref=badge"
               target="_blank"
-              className="mt-6 inline-block max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="mt-6 inline-block max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -112,7 +112,7 @@ export function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="inline-block text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-primary hover:translate-x-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm"
+                        className="inline-block text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-primary hover:translate-x-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
                       >
                         {link.label}
                       </Link>
@@ -142,7 +142,7 @@ export function Footer() {
               <Link
                 key={voice.slug}
                 href={getVoiceUrl(voice.slug)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/50 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <span className="font-medium">{voice.shortName}</span>
                 <span className="text-[10px] text-muted-foreground/70">

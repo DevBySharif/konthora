@@ -1,8 +1,10 @@
 import React from 'react';
-import { Type, SlidersHorizontal, Download, Upload, ListFilter, FileOutput } from 'lucide-react';
+import Link from 'next/link';
+import { Type, SlidersHorizontal, Download, Upload, ListFilter, FileOutput, ArrowRight } from 'lucide-react';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/home/SectionHeading';
 import { Stagger, StaggerItem } from '@/components/ui/motion';
+import { siteConfig } from '@/config/site';
 
 const ttsSteps = [
   { icon: Type, title: 'Input your text', desc: 'Paste or draft scripts up to 2,000 characters.' },
@@ -20,7 +22,7 @@ export function Workflow() {
   return (
     <section className="relative overflow-hidden" aria-labelledby="workflow-heading">
       <div className="orb top-[-8rem] left-[-8rem] h-[22rem] w-[22rem] bg-primary-soft/10" aria-hidden="true" />
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <SectionHeading
           eyebrow="Workflow"
           title={
@@ -34,15 +36,30 @@ export function Workflow() {
 
         <div className="mt-16 grid gap-10 lg:grid-cols-2 lg:gap-16">
           {[
-            { label: 'Speech', colour: 'from-brand-from to-brand-to', steps: ttsSteps },
-            { label: 'Transcription', colour: 'from-primary to-primary-soft', steps: transSteps },
+            {
+              label: 'Speech',
+              colour: 'from-brand-from to-brand-to',
+              steps: ttsSteps,
+              desc: 'Type a script, pick one of 129 voices, and export MP3 or WAV.',
+              cta: 'Open speech workspace',
+              href: siteConfig.links.textToSpeech,
+            },
+            {
+              label: 'Transcription',
+              colour: 'from-primary to-primary-soft',
+              steps: transSteps,
+              desc: 'Upload audio or video and get timestamped text you can export.',
+              cta: 'Open transcription workspace',
+              href: siteConfig.links.audioToText,
+            },
           ].map((track) => (
-            <Stagger key={track.label} className="rounded-3xl border border-border/70 bg-card p-7 shadow-card" stagger={0.09}>
+            <Stagger key={track.label} className="flex flex-col rounded-3xl border border-border/70 bg-card p-7 shadow-card" stagger={0.09}>
               <div className="flex items-center gap-3">
                 <span className={`inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-r ${track.colour}`} aria-hidden="true" />
                 <h3 className="text-lg font-semibold text-foreground">{track.label}</h3>
               </div>
-              <ol className="mt-7 space-y-6">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{track.desc}</p>
+              <ol className="mt-7 flex-1 space-y-6">
                 {track.steps.map((s, i) => (
                   <StaggerItem key={s.title}>
                     <li className="flex gap-4">
@@ -63,6 +80,13 @@ export function Workflow() {
                   </StaggerItem>
                 ))}
               </ol>
+              <Link
+                href={track.href}
+                className="mt-8 inline-flex items-center gap-2 self-start rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {track.cta}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
             </Stagger>
           ))}
         </div>

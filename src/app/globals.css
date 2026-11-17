@@ -26,7 +26,14 @@
   --muted-foreground: #B3B3B3;
   --border: rgba(255, 255, 255, 0.20);
   --border-soft: rgba(255, 255, 255, 0.14);
-  --ring: rgba(255, 255, 255, 0.35);
+  /* Full-opacity white: a 0.35-alpha ring was borderline on WCAG 2.4.11. */
+  --ring: #ffffff;
+  /* Warm gold (logo concept B) — the ONE accent. Reserved for the primary
+     CTA surface and active/selected states only; the monochrome base
+     palette stays untouched. Dark text on gold clears WCAG AA. */
+  --accent: #d9a441;
+  --accent-strong: #e8bc5c;
+  --accent-foreground: #171204;
   --success: #34D399;
   --error: #EF4444;
   --destructive: #EF4444;
@@ -74,6 +81,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
   --color-error: var(--error);
   --color-destructive: var(--destructive);
@@ -138,6 +148,39 @@ body {
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Reveal — visible by default (audit P0-1).
+   Resting state is opacity 1 with no transform, so content is never blank
+   if the observer never fires, animations are off, or JS is disabled. The
+   `is-in` class (added by src/components/ui/motion.tsx) only plays a
+   transform-only rise — the keyframe never touches opacity, so text stays
+   readable even mid-animation in a full-page capture.
+   ========================================================================== */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal.is-in {
+  animation: kf-reveal-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--reveal-delay, 0s);
+}
+
+@keyframes kf-reveal-rise {
+  from {
+    transform: translateY(var(--reveal-y, 24px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal.is-in {
+    animation: none;
+  }
 }
 
 /* ---- Skip link styling ---- */
@@ -352,6 +395,29 @@ body {
     inset 0 1px 0 #ffffff,
     0 0 26px rgba(186, 208, 255, 0.4),
     0 8px 18px rgba(255, 255, 255, 0.14);
+}
+
+/* Warm-gold primary CTA (audit P2-11) — the one accent surface. Same
+   liquid-metal language as .solid-metal, gold instead of white, so the
+   primary action stands out from every secondary control. */
+.solid-gold {
+  color: var(--accent-foreground);
+  border: 1px solid #e8bc5c;
+  background: linear-gradient(180deg, #f0c96a 0%, #d9a441 48%, #b9832a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.solid-gold:hover {
+  border-color: #f5d488;
+  background: linear-gradient(180deg, #f7d67e 0%, #e2ae4c 42%, #c08d2e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 26px rgba(217, 164, 65, 0.35),
+    0 8px 18px rgba(217, 164, 65, 0.16);
 }
 
 /* Instrument Serif italic accent, used on two or three headline words only. */

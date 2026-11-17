@@ -22,7 +22,7 @@ export function SupportedLanguages() {
   return (
     <section className="relative overflow-hidden bg-secondary/25" aria-labelledby="languages-heading">
       <div className="orb bottom-[-8rem] right-[-6rem] h-[20rem] w-[20rem] bg-primary/10" aria-hidden="true" />
-      <Container className="py-20 md:py-28">
+      <Container className="py-14 md:py-20">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
           <div>
             <SectionHeading

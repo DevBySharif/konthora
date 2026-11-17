@@ -678,13 +678,13 @@ export function TranscriptionWorkspace() {
                 role="button"
                 aria-label="Upload audio or video file. Drag and drop or press Enter to browse."
                 aria-describedby={errorMsg ? 'transcribe-validation-error' : undefined}
-                className={`flex min-h-56 flex-col items-center justify-center p-7 sm:p-9 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 select-none ${
+                className={`flex min-h-56 flex-col items-center justify-center p-7 sm:p-9 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white select-none ${
                   dragActive
-                    ? 'border-primary bg-primary/5 scale-[0.99]'
+                    ? 'border-accent bg-accent/10 scale-[0.99]'
                     : 'border-border bg-secondary/10 hover:bg-secondary/20 hover:border-border/80'
                 }`}
               >
-                <div className={`p-4 rounded-full bg-background border border-border shadow-xs text-muted-foreground mb-4 transition-colors ${dragActive ? 'text-primary border-primary/20' : ''}`}>
+                <div className={`p-4 rounded-full bg-background border border-border shadow-xs text-muted-foreground mb-4 transition-colors ${dragActive ? 'text-accent border-accent/30' : ''}`}>
                   <Upload className="w-6 h-6" />
                 </div>
                 <span className="text-base font-semibold text-foreground">
@@ -712,14 +712,14 @@ export function TranscriptionWorkspace() {
                 </div>
                 {!isRunning && (
                   <div className="flex items-center gap-2 self-end sm:self-auto">
-                    <button type="button" onClick={openFileBrowser} className="rounded-lg px-3 py-2 text-xs font-semibold text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors cursor-pointer">
+                    <button type="button" onClick={openFileBrowser} className="rounded-lg px-3 py-2 text-xs font-semibold text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors cursor-pointer">
                       Replace
                     </button>
                     <button
                       type="button"
                       onClick={handleRemoveFile}
                       aria-label={`Remove file ${form.file.name}`}
-                      className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all cursor-pointer"
+                      className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -747,7 +747,7 @@ export function TranscriptionWorkspace() {
               value={form.language}
               onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
               disabled={isRunning}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="auto">Auto Detect</option>
               {(capabilities?.supportedLanguages ?? [{ code: 'en', name: 'English' }]).map((lang) => (
@@ -776,7 +776,7 @@ export function TranscriptionWorkspace() {
                 }))
               }
               disabled={isRunning}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {timestampModes.map((mode) => (
                 <option key={mode} value={mode} disabled={mode === 'word' && !wordTimestampsAvailable}>
@@ -810,7 +810,7 @@ export function TranscriptionWorkspace() {
                   disabled={isRunning}
                   className={`rounded-lg border text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     form.exportFormat === fmt
-                      ? 'border-primary bg-primary/5 text-primary'
+                      ? 'border-accent bg-accent/10 text-accent'
                       : 'border-border bg-background text-muted-foreground hover:bg-secondary/50'
                   }`}
                 >
@@ -847,7 +847,7 @@ export function TranscriptionWorkspace() {
             <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>
               Your files are processed securely and automatically deleted after 60 minutes.{' '}
-              <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">Privacy</a>
+              <a href="/privacy-policy" className="underline hover:text-foreground rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Privacy</a>
             </span>
           </div>
         </div>

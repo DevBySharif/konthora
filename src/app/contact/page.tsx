@@ -64,7 +64,7 @@ export default function ContactPage() {
                 </p>
                 <a
                   href={`mailto:${siteConfig.contactEmail}`}
-                  className="inline-block text-base font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-1 py-0.5"
+                  className="inline-block text-base font-bold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md px-1 py-0.5"
                 >
                   {siteConfig.contactEmail}
                 </a>
@@ -83,7 +83,7 @@ export default function ContactPage() {
                 </p>
                 <a
                   href={siteConfig.links.copyright}
-                  className="inline-block text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md"
+                  className="inline-block text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
                 >
                   View Copyright & Takedown Policy &rarr;
                 </a>
