@@ -15,6 +15,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from loguru import logger
 
 from app.core.config import settings
+from app.core.origin_guard import API_PREFIX, is_origin_allowed
 from app.core.exceptions import TtsException
 from app.core.queue import TtsQueueManager
 from app.core.transcription_queue import TranscriptionQueueManager
@@ -108,6 +109,38 @@ async def add_robots_header(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+# Server-side Origin enforcement (C1 follow-up). Registered AFTER the
+# robots middleware, so it is the OUTERMOST middleware: it runs before
+# CORS and before the route handlers, which means a rejected request
+# never reaches rate limiting (no quota burned) or job creation.
+# Scope: /api/v1/* only, all methods EXCEPT OPTIONS. Preflight OPTIONS
+# requests are the CORS middleware's job — and live they never reach the
+# app at all, because the HF Spaces edge answers them itself (and
+# reflects any Origin, which is why this guard has to exist). The
+# allowlist is settings.cors_origins_list, the same single source of
+# truth as the CORS middleware; requests with no Origin header
+# (curl, server-to-server, mobile apps) are allowed through.
+@app.middleware("http")
+async def enforce_api_origin(request: Request, call_next):
+    if (
+        request.url.path.startswith(API_PREFIX)
+        and request.method != "OPTIONS"
+        and not is_origin_allowed(request.headers.get("origin"))
+    ):
+        logger.warning(
+            f"Rejected cross-origin API request: {request.method} "
+            f"{request.url.path} from Origin "
+            f"{request.headers.get('origin')!r}"
+        )
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={
+                "code": "FORBIDDEN_ORIGIN",
+                "message": "Cross-origin requests to this API are not allowed.",
+            },
+        )
+    return await call_next(request)
 
 # Register routes
 app.include_router(health_router, prefix="/api/v1")
